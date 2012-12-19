@@ -1,0 +1,11 @@
+lang: English
+version: 0.1
+author: DPOH-VAR
+
+locale:
+  error_nochildren: tag %s has no children nodes
+  error_noplayer: player required
+  error_noentity: no entity with id %d
+  data_elements: %d elements
+  data_bytes: %d bytes
+  data_ints: %d integers

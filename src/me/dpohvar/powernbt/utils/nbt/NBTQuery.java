@@ -1,0 +1,30 @@
+package me.dpohvar.powernbt.utils.nbt;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
+public class NBTQuery {
+    public static final String splitPattern = "(?=\\[)|\\.";
+    public static final String indexPattern = "\\[[0-9]*\\]";
+    public static final String tagPattern = "[^\\[\\]]*";
+
+    public List<Object> values = new ArrayList<Object>();
+
+    public NBTQuery(String query){
+        if (query == null) return;
+        String[] els = query.split(splitPattern);
+        for (String s : els) {
+            if (s.isEmpty()) continue;
+            if(s.matches(indexPattern)) values.add(s);
+            else if(s.equals("[]")) values.add(-1);
+            else if(s.matches(tagPattern)) values.add(Integer.parseInt(s.substring(1,s.length()-1)));
+            else throw new RuntimeException("invalid prefix: "+s);
+        }
+    }
+
+    public Queue<Object> getQueue(){
+        return new LinkedList<Object>(values);
+    }
+}

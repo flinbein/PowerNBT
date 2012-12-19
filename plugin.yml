@@ -1,0 +1,25 @@
+name: powerNBT
+description: in-game nbt editor
+author: DPOH-VAR
+main: me.dpohvar.powernbt.PowerNBT
+version: 0.3.1
+commands:
+    nbt:
+        description: use nbt commands
+        usage: /nbt object [query] view|copy|select|remove|<set|add object [query]>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

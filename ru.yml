@@ -1,0 +1,11 @@
+lang: Русский
+version: 0.1
+author: DPOH-VAR
+
+locale:
+  error_nochildren: "элемент %s не имеет дочерних элементов"
+  error_noplayer: "доступно только игрокам"
+  error_noentity: "ничего нет с id %d"
+  data_elements: "%d элементов"
+  data_bytes: "%d байт"
+  data_ints: "%d чисел"

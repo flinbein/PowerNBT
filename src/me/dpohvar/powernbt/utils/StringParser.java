@@ -5,13 +5,6 @@ import org.bukkit.ChatColor;
 import java.util.LinkedList;
 import java.util.Queue;
 
-/**
- * Created with IntelliJ IDEA.
- * User: DPOH-VAR
- * Date: 27.11.12
- * Time: 15:31
- * To change this template use File | Settings | File Templates.
- */
 public class StringParser {
     public static String parse(String input) {
         Queue<Character> chars = new LinkedList<Character>();

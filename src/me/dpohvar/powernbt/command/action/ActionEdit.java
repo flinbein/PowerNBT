@@ -1,0 +1,41 @@
+package me.dpohvar.powernbt.command.action;
+
+import me.dpohvar.powernbt.PowerNBT;
+import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.nbt.NBTContainer;
+import me.dpohvar.powernbt.utils.nbt.NBTQuery;
+import me.dpohvar.powernbt.utils.versionfix.XNBTBase;
+
+public class ActionEdit extends Action {
+
+    private final Caller caller;
+    private final Argument arg1;
+    private final Argument arg2;
+
+    public ActionEdit(Caller caller, String o1, String q1, String o2, String q2) {
+        this.caller = caller;
+        this.arg1 = new Argument(caller, o1, q1);
+        this.arg2 = new Argument(caller, o2, q2);
+    }
+
+    @Override
+    public void execute() {
+        if (arg1.needPrepare()) {
+            arg1.prepare(this, null, null);
+            return;
+        }
+        NBTContainer container = arg1.getContainer();
+        NBTQuery query = arg1.getQuery();
+        if (arg2.needPrepare()) {
+            arg2.prepare(this, container, query);
+            return;
+        }
+        XNBTBase base = arg2.getContainer().getBase(arg2.getQuery());
+        if (base == null) throw new RuntimeException(PowerNBT.plugin.translate("error_null"));
+        boolean result = container.setBase(query, base);
+        if (!result) {
+            throw new RuntimeException(PowerNBT.plugin.translate("error_failedit", query.getQuery()));
+        }
+        caller.send(PowerNBT.plugin.translate("success_edit") + getNBTShortView(base));
+    }
+}

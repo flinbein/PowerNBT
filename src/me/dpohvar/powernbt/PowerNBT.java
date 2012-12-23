@@ -20,6 +20,11 @@ public class PowerNBT extends JavaPlugin {
             null, null, null, Arrays.asList('\"'), null, Arrays.asList(' ')
     );
     private String prefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[" + ChatColor.YELLOW + "PowerNBT" + ChatColor.GOLD + ChatColor.BOLD + "] " + ChatColor.RESET;
+    private String errorPrefix = ChatColor.DARK_RED.toString() + ChatColor.BOLD + "[" + ChatColor.RED + "PowerNBT" + ChatColor.DARK_RED + ChatColor.BOLD + "] " + ChatColor.RESET;
+
+    public File getNBTFilesFolder() {
+        return new File(getDataFolder(), "nbt");
+    }
 
     public Caller getCaller(CommandSender sender) {
         Caller c = callers.get(sender);
@@ -29,8 +34,8 @@ public class PowerNBT extends JavaPlugin {
         return c;
     }
 
-    public File getLangFolder(){
-        File lang = new File(getDataFolder(),"lang");
+    public File getLangFolder() {
+        File lang = new File(getDataFolder(), "lang");
         lang.mkdirs();
         return lang;
     }
@@ -43,25 +48,31 @@ public class PowerNBT extends JavaPlugin {
         return prefix;
     }
 
+    public String getErrorPrefix() {
+        return errorPrefix;
+    }
+
     public boolean isDebug() {
         return true;
     }
 
-    public String translate(String key){
+    public String translate(String key) {
         return translator.translate(key);
     }
 
-    public String translate(String key, Object... values){
-        return translator.translate(key,values);
+    public String translate(String key, Object... values) {
+        return translator.translate(key, values);
     }
 
-    @Override public void onLoad() {
+    @Override
+    public void onLoad() {
         plugin = this;
     }
 
-    @Override public void onEnable() {
+    @Override
+    public void onEnable() {
         String lang = this.getConfig().getString("lang");
-        this.translator = new Translator(this,lang);
+        this.translator = new Translator(this, lang);
         getCommand("nbt").setExecutor(new CommandNBT());
     }
 }

@@ -7,6 +7,7 @@ commands:
     nbt:
         description: use nbt commands
         usage: /nbt object [query] view|copy|select|remove|<set|add object [query]>
+        permission: powernbt.use
 
 
 

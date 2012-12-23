@@ -3,9 +3,29 @@ version: 0.1
 author: DPOH-VAR
 
 locale:
-  error_nochildren: tag %s has no children nodes
-  error_noplayer: player required
-  error_noentity: no entity with id %d
-  data_elements: %d elements
-  data_bytes: %d bytes
-  data_ints: %d integers
+  error_nochildren: "tag %s has no children nodes"
+  error_noplayer: "player required"
+  error_noentity: "no entity with id %d"
+  error_nofile: "file %s not found"
+  error_querynode: "invalid query format: %s (%s)"
+  error_noworld: "no world with name %s"
+  error_parse: "can not parse %s to %s"
+  error_parsetype: "can not parse object of type %s"
+  error_undefinedobject: "no nbt object %s"
+  error_undefinedtype: "type of value %s not set"
+  error_undefinedself: "object self not available in this context"
+  error_toomanyarguments: "too many arguments"
+  error_variablerequired: "variable required"
+  error_null: "no value"
+  error_failedit: "can not change value by query %s"
+  error_accessfile: "access denied to file %s"
+  data_elements: "%d elements"
+  data_null: "no nbt element"
+  data_bytes: "%d bytes"
+  data_ints: "%d integers"
+  object_block: "block %s at %d:%d:%d:%s"
+  request_select: "select a block or entity by right-click, or type to chat."
+  success_removed: "removed: "
+  success_copied: "copied to buffer: "
+  success_select: "%s selected as %s"
+  success_edit: "new value set: "

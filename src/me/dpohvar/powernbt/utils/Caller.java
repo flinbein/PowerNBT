@@ -5,18 +5,28 @@ import me.dpohvar.powernbt.utils.versionfix.XNBTBase;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
 public class Caller extends NBTContainer {
-    private final CommandSender owner;
+    private CommandSender owner;
     private TempListener listener;
     private XNBTBase base;
     private HashMap<String, NBTContainer> variables = new HashMap<String, NBTContainer>();
 
     public CommandSender getOwner() {
         return owner;
+    }
+
+    public void setOwner(CommandSender owner) {
+        this.owner = owner;
+    }
+
+    public HashMap<String, NBTContainer> getVariables() {
+        return variables;
     }
 
     public NBTContainer getVariable(String name) {
@@ -70,6 +80,11 @@ public class Caller extends NBTContainer {
     @Override
     public Object getObject() {
         return this;
+    }
+
+    @Override
+    public List<String> getTypes() {
+        return Arrays.asList("entity", "living", "entity_Player");
     }
 
     @Override

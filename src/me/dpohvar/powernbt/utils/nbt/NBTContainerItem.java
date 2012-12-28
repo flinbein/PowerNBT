@@ -4,6 +4,9 @@ import me.dpohvar.powernbt.utils.versionfix.VersionFix;
 import me.dpohvar.powernbt.utils.versionfix.XNBTBase;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static me.dpohvar.powernbt.utils.versionfix.StaticValues.noInput;
 import static me.dpohvar.powernbt.utils.versionfix.StaticValues.oneNBTTagCompound;
 import static me.dpohvar.powernbt.utils.versionfix.VersionFix.callMethod;
@@ -20,6 +23,11 @@ public class NBTContainerItem extends NBTContainer {
     @Override
     public ItemStack getObject() {
         return item;
+    }
+
+    @Override
+    public List<String> getTypes() {
+        return Arrays.asList("itemtag", "item_" + item.getType());
     }
 
     @Override

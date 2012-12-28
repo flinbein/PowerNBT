@@ -13,8 +13,8 @@ import static me.dpohvar.powernbt.PowerNBT.plugin;
 
 
 public class CommandNBT extends Command {
-    private static HashSet<String> specialTokens = new HashSet<String>(
-            Arrays.asList("=", "+=", "rem", "remove", "copy", "set", "select")
+    public static final HashSet<String> specialTokens = new HashSet<String>(
+            Arrays.asList("=", "rem", "remove", "copy", "paste", "set", "select", "as", "view", "debug", "swap")
     );
 
     @Override
@@ -33,8 +33,22 @@ public class CommandNBT extends Command {
         }
         RuntimeException exceptionArgs = new RuntimeException(plugin.translate("error_toomanyarguments"));
         if (action == null) {
-            if (argsAfter.size() > 2) throw exceptionArgs;
-            Action a = new ActionView(caller, words.poll(), words.poll());
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            Action a = new ActionView(caller, argsBefore.poll(), argsBefore.poll());
+            a.execute();
+        } else if (action.equals("view")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            Action a = new ActionView(caller, argsBefore.poll(), argsBefore.poll(), argsAfter);
+            a.execute();
+        } else if (action.equals("paste")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() > 1) throw exceptionArgs;
+            Action a = new ActionEdit(caller, argsBefore.poll(), argsBefore.poll(), "buffer", argsAfter.poll());
+            a.execute();
+        } else if (action.equals("debug")) {
+            if (argsBefore.size() > 0) throw exceptionArgs;
+            if (argsAfter.size() > 1) throw exceptionArgs;
+            Action a = new ActionDebug(caller, argsAfter.poll());
             a.execute();
         } else if (action.equals("=")) {
             if (argsBefore.size() > 2) throw exceptionArgs;
@@ -55,6 +69,16 @@ public class CommandNBT extends Command {
             if (argsBefore.size() > 1) throw exceptionArgs;
             if (argsAfter.size() > 2) throw exceptionArgs;
             Action a = new ActionSet(caller, argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
+            a.execute();
+        } else if (action.equals("as")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() > 1) throw exceptionArgs;
+            Action a = new ActionSet(caller, argsAfter.poll(), argsBefore.poll(), argsBefore.poll());
+            a.execute();
+        } else if (action.equals("swap")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() > 2) throw exceptionArgs;
+            Action a = new ActionSwap(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
             a.execute();
         }
         return true;

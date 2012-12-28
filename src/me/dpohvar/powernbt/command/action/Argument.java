@@ -1,6 +1,7 @@
 package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.PowerNBT;
+import me.dpohvar.powernbt.command.completer.TypeCompleter;
 import me.dpohvar.powernbt.utils.Caller;
 import me.dpohvar.powernbt.utils.StringParser;
 import me.dpohvar.powernbt.utils.TempListener;
@@ -18,7 +19,10 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 import static me.dpohvar.powernbt.utils.versionfix.StaticValues.*;
@@ -34,6 +38,28 @@ public class Argument {
     private NBTQuery query = null;
     private String objectFuture = null;
     private String queryFuture = null;
+
+    public static final Map<String, Integer> colors = new HashMap<String, Integer>();
+
+    static {
+        colors.put("black", 0x1E1B1B);
+        colors.put("red", 0xb3312C);
+        colors.put("green", 0x3B511A);
+        colors.put("brown", 0x51310A);
+        colors.put("blue", 0x253192);
+        colors.put("purple", 0x7B2FBE);
+        colors.put("cyan", 0x287697);
+        colors.put("lightgray", 0xABABAB);
+        colors.put("gray", 0x434343);
+        colors.put("pink", 0xD88198);
+        colors.put("lime", 0x41CC34);
+        colors.put("lightgreen", 0x41CC34);
+        colors.put("yellow", 0xDECF2A);
+        colors.put("lightblue", 0x6689D3);
+        colors.put("magenta", 0xC354CD);
+        colors.put("orange", 0xEB8844);
+        colors.put("white", 0xF0F0F0);
+    }
 
     public NBTContainer getContainer() {
         return container;
@@ -99,6 +125,8 @@ public class Argument {
             File folder = plugin.getNBTFilesFolder();
             File file = new File(folder, object.substring(1) + ".nbt");
             return new NBTContainerFile(file);
+        } else if (colors.containsKey(object)) {
+            return new NBTContainerBase(NBTType.INT.newBase((int) colors.get(object)));
         } else if (object.startsWith("file:") && object.length() > 5) {
             String s = object.substring(5);
             if (s.startsWith("\"") && s.endsWith("\"")) s = StringParser.parse(s);
@@ -130,6 +158,14 @@ public class Argument {
             return new NBTContainerBase(getShell(XNBTBase.class, getNew(classNBTTagCompound, noInput)));
         } else if (object.equals("list")) {
             return new NBTContainerBase(getShell(XNBTBase.class, getNew(classNBTTagList, noInput)));
+        } else if (object.equals("on") || object.equals("true")) {
+            return new NBTContainerBase(getShell(XNBTBase.class, getNew(classNBTTagByte, new Class[]{String.class, byte.class}, 1)));
+        } else if (object.equals("off") || object.equals("false")) {
+            return new NBTContainerBase(getShell(XNBTBase.class, getNew(classNBTTagByte, new Class[]{String.class, byte.class}, 0)));
+        } else if (object.equals("int[]")) {
+            return new NBTContainerBase(NBTType.INTARRAY.getDefault());
+        } else if (object.equals("byte[]")) {
+            return new NBTContainerBase(NBTType.BYTEARRAY.getDefault());
         } else if (object.matches("(-?[0-9]+):(-?[0-9]+):(-?[0-9]+)(:.*)?")) {
             String[] t = object.split(":");
             int x = Integer.parseInt(t[0]);
@@ -157,6 +193,19 @@ public class Argument {
             NBTType type = NBTType.STRING;
             if (param != null) type = NBTType.fromString(param);
             return new NBTContainerBase(type.parse(s));
+        } else if (object.matches("#-?[0-9a-fA-F]+")) {
+            Long l = Long.parseLong(object.substring(1), 16);
+            String s = l.toString();
+            NBTType type = NBTType.INT;
+            if (param != null) type = NBTType.fromString(param);
+            return new NBTContainerBase(type.parse(s));
+        } else if (object.matches("\\[((-?[0-9]+|#-?[0-9a-fA-F]+)(,(?!\\])|(?=\\])))*\\]")) {
+            if (param == null) {
+                return null;
+            } else {
+                NBTType type = NBTType.fromString(param);
+                return new NBTContainerBase(type.parse(object));
+            }
         } else if (object.matches("-?[0-9]+(.[0-9]*)?")) {
             if (param == null) {
                 return null;
@@ -252,6 +301,35 @@ public class Argument {
             this.query = new NBTQuery(queryFuture);
             action.execute();
         } else if (objectFuture.matches("-?[0-9]*(.[0-9]*)?")) {
+            if (paramContainer == null)
+                throw new RuntimeException(plugin.translate("error_undefinedtype", objectFuture));
+            NBTType type = NBTType.fromBase(paramContainer.getBase(paramQuery));
+            if (type == NBTType.END && paramQuery != null) {
+                List<Object> q = paramQuery.getValues();
+                if (!q.isEmpty()) {
+                    q.remove(q.size() - 1);
+                    NBTQuery nq = new NBTQuery(q);
+                    NBTType nt = NBTType.fromBase(paramContainer.getBase(nq));
+                    if (nt == NBTType.BYTEARRAY) type = NBTType.BYTE;
+                    else if (nt == NBTType.INTARRAY) type = NBTType.INT;
+                }
+                if (type == NBTType.END) {
+                    TypeCompleter comp = plugin.getTypeCompleter();
+                    for (String name : paramContainer.getTypes()) {
+                        NBTType t = comp.getType(name, paramQuery);
+                        if (t != null) {
+                            type = t;
+                            break;
+                        }
+
+                    }
+                }
+            }
+
+            this.container = new NBTContainerBase(type.parse(objectFuture));
+            this.query = emptyQuery;
+            action.execute();
+        } else if (objectFuture.matches("\\[((-?[0-9]+|#-?[0-9a-fA-F]+)(,(?!\\])|(?=\\])))*\\]")) {
             if (paramContainer == null)
                 throw new RuntimeException(plugin.translate("error_undefinedtype", objectFuture));
             NBTType type = NBTType.fromBase(paramContainer.getBase(paramQuery));

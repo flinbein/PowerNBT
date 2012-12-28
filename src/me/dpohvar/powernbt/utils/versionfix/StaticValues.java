@@ -6,6 +6,8 @@ public class StaticValues {
 
     public static final byte typeCompound = 10;
     public static final byte typeList = 9;
+    public static final byte typeIntArray = 11;
+    public static final byte typeByteArray = 7;
 
     public static final Class classNBTBase = fixClass("net.minecraft.server.NBTBase");
     public static final Class classNBTTagEnd = fixClass("net.minecraft.server.NBTTagEnd");

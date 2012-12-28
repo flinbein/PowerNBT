@@ -26,6 +26,6 @@ public class ActionRemove extends Action {
         NBTQuery query = arg.getQuery();
         XNBTBase base = container.getBase(query);
         container.removeBase(query);
-        caller.send(PowerNBT.plugin.translate("success_removed") + getNBTShortView(base));
+        caller.send(PowerNBT.plugin.translate("success_removed") + getNBTShortView(base, null));
     }
 }

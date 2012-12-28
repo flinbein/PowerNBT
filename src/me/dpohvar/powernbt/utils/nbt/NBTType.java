@@ -39,6 +39,16 @@ public enum NBTType {
         this.tagable = taged;
     }
 
+    public XNBTBase newBase(Object o) {
+        if (dataClass == null)
+            throw new RuntimeException("can not construct new " + tagClass.getSimpleName() + " by value");
+        try {
+            return getShell(XNBTBase.class, getNew(tagClass, new Class[]{String.class, dataClass}, "", o));
+        } catch (Throwable t) {
+            throw new RuntimeException("wrong type: " + o.getClass().getSimpleName() + " in " + name(), t);
+        }
+    }
+
     public static NBTType fromByte(byte b) {
         for (NBTType t : values()) if (t.type == b) return t;
         return END;
@@ -157,17 +167,26 @@ public enum NBTType {
                 return getShell(XNBTBase.class, getNew(tagClass, new Class[]{String.class, float.class}, "", v));
             }
             case BYTEARRAY: {
-                String[] ss = s.split(",");
+                if (!s.matches("\\[((-?[0-9]+|#-?[0-9a-fA-F]+)(,(?!\\])|(?=\\])))*\\]")) {
+                    throw new RuntimeException(plugin.translate("error_parse", s, INTARRAY.name));
+                }
+                String sp = s.substring(1, s.length() - 1);
+                if (sp.isEmpty()) return newBase(new byte[0]);
+                String[] ss = sp.split(",");
                 byte[] v = new byte[ss.length];
                 for (int i = 0; i < v.length; i++) {
                     Byte t = null;
                     String x = ss[i];
+                    if (x.startsWith("#")) try {
+                        t = (byte) Long.parseLong(x.substring(1), 16);
+                    } catch (Throwable ignored) {
+                    }
                     try {
-                        t = Byte.parseByte(s);
+                        t = Byte.parseByte(x);
                     } catch (Throwable ignored) {
                     }
                     if (t == null) try {
-                        t = (byte) (long) Long.parseLong(s);
+                        t = (byte) (long) Long.parseLong(x);
                     } catch (Throwable ignored) {
                     }
                     if (t == null) throw new RuntimeException(plugin.translate("error_parse", x, BYTE.name));
@@ -176,17 +195,26 @@ public enum NBTType {
                 return getShell(XNBTBase.class, getNew(tagClass, new Class[]{String.class, byte[].class}, "", v));
             }
             case INTARRAY: {
-                String[] ss = s.split(",");
+                if (!s.matches("\\[((-?[0-9]+|#-?[0-9a-fA-F]+)(,(?!\\])|(?=\\])))*\\]")) {
+                    throw new RuntimeException(plugin.translate("error_parse", s, INTARRAY.name));
+                }
+                String sp = s.substring(1, s.length() - 1);
+                if (sp.isEmpty()) return newBase(new int[0]);
+                String[] ss = sp.split(",");
                 int[] v = new int[ss.length];
                 for (int i = 0; i < v.length; i++) {
                     Integer t = null;
                     String x = ss[i];
+                    if (x.startsWith("#")) try {
+                        t = (int) Long.parseLong(x.substring(1), 16);
+                    } catch (Throwable ignored) {
+                    }
                     try {
-                        t = Integer.parseInt(s);
+                        t = Integer.parseInt(x);
                     } catch (Throwable ignored) {
                     }
                     if (t == null) try {
-                        t = (int) (long) Long.parseLong(s);
+                        t = (int) (long) Long.parseLong(x);
                     } catch (Throwable ignored) {
                     }
                     if (t == null) throw new RuntimeException(plugin.translate("error_parse", x, INT.name));

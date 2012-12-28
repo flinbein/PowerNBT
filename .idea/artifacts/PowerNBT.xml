@@ -5,8 +5,8 @@
       <element id="module-output" name="PowerNBT" />
       <element id="file-copy" path="$PROJECT_DIR$/config.yml" />
       <element id="file-copy" path="$PROJECT_DIR$/plugin.yml" />
-      <element id="file-copy" path="$PROJECT_DIR$/en.yml" />
-      <element id="file-copy" path="$PROJECT_DIR$/ru.yml" />
+      <element id="file-copy" path="$PROJECT_DIR$/locale/en.yml" />
+      <element id="file-copy" path="$PROJECT_DIR$/locale/ru.yml" />
     </root>
   </artifact>
 </component>

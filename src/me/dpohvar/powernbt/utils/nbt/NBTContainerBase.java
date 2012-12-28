@@ -2,6 +2,9 @@ package me.dpohvar.powernbt.utils.nbt;
 
 import me.dpohvar.powernbt.utils.versionfix.XNBTBase;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class NBTContainerBase extends NBTContainer {
 
     XNBTBase base;
@@ -13,6 +16,11 @@ public class NBTContainerBase extends NBTContainer {
     @Override
     public XNBTBase getObject() {
         return this.base;
+    }
+
+    @Override
+    public List<String> getTypes() {
+        return new ArrayList<String>();
     }
 
     @Override

@@ -1,0 +1,17 @@
+ench: [enchantment]
+StoredEnchantments: [enchantment]
+RepairCost: int
+title: string
+author: string
+pages: [string]
+display:
+  color: int
+  Name: string
+  Lore: [string]
+CustomPotionEffects: [potioneffect]
+SkullOwner: string
+Explosion: explosion
+Fireworks:
+  Flight: byte
+  Explosions: [explosion]
+map_is_scaling: byte

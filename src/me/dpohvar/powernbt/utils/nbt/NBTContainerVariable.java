@@ -3,6 +3,8 @@ package me.dpohvar.powernbt.utils.nbt;
 import me.dpohvar.powernbt.utils.Caller;
 import me.dpohvar.powernbt.utils.versionfix.XNBTBase;
 
+import java.util.List;
+
 public class NBTContainerVariable extends NBTContainer {
 
     Caller caller;
@@ -16,6 +18,13 @@ public class NBTContainerVariable extends NBTContainer {
     @Override
     public Caller getObject() {
         return this.caller;
+    }
+
+    @Override
+    public List<String> getTypes() {
+        NBTContainer c = getContainer();
+        if (c == null) return null;
+        return c.getTypes();
     }
 
     public String getVariableName() {

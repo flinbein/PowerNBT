@@ -2,6 +2,10 @@ package me.dpohvar.powernbt.utils.nbt;
 
 import me.dpohvar.powernbt.utils.versionfix.XNBTBase;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static me.dpohvar.powernbt.utils.versionfix.StaticValues.*;
 import static me.dpohvar.powernbt.utils.versionfix.VersionFix.*;
@@ -17,6 +21,12 @@ public class NBTContainerEntity extends NBTContainer {
     @Override
     public Entity getObject() {
         return ent;
+    }
+
+    @Override
+    public List<String> getTypes() {
+        if (ent instanceof LivingEntity) return Arrays.asList("entity", "living", ent.getType().name());
+        return Arrays.asList("entity", ent.getType().name());
     }
 
     @Override

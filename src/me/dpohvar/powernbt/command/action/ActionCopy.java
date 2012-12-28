@@ -26,6 +26,6 @@ public class ActionCopy extends Action {
         NBTQuery query = arg.getQuery();
         XNBTBase base = container.getBase(query);
         caller.setRootBase(container.getBase(query));
-        caller.send(PowerNBT.plugin.translate("success_copied") + getNBTShortView(base));
+        caller.send(PowerNBT.plugin.translate("success_copied") + getNBTShortView(base, null));
     }
 }

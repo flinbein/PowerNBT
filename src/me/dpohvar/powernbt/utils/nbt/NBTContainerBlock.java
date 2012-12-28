@@ -8,6 +8,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static me.dpohvar.powernbt.utils.versionfix.StaticValues.*;
 import static me.dpohvar.powernbt.utils.versionfix.VersionFix.*;
 
@@ -25,6 +28,11 @@ public class NBTContainerBlock extends NBTContainer {
     }
 
     @Override
+    public List<String> getTypes() {
+        return Arrays.asList("block", "block_" + block.getType());
+    }
+
+    @Override
     public XNBTBase getRootBase() {
         XCraftWorld w = getShell(XCraftWorld.class, block.getWorld());
         Object tile = w.getTileEntityAt(block.getX(), block.getY(), block.getZ());
@@ -38,7 +46,6 @@ public class NBTContainerBlock extends NBTContainer {
 
     @Override
     public void setRootBase(XNBTBase base) {
-        //todo: not work
         XCraftWorld w = getShell(XCraftWorld.class, block.getWorld());
         XTileEntity tile = getShell(XTileEntity.class, w.getTileEntityAt(block.getX(), block.getY(), block.getZ()));
         if (tile.getProxyObject() != null) {

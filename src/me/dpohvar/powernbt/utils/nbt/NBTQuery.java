@@ -13,10 +13,9 @@ public class NBTQuery {
     public static final String tagPattern = "[^\\[\\]]*";
 
     private List<Object> values = new ArrayList<Object>();
-    private String query;
 
     public List<Object> getValues() {
-        return values;
+        return new ArrayList<Object>(values);
     }
 
     public boolean isEmpty() {
@@ -24,11 +23,19 @@ public class NBTQuery {
     }
 
     public String getQuery() {
-        return query;
+        String s = "";
+        for (Object node : values) {
+            if (node instanceof Integer) s += "[" + node + "]";
+            else s += "." + node;
+        }
+        if (s.startsWith(".")) s = s.substring(1);
+        if (s.isEmpty()) s = ".";
+        return s;
     }
 
     public NBTQuery(String query) {
         if (query == null) return;
+
         String[] els = query.split(splitPattern);
         for (String s : els) {
             if (s.isEmpty()) continue;
@@ -41,8 +48,17 @@ public class NBTQuery {
 
     public NBTQuery(Object... nodes) {
         for (Object node : nodes) {
-            if (node instanceof String || node instanceof Integer) values.add(node);
-            else throw new RuntimeException("invalid node: " + node);
+            if (node instanceof String || node instanceof Integer) {
+                values.add(node);
+            } else throw new RuntimeException("invalid node: " + node);
+        }
+    }
+
+    public NBTQuery(List<Object> nodes) {
+        for (Object node : nodes) {
+            if (node instanceof String || node instanceof Integer) {
+                values.add(node);
+            } else throw new RuntimeException("invalid node: " + node);
         }
     }
 

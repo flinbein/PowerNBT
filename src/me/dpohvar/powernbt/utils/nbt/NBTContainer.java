@@ -5,6 +5,7 @@ import me.dpohvar.powernbt.utils.versionfix.XNBTBase;
 import me.dpohvar.powernbt.utils.versionfix.XNBTTagCompound;
 import me.dpohvar.powernbt.utils.versionfix.XNBTTagList;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -29,6 +30,7 @@ public abstract class NBTContainer {
 
     public abstract Object getObject();
 
+    public abstract List<String> getTypes();
 
     public XNBTBase getBase(NBTQuery query) {
         if (query == null) return getRootBase();
@@ -49,6 +51,20 @@ public abstract class NBTContainer {
                 else if (index == -1) current = VersionFix.getShell(XNBTBase.class, list.get(list.size() - 1));
                 else if (list.size() > index) current = VersionFix.getShell(XNBTBase.class, list.get(index));
                 else return null;
+            } else if (current.getTypeId() == typeByteArray && t instanceof Integer) {
+                byte[] bytes = (byte[]) current.getProxyField("data");
+                int index = (Integer) t;
+                if (bytes.length == 0) return null;
+                else if (index == -1) return null;
+                else if (index >= bytes.length) return null;
+                else current = NBTType.BYTE.newBase(bytes[index]);
+            } else if (current.getTypeId() == typeIntArray && t instanceof Integer) {
+                int[] ints = (int[]) current.getProxyField("data");
+                int index = (Integer) t;
+                if (ints.length == 0) return null;
+                else if (index == -1) return null;
+                else if (index >= ints.length) return null;
+                else current = NBTType.INT.newBase(ints[index]);
             } else throw new RuntimeException(plugin.translate("error_nochildren", current.getName()));
         }
     }
@@ -92,6 +108,48 @@ public abstract class NBTContainer {
                         xList.add(type.getDefault().clone());
                     }
                     list.set(index, base.clone());
+                    setRootBase(root);
+                    return true;
+                } else if (current.getTypeId() == typeByteArray && t instanceof Integer) {
+                    List<Byte> list = new ArrayList<Byte>();
+                    for (byte b : (byte[]) current.getProxyField("data")) list.add(b);
+                    byte val;
+                    try {
+                        Number num = (Number) base.getProxyField("data");
+                        val = num.byteValue();
+                    } catch (Throwable thr) {
+                        throw new RuntimeException(plugin.translate("error_notnumber", base.getName()));
+                    }
+                    int index = (Integer) t;
+                    if (index == -1) index = list.size();
+                    while (index >= list.size()) {
+                        list.add((byte) 0);
+                    }
+                    list.set(index, val);
+                    byte[] bytes = new byte[list.size()];
+                    for (int i = 0; i < bytes.length; i++) bytes[i] = list.get(i);
+                    current.setProxyField("data", bytes);
+                    setRootBase(root);
+                    return true;
+                } else if (current.getTypeId() == typeIntArray && t instanceof Integer) {
+                    List<Integer> list = new ArrayList<Integer>();
+                    for (int i : (int[]) current.getProxyField("data")) list.add(i);
+                    int val;
+                    try {
+                        Number num = (Number) base.getProxyField("data");
+                        val = num.intValue();
+                    } catch (Throwable thr) {
+                        throw new RuntimeException(plugin.translate("error_notnumber", base.getName()));
+                    }
+                    int index = (Integer) t;
+                    if (index == -1) index = list.size();
+                    while (index >= list.size()) {
+                        list.add(0);
+                    }
+                    list.set(index, val);
+                    int[] ints = new int[list.size()];
+                    for (int i = 0; i < ints.length; i++) ints[i] = list.get(i);
+                    current.setProxyField("data", ints);
                     setRootBase(root);
                     return true;
                 } else {
@@ -158,13 +216,34 @@ public abstract class NBTContainer {
                     map.remove(key);
                     setRootBase(root);
                 } else if (current.getTypeId() == typeList && t instanceof Integer) {
-                    XNBTTagList list = VersionFix.getShell(XNBTTagList.class, current.getProxyObject());
+                    List<Object> list = (List<Object>) current.getProxyField("list");
                     int index = (Integer) t;
-                    List<Object> bases = (List<Object>) list.getProxyField("list");
-                    if (bases.size() == 0) return false;
-                    else if (bases.size() >= index) return false;
-                    else if (index == -1) bases.remove(bases.size() - 1);
-                    else bases.remove(index);
+                    if (list.size() == 0) return false;
+                    else if (index >= list.size()) return false;
+                    else if (index == -1) list.remove(list.size() - 1);
+                    else list.remove(index);
+                    setRootBase(root);
+                } else if (current.getTypeId() == typeByteArray && t instanceof Integer) {
+                    List<Byte> list = new ArrayList<Byte>();
+                    for (byte b : (byte[]) current.getProxyField("data")) list.add(b);
+                    int index = (Integer) t;
+                    if (index == -1) return false;
+                    else if (list.size() <= index) return false;
+                    list.remove(index);
+                    byte[] bytes = new byte[list.size()];
+                    for (int i = 0; i < bytes.length; i++) bytes[i] = list.get(i);
+                    current.setProxyField("data", bytes);
+                    setRootBase(root);
+                } else if (current.getTypeId() == typeIntArray && t instanceof Integer) {
+                    List<Integer> list = new ArrayList<Integer>();
+                    for (int i : (int[]) current.getProxyField("data")) list.add(i);
+                    int index = (Integer) t;
+                    if (index == -1) return false;
+                    else if (list.size() >= index) return false;
+                    list.remove(index);
+                    int[] ints = new int[list.size()];
+                    for (int i = 0; i < ints.length; i++) ints[i] = list.get(i);
+                    current.setProxyField("data", ints);
                     setRootBase(root);
                 } else throw new RuntimeException(plugin.translate("error_nochildren", current.getName()));
                 return true;
@@ -180,9 +259,9 @@ public abstract class NBTContainer {
                 XNBTTagList list = VersionFix.getShell(XNBTTagList.class, current.getProxyObject());
                 int index = (Integer) t;
                 if (list.size() == 0) return false;
-                else if (index == -1) current = VersionFix.getShell(XNBTBase.class, list.get(list.size() - 1));
-                else if (list.size() < index) current = VersionFix.getShell(XNBTBase.class, list.get(index));
-                else return false;
+                else if (index == -1) return false;
+                else if (list.size() <= index) return false;
+                current = VersionFix.getShell(XNBTBase.class, list.get(index));
             } else throw new RuntimeException(plugin.translate("error_nochildren", current.getName()));
         }
     }

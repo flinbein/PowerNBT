@@ -36,6 +36,6 @@ public class ActionEdit extends Action {
         if (!result) {
             throw new RuntimeException(PowerNBT.plugin.translate("error_failedit", query.getQuery()));
         }
-        caller.send(PowerNBT.plugin.translate("success_edit") + getNBTShortView(base));
+        caller.send(PowerNBT.plugin.translate("success_edit") + getNBTShortView(base, null));
     }
 }

@@ -2,6 +2,9 @@ package me.dpohvar.powernbt.utils.nbt;
 
 import me.dpohvar.powernbt.utils.versionfix.XNBTBase;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class NBTContainerComplex extends NBTContainer {
 
     private final NBTContainer container;
@@ -15,6 +18,11 @@ public class NBTContainerComplex extends NBTContainer {
     @Override
     public NBTContainer getObject() {
         return this.container;
+    }
+
+    @Override
+    public List<String> getTypes() {
+        return new ArrayList<String>();
     }
 
     public NBTQuery getQuery() {

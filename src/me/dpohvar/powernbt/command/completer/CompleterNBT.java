@@ -4,6 +4,7 @@ import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.command.CommandNBT;
 import me.dpohvar.powernbt.command.action.Argument;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.StringParser;
 import me.dpohvar.powernbt.utils.nbt.NBTContainer;
 import me.dpohvar.powernbt.utils.nbt.NBTContainerVariable;
 import me.dpohvar.powernbt.utils.nbt.NBTQuery;
@@ -15,25 +16,25 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
 import static me.dpohvar.powernbt.utils.versionfix.StaticValues.*;
 
 public class CompleterNBT extends Completer {
-    TypeCompleter completer;
+    TypeCompleter typeCompleter;
     NBTQuery emptyQuery = new NBTQuery();
 
     public CompleterNBT() {
         super();
-        completer = PowerNBT.plugin.getTypeCompleter();
+        typeCompleter = PowerNBT.plugin.getTypeCompleter();
     }
 
     @Override
     public void fillTabs(Caller caller, TabFormer former) throws Exception {
         String word = former.poll(); // object
         if (word.isEmpty()) {
-            //todo: add $tmpfile completer
             former.addIfStarts("me", "item", "block", "buffer", "list", "compound", "byte[]", "int[]", "debug");
             if (caller.getOwner() instanceof Player && former.getQuery().startsWith("id")) {
                 Player p = (Player) caller.getOwner();
@@ -66,7 +67,22 @@ public class CompleterNBT extends Completer {
                 for (Player f : Bukkit.getOnlinePlayers()) {
                     former.addIfStarts("*" + f.getName());
                 }
+            } else if (former.getQuery().startsWith("$$")) {
+                File folder = PowerNBT.plugin.getNBTFilesFolder();
+                if (folder.isDirectory()) for (File f : folder.listFiles()) {
+                    String n = f.getName();
+                    if (!n.endsWith(".nbtz")) continue;
+                    former.addIfStarts("$$" + n.substring(0, n.length() - 5));
+                }
+            } else if (former.getQuery().startsWith("$")) {
+                File folder = PowerNBT.plugin.getNBTFilesFolder();
+                if (folder.isDirectory()) for (File f : folder.listFiles()) {
+                    String n = f.getName();
+                    if (!n.endsWith(".nbt")) continue;
+                    former.addIfStarts("$" + n.substring(0, n.length() - 4));
+                }
             }
+
             return;
         }
         if (word.equals("debug")) {
@@ -114,15 +130,15 @@ public class CompleterNBT extends Completer {
         }
         if (word.isEmpty()) {
             if (container == null) {
-                former.addIfStarts("=", "remove", "copy", "set", "as", "view", "swap");
+                former.addIfStarts("=", "rem", "copy", "paste", "cut", "set", "as", "view", "swap", ">", ">>", "<<");
             } else {
                 if (container instanceof NBTContainerVariable) former.addIfStarts("set");
-                if (base != null) former.addIfStarts("copy", "remove");
-                former.addIfStarts("=", "as", "view", "swap");
+                if (base != null) former.addIfStarts("rem", "copy", "cut", "view", ">", ">>");
+                former.addIfStarts("=", "as", "swap", "paste", "swap", "<<");
             }
             return;
         }
-        if (matches(word, "swap", "=", "set", "select")) {
+        if (matches(word, "=", "<", "set", "select", "swap", "<>", ">", ">>", "<<")) {
             if (matches(word, "set", "select") && !(container instanceof NBTContainerVariable)) return;
             word = former.poll();
             if (word.isEmpty()) {
@@ -137,13 +153,15 @@ public class CompleterNBT extends Completer {
                         case DOUBLE:
                         case BYTEARRAY:
                         case INTARRAY:
-                        case STRING:
                             String s = me.dpohvar.powernbt.command.action.Action.getNBTValue(base, null);
                             former.add(s);
                             return;
+                        case STRING:
+                            String t = me.dpohvar.powernbt.command.action.Action.getNBTValue(base, null);
+                            former.add("\"" + StringParser.wrap(t) + "\"");
+                            return;
                     }
                 }
-                //todo: add $tmpfile completer
                 former.addIfStarts("me", "item", "block", "buffer", "list", "compound", "byte[]", "int[]");
                 if (caller.getOwner() instanceof Player && former.getQuery().startsWith("id")) {
                     Player p = (Player) caller.getOwner();
@@ -176,6 +194,13 @@ public class CompleterNBT extends Completer {
                     for (Player f : Bukkit.getOnlinePlayers()) {
                         former.addIfStarts("*" + f.getName());
                     }
+                } else if (former.getQuery().startsWith("$")) {
+                    File folder = PowerNBT.plugin.getNBTFilesFolder();
+                    if (folder.isDirectory()) for (File f : folder.listFiles()) {
+                        String n = f.getName();
+                        if (!n.endsWith(".nbt")) continue;
+                        former.addIfStarts("$" + n.substring(0, n.length() - 4));
+                    }
                 }
                 return;
             }
@@ -189,6 +214,7 @@ public class CompleterNBT extends Completer {
                 future2 = false;
             }
             String val2 = word;
+            if (val2.equals("this") || val2.equals("self")) container2 = container;
             word = former.poll(); // query or type or command
             if (container2 == null && !future2) return;
             if (word.isEmpty()) {
@@ -201,7 +227,6 @@ public class CompleterNBT extends Completer {
                         former.addIfStarts("byte[]", "int[]");
                     }
                 } else {
-                    if (word.equals("this") || word.equals("self")) container2 = container;
                     completeTag(container2, former);
                 }
             }
@@ -210,30 +235,37 @@ public class CompleterNBT extends Completer {
 
 
     private void completeTag(NBTContainer container, TabFormer former) throws Exception {
+        //todo: all tags for "*"
         String query = former.getQuery();
         String[] els = query.split("\\.|(?=\\[)");
         if (!query.endsWith(".") && (query.isEmpty() || els.length == 1)) {
             XNBTBase base = container.getRootBase();
-            for (String type : container.getTypes()) {
-                for (String s : completer.getNextKeys(type, emptyQuery)) {
-                    former.addIfHas(s);
+            if (base != null) {
+                if (base.getTypeId() == typeCompound) {
+                    for (String s : ((Map<String, Object>) base.getProxyField("map")).keySet()) {
+                        String u = StringParser.wrap(s);
+                        if (!u.equals(s) || u.contains(".")) s = '\"' + u + '\"';
+                        former.addIfHas(s);
+                    }
+                } else if (base.getTypeId() == typeList) {
+                    for (int i = 0; i < ((List<Object>) base.getProxyField("list")).size(); i++) {
+                        former.addIfStarts("[" + i + "]");
+                    }
+                } else if (base.getTypeId() == typeByteArray) {
+                    for (int i = 0; i < ((byte[]) base.getProxyField("data")).length; i++) {
+                        former.addIfStarts("[" + i + "]");
+                    }
+                } else if (base.getTypeId() == typeIntArray) {
+                    for (int i = 0; i < ((int[]) base.getProxyField("data")).length; i++) {
+                        former.addIfStarts("[" + i + "]");
+                    }
                 }
             }
-            if (base.getTypeId() == typeCompound) {
-                for (String s : ((Map<String, Object>) base.getProxyField("map")).keySet()) {
+            for (String type : container.getTypes()) {
+                for (String s : typeCompleter.getNextKeys(type, emptyQuery)) {
+                    String u = StringParser.wrap(s);
+                    if (!u.equals(s) || u.contains(".")) s = '\"' + u + '\"';
                     former.addIfHas(s);
-                }
-            } else if (base.getTypeId() == typeList) {
-                for (int i = 0; i < ((List<Object>) base.getProxyField("list")).size(); i++) {
-                    former.addIfStarts("[" + i + "]");
-                }
-            } else if (base.getTypeId() == typeByteArray) {
-                for (int i = 0; i < ((byte[]) base.getProxyField("data")).length; i++) {
-                    former.addIfStarts("[" + i + "]");
-                }
-            } else if (base.getTypeId() == typeIntArray) {
-                for (int i = 0; i < ((int[]) base.getProxyField("data")).length; i++) {
-                    former.addIfStarts("[" + i + "]");
                 }
             }
             return;
@@ -247,34 +279,39 @@ public class CompleterNBT extends Completer {
             option = option.substring(0, option.length() - 1);
         }
         NBTQuery q = new NBTQuery(option);
-        for (String type : container.getTypes()) {
-            for (String s : completer.getNextKeys(type, q)) {
-                if (s.toUpperCase().startsWith(qu.toUpperCase())) {
-                    if (!s.matches("\\[.*\\]")) s = "." + s;
-                    former.add(option + s);
+        XNBTBase base = container.getBase(q);
+        if (base != null) {
+            if (base.getTypeId() == typeCompound) {
+                for (String s : ((Map<String, Object>) base.getProxyField("map")).keySet()) {
+                    String u = StringParser.wrap(s);
+                    if (!u.equals(s) || u.contains(".")) s = '\"' + u + '\"';
+                    if (s.toUpperCase().contains(qu.toUpperCase())) former.add(option + "." + s);
+                }
+            } else if (base.getTypeId() == typeList) {
+                for (int i = 0; i < ((List<Object>) base.getProxyField("list")).size(); i++) {
+                    String s = "[" + i + "]";
+                    if (s.toUpperCase().startsWith(qu.toUpperCase())) former.add(option + s);
+                }
+            } else if (base.getTypeId() == typeByteArray) {
+                for (int i = 0; i < ((byte[]) base.getProxyField("data")).length; i++) {
+                    String s = "[" + i + "]";
+                    if (s.toUpperCase().startsWith(qu.toUpperCase())) former.add(option + s);
+                }
+            } else if (base.getTypeId() == typeIntArray) {
+                for (int i = 0; i < ((int[]) base.getProxyField("data")).length; i++) {
+                    String s = "[" + i + "]";
+                    if (s.toUpperCase().startsWith(qu.toUpperCase())) former.add(option + s);
                 }
             }
         }
-        XNBTBase base = container.getBase(q);
-        if (base == null) return;
-        if (base.getTypeId() == typeCompound) {
-            for (String s : ((Map<String, Object>) base.getProxyField("map")).keySet()) {
-                if (s.toUpperCase().contains(qu.toUpperCase())) former.add(option + "." + s);
-            }
-        } else if (base.getTypeId() == typeList) {
-            for (int i = 0; i < ((List<Object>) base.getProxyField("list")).size(); i++) {
-                String s = "[" + i + "]";
-                if (s.toUpperCase().startsWith(qu.toUpperCase())) former.add(option + s);
-            }
-        } else if (base.getTypeId() == typeByteArray) {
-            for (int i = 0; i < ((byte[]) base.getProxyField("data")).length; i++) {
-                String s = "[" + i + "]";
-                if (s.toUpperCase().startsWith(qu.toUpperCase())) former.add(option + s);
-            }
-        } else if (base.getTypeId() == typeIntArray) {
-            for (int i = 0; i < ((int[]) base.getProxyField("data")).length; i++) {
-                String s = "[" + i + "]";
-                if (s.toUpperCase().startsWith(qu.toUpperCase())) former.add(option + s);
+        for (String type : container.getTypes()) {
+            for (String s : typeCompleter.getNextKeys(type, q)) {
+                if (s.toUpperCase().startsWith(qu.toUpperCase())) {
+                    String u = StringParser.wrap(s);
+                    if (!u.equals(s) || u.contains(".")) s = '\"' + u + '\"';
+                    if (!s.matches("\\[[0-9]*\\]")) s = "." + s;
+                    former.add(option + s);
+                }
             }
         }
     }

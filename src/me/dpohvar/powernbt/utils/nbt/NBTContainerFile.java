@@ -41,14 +41,17 @@ public class NBTContainerFile extends NBTContainer {
     @Override
     public void setRootBase(XNBTBase base) {
         try {
-            if (!file.exists()) file.createNewFile();
+            if (!file.exists()) {
+                new File(file.getParent()).mkdirs();
+                file.createNewFile();
+            }
             DataOutputStream output = new DataOutputStream(new FileOutputStream(file));
             callStaticMethod(classNBTBase, "a", new Class[]{classNBTBase, DataOutput.class}, base.getProxyObject(), output);
             output.close();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(plugin.translate("error_nofile", file.getName()), e);
         } catch (Exception e) {
-            throw new RuntimeException(plugin.translate("IO error", e));
+            throw new RuntimeException(plugin.translate("IO error"), e);
         }
     }
 

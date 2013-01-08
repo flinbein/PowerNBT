@@ -120,11 +120,13 @@ public class Argument {
             return new NBTContainerEntity(Bukkit.getPlayer(object.substring(1)));
         } else if (object.startsWith("%") && object.length() > 1) {
             return new NBTContainerVariable(caller, object.substring(1));
+        } else if (object.startsWith("$$") && object.length() > 2) {
+            return new NBTContainerFileCustom(object.substring(2));
         } else if (object.startsWith("$") && object.length() > 1) {
-            if (object.contains(File.separator)) throw new RuntimeException("invalid file name");
-            File folder = plugin.getNBTFilesFolder();
-            File file = new File(folder, object.substring(1) + ".nbt");
-            return new NBTContainerFile(file);
+            String name = object.substring(1);
+            if (name.contains(".") || name.contains(File.separator))
+                throw new RuntimeException(plugin.translate("error_customfile", name));
+            return new NBTContainerFile(new File(plugin.getNBTFilesFolder(), name + ".nbt"));
         } else if (colors.containsKey(object)) {
             return new NBTContainerBase(NBTType.INT.newBase((int) colors.get(object)));
         } else if (object.startsWith("file:") && object.length() > 5) {
@@ -204,6 +206,8 @@ public class Argument {
                 return null;
             } else {
                 NBTType type = NBTType.fromString(param);
+                if (type == NBTType.BYTE) type = NBTType.BYTEARRAY;
+                else if (type == NBTType.INT) type = NBTType.INTARRAY;
                 return new NBTContainerBase(type.parse(object));
             }
         } else if (object.matches("-?[0-9]+(.[0-9]*)?")) {
@@ -321,7 +325,6 @@ public class Argument {
                             type = t;
                             break;
                         }
-
                     }
                 }
             }
@@ -333,6 +336,18 @@ public class Argument {
             if (paramContainer == null)
                 throw new RuntimeException(plugin.translate("error_undefinedtype", objectFuture));
             NBTType type = NBTType.fromBase(paramContainer.getBase(paramQuery));
+            if (type == NBTType.INT) type = NBTType.INTARRAY;
+            else if (type == NBTType.BYTE) type = NBTType.BYTEARRAY;
+            else if (type == null || type == NBTType.END) {
+                TypeCompleter comp = plugin.getTypeCompleter();
+                for (String name : paramContainer.getTypes()) {
+                    NBTType t = comp.getType(name, paramQuery);
+                    if (t != null) {
+                        type = t;
+                        break;
+                    }
+                }
+            }
             this.container = new NBTContainerBase(type.parse(objectFuture));
             this.query = emptyQuery;
             action.execute();

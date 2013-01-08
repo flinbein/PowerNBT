@@ -6,13 +6,13 @@ import me.dpohvar.powernbt.utils.nbt.NBTContainer;
 import me.dpohvar.powernbt.utils.nbt.NBTQuery;
 import me.dpohvar.powernbt.utils.versionfix.XNBTBase;
 
-public class ActionEdit extends Action {
+public class ActionMove extends Action {
 
     private final Caller caller;
     private final Argument arg1;
     private final Argument arg2;
 
-    public ActionEdit(Caller caller, String o1, String q1, String o2, String q2) {
+    public ActionMove(Caller caller, String o1, String q1, String o2, String q2) {
         this.caller = caller;
         this.arg1 = new Argument(caller, o1, q1);
         this.arg2 = new Argument(caller, o2, q2);
@@ -34,8 +34,9 @@ public class ActionEdit extends Action {
         if (base == null) throw new RuntimeException(PowerNBT.plugin.translate("error_null"));
         boolean result = container.setBase(query, base);
         if (!result) {
-            throw new RuntimeException(PowerNBT.plugin.translate("fail_edit", query.getQuery()));
+            throw new RuntimeException(PowerNBT.plugin.translate("fail_move", query.getQuery()));
         }
-        caller.send(PowerNBT.plugin.translate("success_edit") + getNBTShortView(base, null));
+        caller.send(PowerNBT.plugin.translate("success_move") + getNBTShortView(base, null));
+        arg2.getContainer().removeBase(arg2.getQuery());
     }
 }

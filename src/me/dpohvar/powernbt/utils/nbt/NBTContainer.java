@@ -228,7 +228,7 @@ public abstract class NBTContainer {
                     for (byte b : (byte[]) current.getProxyField("data")) list.add(b);
                     int index = (Integer) t;
                     if (index == -1) return false;
-                    else if (list.size() <= index) return false;
+                    else if (index >= list.size()) return false;
                     list.remove(index);
                     byte[] bytes = new byte[list.size()];
                     for (int i = 0; i < bytes.length; i++) bytes[i] = list.get(i);
@@ -239,7 +239,7 @@ public abstract class NBTContainer {
                     for (int i : (int[]) current.getProxyField("data")) list.add(i);
                     int index = (Integer) t;
                     if (index == -1) return false;
-                    else if (list.size() >= index) return false;
+                    else if (index >= list.size()) return false;
                     list.remove(index);
                     int[] ints = new int[list.size()];
                     for (int i = 0; i < ints.length; i++) ints[i] = list.get(i);

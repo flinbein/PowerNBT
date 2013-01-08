@@ -14,7 +14,21 @@ import static me.dpohvar.powernbt.PowerNBT.plugin;
 
 public class CommandNBT extends Command {
     public static final HashSet<String> specialTokens = new HashSet<String>(
-            Arrays.asList("=", "rem", "remove", "copy", "paste", "set", "select", "as", "view", "debug", "swap")
+            Arrays.asList(
+                    "=", "<",
+                    "rem", "remove",
+                    "copy",
+                    "paste",
+                    "cut",
+                    "set", "select",
+                    "as",
+                    "view", "?",
+                    "debug",
+                    "swap", "<>",
+                    ">",
+                    ">>",
+                    "<<"
+            )
     );
 
     @Override
@@ -36,7 +50,7 @@ public class CommandNBT extends Command {
             if (argsBefore.size() > 2) throw exceptionArgs;
             Action a = new ActionView(caller, argsBefore.poll(), argsBefore.poll());
             a.execute();
-        } else if (action.equals("view")) {
+        } else if (action.equals("view") || action.equals("?")) {
             if (argsBefore.size() > 2) throw exceptionArgs;
             Action a = new ActionView(caller, argsBefore.poll(), argsBefore.poll(), argsAfter);
             a.execute();
@@ -50,10 +64,35 @@ public class CommandNBT extends Command {
             if (argsAfter.size() > 1) throw exceptionArgs;
             Action a = new ActionDebug(caller, argsAfter.poll());
             a.execute();
-        } else if (action.equals("=")) {
+        } else if (action.equals("=") || action.equals("<")) {
             if (argsBefore.size() > 2) throw exceptionArgs;
             if (argsAfter.size() > 2) throw exceptionArgs;
             Action a = new ActionEdit(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
+            a.execute();
+        } else if (action.equals(">")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() > 2) throw exceptionArgs;
+            Action a = new ActionEdit(caller, argsAfter.poll(), argsAfter.poll(), argsBefore.poll(), argsBefore.poll());
+            a.execute();
+        } else if (action.equals("paste")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() > 1) throw exceptionArgs;
+            Action a = new ActionEdit(caller, argsBefore.poll(), argsBefore.poll(), "buffer", argsAfter.poll());
+            a.execute();
+        } else if (action.equals(">>")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() > 2) throw exceptionArgs;
+            Action a = new ActionMove(caller, argsAfter.poll(), argsAfter.poll(), argsBefore.poll(), argsBefore.poll());
+            a.execute();
+        } else if (action.equals("<<")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() > 2) throw exceptionArgs;
+            Action a = new ActionMove(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
+            a.execute();
+        } else if (action.equals("cut")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() > 0) throw exceptionArgs;
+            Action a = new ActionCut(caller, argsBefore.poll(), argsBefore.poll());
             a.execute();
         } else if (action.equals("rem") || action.equals("remove")) {
             if (argsBefore.size() > 2) throw exceptionArgs;
@@ -75,7 +114,7 @@ public class CommandNBT extends Command {
             if (argsAfter.size() > 1) throw exceptionArgs;
             Action a = new ActionSet(caller, argsAfter.poll(), argsBefore.poll(), argsBefore.poll());
             a.execute();
-        } else if (action.equals("swap")) {
+        } else if (action.equals("swap") || action.equals("<>")) {
             if (argsBefore.size() > 2) throw exceptionArgs;
             if (argsAfter.size() > 2) throw exceptionArgs;
             Action a = new ActionSwap(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());

@@ -25,6 +25,9 @@ public class StringParser {
                     case 't':
                         sb.append('\t');
                         break;
+                    case '_':
+                        sb.append(' ');
+                        break;
                     case 'f':
                         sb.append('\f');
                         break;
@@ -58,5 +61,17 @@ public class StringParser {
             }
         }
         return sb.toString();
+    }
+
+    public static String wrap(String raw) {
+        raw = raw.replace("\\", "\\\\");
+        raw = raw.replace("\n", "\\n");
+        raw = raw.replace("\b", "\\b");
+        raw = raw.replace("\r", "\\r");
+        raw = raw.replace("\t", "\\t");
+        raw = raw.replace("\f", "\\f");
+        raw = raw.replace("" + ChatColor.COLOR_CHAR, "\\c");
+        raw = raw.replace(" ", "\\_");
+        return raw;
     }
 }

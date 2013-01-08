@@ -13,6 +13,7 @@ import static me.dpohvar.powernbt.PowerNBT.plugin;
 import static me.dpohvar.powernbt.utils.versionfix.VersionFix.getShell;
 
 public abstract class Action {
+
     abstract public void execute();
 
     public static String getNBTShortView(XNBTBase base, List<String> args) {
@@ -24,6 +25,8 @@ public abstract class Action {
 
     public static String getNBTView(XNBTBase base, List<String> args) {
         try {
+
+
             if (base == null) return plugin.translate("data_null");
             if (stringInList(args, "few", "short", "summary") != null) return getNBTShortView(base, args);
             NBTType type = NBTType.fromBase(base);
@@ -50,9 +53,9 @@ public abstract class Action {
                         NBTType t = NBTType.fromBase(b);
                         if (t.equals(NBTType.LIST)) {
                             NBTType subType = NBTType.fromByte((Byte) b.getProxyField("type"));
-                            s += "" + subType.color + ChatColor.BOLD + b.getName() + "[]: " + ChatColor.RESET + getNBTValue(b, args) + '\n';
+                            s += subType.color + t.prefix + ChatColor.BOLD + b.getName() + ": " + ChatColor.RESET + getNBTValue(b, args) + '\n';
                         } else {
-                            s += "" + t.color + ChatColor.BOLD + b.getName() + ": " + ChatColor.RESET + getNBTValue(b, args) + '\n';
+                            s += t.color + t.prefix + ChatColor.BOLD + b.getName() + ": " + ChatColor.RESET + getNBTValue(b, args) + '\n';
                         }
                     }
                     break;
@@ -74,7 +77,8 @@ public abstract class Action {
                             if (i > max) continue;
                         }
                         XNBTBase b = getShell(XNBTBase.class, list.get(i));
-                        s += subType.color.toString() + ChatColor.BOLD + "[" + i + "]: " + ChatColor.RESET + getNBTValue(b, args) + '\n';
+                        String prefix = subType.prefix;
+                        s += subType.color + prefix + ChatColor.BOLD + "[" + i + "]: " + ChatColor.RESET + getNBTValue(b, args) + '\n';
                     }
                     break;
                 }

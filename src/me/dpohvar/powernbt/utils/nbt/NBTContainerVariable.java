@@ -3,6 +3,7 @@ package me.dpohvar.powernbt.utils.nbt;
 import me.dpohvar.powernbt.utils.Caller;
 import me.dpohvar.powernbt.utils.versionfix.XNBTBase;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class NBTContainerVariable extends NBTContainer {
@@ -15,6 +16,7 @@ public class NBTContainerVariable extends NBTContainer {
         this.name = name;
     }
 
+
     @Override
     public Caller getObject() {
         return this.caller;
@@ -23,7 +25,7 @@ public class NBTContainerVariable extends NBTContainer {
     @Override
     public List<String> getTypes() {
         NBTContainer c = getContainer();
-        if (c == null) return null;
+        if (c == null) return new ArrayList<String>();
         return c.getTypes();
     }
 

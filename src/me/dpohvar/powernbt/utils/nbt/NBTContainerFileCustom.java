@@ -5,24 +5,28 @@ import me.dpohvar.powernbt.utils.versionfix.XNBTBase;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 import static me.dpohvar.powernbt.utils.versionfix.StaticValues.classCompressedStreamTools;
 import static me.dpohvar.powernbt.utils.versionfix.StaticValues.classNBTTagCompound;
-import static me.dpohvar.powernbt.utils.versionfix.VersionFix.callStaticMethod;
-import static me.dpohvar.powernbt.utils.versionfix.VersionFix.getShell;
+import static me.dpohvar.powernbt.utils.versionfix.VersionFix.*;
 
-public class NBTContainerFileGZip extends NBTContainer {
+public class NBTContainerFileCustom extends NBTContainer {
 
+    String name;
     File file;
 
-    public NBTContainerFileGZip(File file) {
-        this.file = file;
+    public NBTContainerFileCustom(String name) {
+        this.name = name;
+        if (name.contains(".") || name.contains(File.separator))
+            throw new RuntimeException(plugin.translate("error_customfile", name));
+        file = new File(plugin.getNBTFilesFolder(), name + ".nbtz");
     }
 
     @Override
-    public File getObject() {
-        return file;
+    public String getObject() {
+        return name;
     }
 
     @Override
@@ -36,7 +40,9 @@ public class NBTContainerFileGZip extends NBTContainer {
             FileInputStream input = new FileInputStream(file);
             Object tag = callStaticMethod(classCompressedStreamTools, "a", new Class[]{InputStream.class}, input);
             input.close();
-            return getShell(XNBTBase.class, tag);
+            XNBTBase base = getShell(XNBTBase.class, tag);
+            Map<String, Object> map = (Map<String, Object>) base.getProxyField("map");
+            return getShell(XNBTBase.class, map.get("Data"));
         } catch (FileNotFoundException e) {
             return null;
         } catch (Exception e) {
@@ -45,8 +51,12 @@ public class NBTContainerFileGZip extends NBTContainer {
     }
 
     @Override
-    public void setRootBase(XNBTBase base) {
+    public void setRootBase(XNBTBase data) {
         try {
+            XNBTBase base = getShell(XNBTBase.class, getNew(classNBTTagCompound, new Class[]{String.class}, ""));
+            data.setName("Data");
+            Map<String, Object> map = (Map<String, Object>) base.getProxyField("map");
+            map.put("Data", data.getProxyObject());
             if (!file.exists()) {
                 new File(file.getParent()).mkdirs();
                 file.createNewFile();

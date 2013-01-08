@@ -10,28 +10,30 @@ import static me.dpohvar.powernbt.utils.versionfix.VersionFix.getShell;
 import static org.bukkit.ChatColor.*;
 
 public enum NBTType {
-    END((byte) 0, "end", null, classNBTTagEnd, WHITE, false),
-    BYTE((byte) 1, "byte", byte.class, classNBTTagByte, RED, false),//b
-    SHORT((byte) 2, "short", short.class, classNBTTagShort, YELLOW, false),//s
-    INT((byte) 3, "int", int.class, classNBTTagInt, BLUE, false),//i
-    LONG((byte) 4, "long", long.class, classNBTTagLong, AQUA, false),//l
-    FLOAT((byte) 5, "float", float.class, classNBTTagFloat, DARK_PURPLE, false),//f
-    DOUBLE((byte) 6, "double", double.class, classNBTTagDouble, LIGHT_PURPLE, false),//d
-    BYTEARRAY((byte) 7, "byte[]", byte[].class, classNBTTagByteArray, DARK_RED, false),//b
-    STRING((byte) 8, "string", String.class, classNBTTagString, GREEN, false),
-    LIST((byte) 9, "list", null, classNBTTagList, DARK_GRAY, true),
-    COMPOUND((byte) 10, "compound", null, classNBTTagCompound, GRAY, true),
-    INTARRAY((byte) 11, "int[]", int[].class, classNBTTagIntArray, DARK_BLUE, false),//i
+    END((byte) 0, "end", "\u24CD ", null, classNBTTagEnd, WHITE, false),
+    BYTE((byte) 1, "byte", "\u24B7 ", byte.class, classNBTTagByte, RED, false),//b
+    SHORT((byte) 2, "short", "\u24C8 ", short.class, classNBTTagShort, YELLOW, false),//s
+    INT((byte) 3, "int", "\u24BE ", int.class, classNBTTagInt, BLUE, false),//i
+    LONG((byte) 4, "long", "\u24C1 ", long.class, classNBTTagLong, AQUA, false),//l
+    FLOAT((byte) 5, "float", "\u24BB ", float.class, classNBTTagFloat, DARK_PURPLE, false),//f
+    DOUBLE((byte) 6, "double", "\u24B9 ", double.class, classNBTTagDouble, LIGHT_PURPLE, false),//d
+    BYTEARRAY((byte) 7, "byte[]", ChatColor.BOLD + "\u24B7 ", byte[].class, classNBTTagByteArray, DARK_RED, false),//b
+    STRING((byte) 8, "string", "\u24C9 ", String.class, classNBTTagString, GREEN, false),
+    LIST((byte) 9, "list", "\u2630 ", null, classNBTTagList, DARK_GRAY, true),
+    COMPOUND((byte) 10, "compound", "\u27B2 ", null, classNBTTagCompound, GRAY, true), //27B2
+    INTARRAY((byte) 11, "int[] ", ChatColor.BOLD + "\u24BE ", int[].class, classNBTTagIntArray, DARK_BLUE, false),//i
     ;
     public final String name;
+    public final String prefix;
     public final byte type;
     public final Class dataClass;
     public final Class tagClass;
     public final ChatColor color;
     public final boolean tagable;
 
-    NBTType(byte type, String name, Class dataClass, Class tagClass, ChatColor color, boolean taged) {
+    NBTType(byte type, String name, String prefix, Class dataClass, Class tagClass, ChatColor color, boolean taged) {
         this.name = name;
+        this.prefix = prefix;
         this.type = type;
         this.dataClass = dataClass;
         this.tagClass = tagClass;

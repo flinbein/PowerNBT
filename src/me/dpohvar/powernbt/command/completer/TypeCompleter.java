@@ -61,7 +61,7 @@ public class TypeCompleter {
 
     private Object getObjectByQueue(String key, Queue<Object> queue) {
         Object current = templates.get(key);
-        while (true) {
+        if (key != null) while (true) {
             Object t = queue.poll();
             if (current == null) return null;
             if (current instanceof Map && t instanceof String) {
@@ -74,7 +74,11 @@ public class TypeCompleter {
             }
             if (current instanceof String) {
                 String s = (String) current;
-                if (s.endsWith("[]")) return queue.isEmpty() ? s.substring(0, s.length() - 2) : null;
+                if (s.endsWith("[]")) {
+                    if (t == null) return s;
+                    if (queue.isEmpty()) return s.substring(0, s.length() - 2);
+                    return null;
+                }
                 if (templates.containsKey(current)) {
                     LinkedList<Object> l = new LinkedList<Object>(queue);
                     l.addFirst(t);
@@ -83,6 +87,14 @@ public class TypeCompleter {
                 return queue.isEmpty() ? current : null;
             }
             return current;
+        }
+        else {
+            Object r = null;
+            for (String subKey : templates.keySet()) {
+                r = getObjectByQueue(subKey, new LinkedList<Object>(queue));
+                if (r != null) break;
+            }
+            return r;
         }
     }
 

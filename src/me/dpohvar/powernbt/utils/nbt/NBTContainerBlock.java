@@ -29,7 +29,7 @@ public class NBTContainerBlock extends NBTContainer {
 
     @Override
     public List<String> getTypes() {
-        return Arrays.asList("block", "block_" + block.getType());
+        return Arrays.asList("block", "block_" + block.getType().name());
     }
 
     @Override

@@ -1,10 +1,10 @@
 package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.PowerNBT;
+import me.dpohvar.powernbt.nbt.NBTBase;
+import me.dpohvar.powernbt.nbt.NBTContainer;
+import me.dpohvar.powernbt.nbt.NBTQuery;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.nbt.NBTContainer;
-import me.dpohvar.powernbt.utils.nbt.NBTQuery;
-import me.dpohvar.powernbt.utils.versionfix.XNBTBase;
 
 public class ActionMove extends Action {
 
@@ -30,13 +30,13 @@ public class ActionMove extends Action {
             arg2.prepare(this, container, query);
             return;
         }
-        XNBTBase base = arg2.getContainer().getBase(arg2.getQuery());
+        NBTBase base = arg2.getContainer().getTag(arg2.getQuery());
         if (base == null) throw new RuntimeException(PowerNBT.plugin.translate("error_null"));
-        boolean result = container.setBase(query, base);
+        boolean result = container.setTag(query, base);
         if (!result) {
             throw new RuntimeException(PowerNBT.plugin.translate("fail_move", query.getQuery()));
         }
         caller.send(PowerNBT.plugin.translate("success_move") + getNBTShortView(base, null));
-        arg2.getContainer().removeBase(arg2.getQuery());
+        arg2.getContainer().removeTag(arg2.getQuery());
     }
 }

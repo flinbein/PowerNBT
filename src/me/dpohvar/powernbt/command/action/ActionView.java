@@ -1,8 +1,8 @@
 package me.dpohvar.powernbt.command.action;
 
+import me.dpohvar.powernbt.nbt.NBTContainer;
+import me.dpohvar.powernbt.nbt.NBTQuery;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.nbt.NBTContainer;
-import me.dpohvar.powernbt.utils.nbt.NBTQuery;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +31,6 @@ public class ActionView extends Action {
         }
         NBTContainer container = arg.getContainer();
         NBTQuery query = arg.getQuery();
-        caller.send(getNBTView(container.getBase(query), args));
+        caller.send(getNBTView(container.getTag(query), args));
     }
 }

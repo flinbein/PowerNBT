@@ -1,7 +1,6 @@
 package me.dpohvar.powernbt.command.action;
 
-import me.dpohvar.powernbt.utils.nbt.NBTType;
-import me.dpohvar.powernbt.utils.versionfix.XNBTBase;
+import me.dpohvar.powernbt.nbt.*;
 import org.bukkit.ChatColor;
 
 import java.nio.ByteBuffer;
@@ -10,20 +9,19 @@ import java.util.List;
 import java.util.Map;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
-import static me.dpohvar.powernbt.utils.versionfix.VersionFix.getShell;
 
 public abstract class Action {
 
     abstract public void execute();
 
-    public static String getNBTShortView(XNBTBase base, List<String> args) {
+    public static String getNBTShortView(NBTBase base, List<String> args) {
         if (base == null) return plugin.translate("data_null");
         NBTType type = NBTType.fromBase(base);
         return type.color + type.name + ' ' + ChatColor.BOLD + base.getName() + ChatColor.RESET
                 + ": " + getNBTValue(base, args) + ChatColor.RESET;
     }
 
-    public static String getNBTView(XNBTBase base, List<String> args) {
+    public static String getNBTView(NBTBase base, List<String> args) {
         try {
 
 
@@ -34,7 +32,7 @@ public abstract class Action {
                     + ": " + getNBTValue(base, args) + ChatColor.RESET + '\n';
             switch (type) {
                 case COMPOUND: {
-                    Map<String, Object> map = (Map<String, Object>) base.getProxyField("map");
+                    Map<String, NBTBase> map = ((NBTTagCompound) base).asMap();
                     int min = 0;
                     int max = 0;
                     String pattern = regexInList(args, "[0-9]+-[0-9]+");
@@ -44,15 +42,15 @@ public abstract class Action {
                         max = Integer.parseInt(ss[1]);
                     }
                     int c = 0;
-                    for (Map.Entry<String, Object> e : map.entrySet()) {
+                    for (Map.Entry<String, NBTBase> e : map.entrySet()) {
                         if (pattern != null) {
                             int t = c++;
                             if (min > t || t > max) continue;
                         }
-                        XNBTBase b = getShell(XNBTBase.class, e.getValue());
+                        NBTBase b = e.getValue();
                         NBTType t = NBTType.fromBase(b);
                         if (t.equals(NBTType.LIST)) {
-                            NBTType subType = NBTType.fromByte((Byte) b.getProxyField("type"));
+                            NBTType subType = NBTType.fromByte((Byte) b.getTypeId());
                             s += subType.color + t.prefix + ChatColor.BOLD + b.getName() + ": " + ChatColor.RESET + getNBTValue(b, args) + '\n';
                         } else {
                             s += t.color + t.prefix + ChatColor.BOLD + b.getName() + ": " + ChatColor.RESET + getNBTValue(b, args) + '\n';
@@ -61,8 +59,8 @@ public abstract class Action {
                     break;
                 }
                 case LIST: {
-                    List<Object> list = (List<Object>) base.getProxyField("list");
-                    NBTType subType = NBTType.fromByte((Byte) base.getProxyField("type"));
+                    List<NBTBase> list = ((NBTTagList) base).asList();
+                    NBTType subType = NBTType.fromByte(((NBTTagList) base).getSubTypeId());
                     int min = 0;
                     int max = 0;
                     String pattern = regexInList(args, "[0-9]+-[0-9]+");
@@ -76,7 +74,7 @@ public abstract class Action {
                             if (i < min) continue;
                             if (i > max) continue;
                         }
-                        XNBTBase b = getShell(XNBTBase.class, list.get(i));
+                        NBTBase b = list.get(i);
                         String prefix = subType.prefix;
                         s += subType.color + prefix + ChatColor.BOLD + "[" + i + "]: " + ChatColor.RESET + getNBTValue(b, args) + '\n';
                     }
@@ -92,19 +90,19 @@ public abstract class Action {
         }
     }
 
-    public static String getNBTValue(XNBTBase base, List<String> args) {
+    public static String getNBTValue(NBTBase base, List<String> args) {
         NBTType type = NBTType.fromBase(base);
         switch (type) {
             case LIST:
-                return plugin.translate("data_elements", ((List) base.getProxyField("list")).size());
+                return plugin.translate("data_elements", ((NBTTagList) base).size());
             case COMPOUND:
-                return plugin.translate("data_elements", ((Map) base.getProxyField("map")).size());
+                return plugin.translate("data_elements", ((NBTTagCompound) base).size());
             case BYTEARRAY: {
                 if (stringInList(args, "few", "short", "summary") != null) {
-                    return plugin.translate("data_bytes", ((byte[]) base.getProxyField("data")).length);
+                    return plugin.translate("data_bytes", ((NBTTagByteArray) base).size());
                 }
                 String s = "";
-                byte[] bytes = (byte[]) base.getProxyField("data");
+                byte[] bytes = ((NBTTagByteArray) base).get();
                 String pattern = regexInList(args, "[0-9]+-[0-9]+");
                 if (pattern != null) {
                     ArrayList<Byte> a = new ArrayList<Byte>();
@@ -134,10 +132,10 @@ public abstract class Action {
             }
             case INTARRAY: {
                 if (stringInList(args, "few", "short", "summary") != null) {
-                    return plugin.translate("data_ints", ((int[]) base.getProxyField("data")).length);
+                    return plugin.translate("data_ints", ((NBTTagIntArray) base).size());
                 }
                 String s = "";
-                int[] ints = (int[]) base.getProxyField("data");
+                int[] ints = ((NBTTagIntArray) base).get();
                 String pattern = regexInList(args, "[0-9]+-[0-9]+");
                 if (pattern != null) {
                     ArrayList<Integer> a = new ArrayList<Integer>();
@@ -164,7 +162,7 @@ public abstract class Action {
                 return s;
             }
             default:
-                Object o = base.getProxyField("data");
+                Object o = ((NBTTagDatable) base).get();
                 if (stringInList(args, "hex") != null) {
                     if (o instanceof Byte) {
                         return "#" + toHex((Byte) o & 0xFF, 2);

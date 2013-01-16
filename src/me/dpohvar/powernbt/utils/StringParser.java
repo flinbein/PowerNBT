@@ -12,12 +12,17 @@ public class StringParser {
         for (char c : input.toCharArray()) chars.add(c);
         while (!chars.isEmpty()) {
             char c = chars.poll();
-            if (c == '\\') {
+            if (c == '&') {
+                sb.append(ChatColor.COLOR_CHAR);
+            } else if (c == '\\') {
                 if (chars.isEmpty()) throw new RuntimeException("\\ is last symbol in string");
                 char t = chars.poll();
                 switch (t) {
                     case 'r':
                         sb.append('\r');
+                        break;
+                    case '&':
+                        sb.append('&');
                         break;
                     case '\\':
                         sb.append('\\');
@@ -69,6 +74,7 @@ public class StringParser {
         raw = raw.replace("\b", "\\b");
         raw = raw.replace("\r", "\\r");
         raw = raw.replace("\t", "\\t");
+        raw = raw.replace("&", "\\&");
         raw = raw.replace("\f", "\\f");
         raw = raw.replace("" + ChatColor.COLOR_CHAR, "\\c");
         raw = raw.replace(" ", "\\_");

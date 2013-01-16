@@ -1,8 +1,8 @@
-name: powerNBT
-description: in-game nbt editor
+name: PowerNBT
+description: Powerful nbt editor for bukkit server
 author: DPOH-VAR
 main: me.dpohvar.powernbt.PowerNBT
-version: 0.3.3
+version: 0.4.0
 commands:
     nbt:
         description: use nbt commands

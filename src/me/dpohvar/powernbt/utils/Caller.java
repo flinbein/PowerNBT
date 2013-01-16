@@ -1,7 +1,7 @@
 package me.dpohvar.powernbt.utils;
 
-import me.dpohvar.powernbt.utils.nbt.NBTContainer;
-import me.dpohvar.powernbt.utils.versionfix.XNBTBase;
+import me.dpohvar.powernbt.nbt.NBTBase;
+import me.dpohvar.powernbt.nbt.NBTContainer;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -14,7 +14,7 @@ import static me.dpohvar.powernbt.PowerNBT.plugin;
 public class Caller extends NBTContainer {
     private CommandSender owner;
     private TempListener listener;
-    private XNBTBase base;
+    private NBTBase base;
     private HashMap<String, NBTContainer> variables = new HashMap<String, NBTContainer>();
 
     public CommandSender getOwner() {
@@ -73,14 +73,6 @@ public class Caller extends NBTContainer {
         this.listener = listener;
     }
 
-    public XNBTBase getBase() {
-        return base;
-    }
-
-    @Override
-    public Object getObject() {
-        return this;
-    }
 
     @Override
     public List<String> getTypes() {
@@ -88,12 +80,12 @@ public class Caller extends NBTContainer {
     }
 
     @Override
-    public XNBTBase getRootBase() {
+    public NBTBase getTag() {
         return this.base;
     }
 
     @Override
-    public void setRootBase(XNBTBase base) {
+    public void setTag(NBTBase base) {
         this.base = base;
     }
 
@@ -103,7 +95,7 @@ public class Caller extends NBTContainer {
     }
 
     @Override
-    public void removeRootBase() {
+    public void removeTag() {
         this.base = null;
     }
 }

@@ -1,10 +1,10 @@
 package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.PowerNBT;
+import me.dpohvar.powernbt.nbt.NBTBase;
+import me.dpohvar.powernbt.nbt.NBTContainer;
+import me.dpohvar.powernbt.nbt.NBTQuery;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.nbt.NBTContainer;
-import me.dpohvar.powernbt.utils.nbt.NBTQuery;
-import me.dpohvar.powernbt.utils.versionfix.XNBTBase;
 
 public class ActionSwap extends Action {
 
@@ -32,16 +32,16 @@ public class ActionSwap extends Action {
         }
         NBTContainer container2 = arg2.getContainer();
         NBTQuery query2 = arg2.getQuery();
-        XNBTBase base1 = container1.getBase(query1);
-        XNBTBase base2 = container2.getBase(query2);
+        NBTBase base1 = container1.getTag(query1);
+        NBTBase base2 = container2.getTag(query2);
         if (base1 == null && base2 == null) {
             caller.send(PowerNBT.plugin.translate("success_swap_null"));
             return;
         }
-        if (base2 == null) container1.removeBase(query1);
-        else container1.setBase(query1, base2);
-        if (base1 == null) container2.removeBase(query2);
-        else container2.setBase(query2, base1);
+        if (base2 == null) container1.removeTag(query1);
+        else container1.setTag(query1, base2);
+        if (base1 == null) container2.removeTag(query2);
+        else container2.setTag(query2, base1);
         caller.send(PowerNBT.plugin.translate("success_swap"));
     }
 }

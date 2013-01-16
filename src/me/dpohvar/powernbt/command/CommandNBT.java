@@ -1,9 +1,9 @@
 package me.dpohvar.powernbt.command;
 
 import me.dpohvar.powernbt.command.action.*;
+import me.dpohvar.powernbt.nbt.NBTContainer;
+import me.dpohvar.powernbt.nbt.NBTType;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.nbt.NBTContainer;
-import me.dpohvar.powernbt.utils.nbt.NBTType;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -17,6 +17,7 @@ public class CommandNBT extends Command {
             Arrays.asList(
                     "=", "<",
                     "rem", "remove",
+                    "ren", "rename",
                     "copy",
                     "paste",
                     "cut",
@@ -98,6 +99,11 @@ public class CommandNBT extends Command {
             if (argsBefore.size() > 2) throw exceptionArgs;
             if (argsAfter.size() > 0) throw exceptionArgs;
             Action a = new ActionRemove(caller, argsBefore.poll(), argsBefore.poll());
+            a.execute();
+        } else if (action.equals("ren") || action.equals("rename")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() != 1) throw exceptionArgs;
+            Action a = new ActionRename(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll());
             a.execute();
         } else if (action.equals("copy")) {
             if (argsBefore.size() > 2) throw exceptionArgs;

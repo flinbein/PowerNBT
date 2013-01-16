@@ -1,11 +1,11 @@
 package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.PowerNBT;
+import me.dpohvar.powernbt.nbt.NBTContainer;
+import me.dpohvar.powernbt.nbt.NBTContainerComplex;
+import me.dpohvar.powernbt.nbt.NBTContainerVariable;
+import me.dpohvar.powernbt.nbt.NBTQuery;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.nbt.NBTContainer;
-import me.dpohvar.powernbt.utils.nbt.NBTContainerComplex;
-import me.dpohvar.powernbt.utils.nbt.NBTContainerVariable;
-import me.dpohvar.powernbt.utils.nbt.NBTQuery;
 
 public class ActionSet extends Action {
 

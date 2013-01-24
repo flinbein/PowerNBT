@@ -275,7 +275,7 @@ public class NBTTagList extends NBTBase {
         getHandleList().add(base.getHandle());
     }
 
-    public void addAll(Collection<Object> values) {
+    public void addAll(Collection<?> values) {
         List<Object> list = getHandleList();
         for (Object value : values) {
             NBTBase base = NBTBase.getByValue(value);
@@ -287,15 +287,20 @@ public class NBTTagList extends NBTBase {
     }
 
     public void add(int i, Object value) {
-        if (size() >= i) {
-            set(i, value);
-            return;
-        }
         NBTBase base = NBTBase.getByValue(value);
         byte listType = getSubTypeId();
         if (listType != 0 && listType != base.getTypeId()) throw new IllegalArgumentException();
         if (listType == 0) setSubTypeId(base.getTypeId());
-        getHandleList().add(i, base.getHandle());
+        NBTBase def = base.getDefault();
+        List<Object> list = getHandleList();
+        while(size()<i){
+            list.add(def);
+        }
+        if (size() == i){
+            list.add(base.getHandle());
+        } else{
+            list.add(i, base.getHandle());
+        }
     }
 
     public byte getSubTypeId() {

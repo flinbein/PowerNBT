@@ -1,2 +1,8 @@
 debug: false
 lang: system
+formatting:
+  char_color: '&'
+  char_space:
+display:
+  block_location: false
+  block_id: true

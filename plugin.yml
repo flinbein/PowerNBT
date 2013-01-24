@@ -2,12 +2,16 @@ name: PowerNBT
 description: Powerful nbt editor for bukkit server
 author: DPOH-VAR
 main: me.dpohvar.powernbt.PowerNBT
-version: 0.4.0
+version: 0.4.1
 commands:
-    nbt:
+    powernbt:
         description: use nbt commands
-        usage: /nbt {object} [query] [{operand} [{object} [query]]]
+        usage: /nbt [...] use [Tab] key for help
         permission: powernbt.use
+        aliases:
+            - pnbt
+            - nbt
+
 
 
 

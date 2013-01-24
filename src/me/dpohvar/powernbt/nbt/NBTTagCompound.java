@@ -258,7 +258,7 @@ public class NBTTagCompound extends NBTBase {
      * set("key2","string");
      * set("key3",elementNBTBase);
      *
-     * @param key   key
+     * @param key key
      * @param value NBTBase or some primitive value
      */
 
@@ -293,6 +293,20 @@ public class NBTTagCompound extends NBTBase {
             methodSet.invoke(handle, key, base);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void add(Map<String,?> values){
+        for(Map.Entry<String,?> e:values.entrySet()){
+            set(e.getKey(),e.getValue());
+        }
+    }
+
+    public void fill(Map<String,?> values){
+        for(Map.Entry<String,?> e:values.entrySet()){
+            if (!has(e.getKey())){
+                set(e.getKey(),e.getValue());
+            }
         }
     }
 

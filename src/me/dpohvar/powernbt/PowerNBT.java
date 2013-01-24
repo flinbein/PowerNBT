@@ -3,6 +3,7 @@ package me.dpohvar.powernbt;
 import me.dpohvar.powernbt.command.CommandNBT;
 import me.dpohvar.powernbt.completer.CompleterNBT;
 import me.dpohvar.powernbt.completer.TypeCompleter;
+import me.dpohvar.powernbt.nbt.NBTTagCompound;
 import me.dpohvar.powernbt.utils.Caller;
 import me.dpohvar.powernbt.utils.Tokenizer;
 import me.dpohvar.powernbt.utils.Translator;
@@ -15,6 +16,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class PowerNBT extends JavaPlugin {
+
+    public static final int versionAPI = 0x000401;
+
+    // public HashMap<Integer,NBTTagCompound> entityExtra = new HashMap<Integer, NBTTagCompound>();
+    // public HashMap<Block,NBTTagCompound> tileExtra = new HashMap<Block, NBTTagCompound>();
+
     public static PowerNBT plugin;
     private HashMap<String, Caller> callers = new HashMap<String, Caller>();
     private Translator translator;

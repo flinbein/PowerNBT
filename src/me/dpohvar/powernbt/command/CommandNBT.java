@@ -20,6 +20,7 @@ public class CommandNBT extends Command {
                     "ren", "rename",
                     "copy",
                     "paste",
+                    "add","+=",
                     "cut",
                     "set", "select",
                     "as",
@@ -28,7 +29,8 @@ public class CommandNBT extends Command {
                     "swap", "<>",
                     ">",
                     ">>",
-                    "<<"
+                    "<<",
+                    "insert","ins"
             )
     );
 
@@ -124,6 +126,16 @@ public class CommandNBT extends Command {
             if (argsBefore.size() > 2) throw exceptionArgs;
             if (argsAfter.size() > 2) throw exceptionArgs;
             Action a = new ActionSwap(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
+            a.execute();
+        } else if (action.equals("add") || action.equals("+=")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() > 2) throw exceptionArgs;
+            Action a = new ActionAddAll(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
+            a.execute();
+        } else if (action.equals("insert") || action.equals("ins")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() > 3) throw exceptionArgs;
+            Action a = new ActionInsert(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll(), argsAfter.poll());
             a.execute();
         }
         return true;

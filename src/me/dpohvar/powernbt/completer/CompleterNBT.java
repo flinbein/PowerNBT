@@ -106,7 +106,7 @@ public class CompleterNBT extends Completer {
             } else {
                 completeTag(container, former);
                 former.addIfStarts("rem", "ren");
-                former.addIfStarts("copy", "=", "as", "view", "swap");
+                former.addIfStarts("copy", "=", "as", "view", "swap","+=");
             }
             if (container instanceof NBTContainerVariable) former.addIfStarts("set");
             return;
@@ -125,44 +125,95 @@ public class CompleterNBT extends Completer {
         }
         if (word.isEmpty()) {
             if (container == null) {
-                former.addIfStarts("=", "rem", "ren", "copy", "paste", "cut", "set", "as", "view", "swap", ">", ">>", "<<");
+                former.addIfStarts("=", "rem", "ren", "copy", "paste","+=", "cut", "set", "as", "view", "swap", ">", ">>", "<<");
             } else {
                 if (container instanceof NBTContainerVariable) former.addIfStarts("set");
-                if (base != null) former.addIfStarts("rem", "ren", "copy", "cut", "view", ">", ">>");
+                if (base != null) {
+                    former.addIfStarts("rem","+=", "copy", "cut", "ren", "view", ">", ">>");
+                    if ((base instanceof NBTTagNumericArray)||(base instanceof NBTTagList)) former.addIfStarts("ins");
+                }
                 former.addIfStarts("=", "as", "swap", "paste", "swap", "<<");
             }
             return;
         }
+        String index = "";
         if (matches(word, "rename", "ren")) {
             if (base == null) return;
             String t = base.getName();
             String w = StringParser.wrap(t);
             if (t.equals(w)) former.addIfStarts(t);
             else former.addIfStarts('"' + StringParser.wrap(base.getName()) + '"');
+            return;
+        } else if (matches(word, "insert", "ins")) {
+            if (base == null) return;
+            int size = 0;
+            if(base instanceof NBTTagList) size = ((NBTTagList) base).size();
+            else if(base instanceof NBTTagNumericArray) size = ((NBTTagNumericArray) base).size();
+            else return;
+            index = former.poll();
+            if (index.isEmpty()){
+                for(int i=0;i<=size;i++){
+                    former.addIfStarts(Integer.toString(i));
+                }
+                return;
+            }
         }
-        if (matches(word, "=", "<", "set", "select", "swap", "<>", ">", ">>", "<<")) {
-            if (matches(word, "set", "select") && !(container instanceof NBTContainerVariable)) return;
+        String oper = word;
+        if (matches(oper, "=","insert", "ins","+=","add", "<", "set", "select", "swap", "<>", ">", ">>", "<<")) {
+            if (matches(oper, "set", "select") && !(container instanceof NBTContainerVariable)) return;
             word = former.poll();
             if (word.isEmpty()) {
                 if (base != null && former.getQuery().isEmpty()) {
-                    NBTType type = NBTType.fromBase(base);
-                    switch (type) {
-                        case BYTE:
-                        case SHORT:
-                        case INT:
-                        case LONG:
-                        case FLOAT:
-                        case DOUBLE:
-                        case BYTEARRAY:
-                        case INTARRAY:
-                            String s = Action.getNBTValue(base, null);
-                            former.add(s);
+                    if (matches(oper,"=","<","set","select")){
+                        NBTType type = NBTType.fromBase(base);
+                        switch (type) {
+                            case BYTE:
+                            case SHORT:
+                            case INT:
+                            case LONG:
+                            case FLOAT:
+                            case DOUBLE:
+                            case BYTEARRAY:
+                            case INTARRAY:
+                                String s = Action.getNBTValue(base, null);
+                                former.add(s);
+                                return;
+                            case STRING:
+                                String t = Action.getNBTValue(base, null);
+                                String w = StringParser.wrap(t);
+                                former.add("\"" + w + "\"");
+                                return;
+                        }
+                    } else if (matches(oper,"insert","ins")){
+                        try{
+                            int ind = Integer.parseInt(index);
+                            if(base instanceof NBTTagNumericArray){
+                                former.add("" + ((NBTTagNumericArray) base).get(ind));
+                            } else if (base instanceof NBTTagList){
+                                NBTBase b = ((NBTTagList) base).get(ind);
+                                NBTType type = NBTType.fromBase(b);
+                                switch (type) {
+                                    case BYTE:
+                                    case SHORT:
+                                    case INT:
+                                    case LONG:
+                                    case FLOAT:
+                                    case DOUBLE:
+                                    case BYTEARRAY:
+                                    case INTARRAY:
+                                        String s = Action.getNBTValue(b, null);
+                                        former.add(s);
+                                        return;
+                                    case STRING:
+                                        String t = Action.getNBTValue(b, null);
+                                        String w = StringParser.wrap(t);
+                                        former.add("\"" + w + "\"");
+                                        return;
+                                }
+                            }
+                        }catch (Exception ignored){
                             return;
-                        case STRING:
-                            String t = Action.getNBTValue(base, null);
-                            String w = StringParser.wrap(t);
-                            former.add("\"" + w + "\"");
-                            return;
+                        }
                     }
                 }
                 former.addIfStarts("me", "item", "block", "buffer", "list", "compound", "byte[]", "int[]");

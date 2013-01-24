@@ -11,7 +11,7 @@ import static me.dpohvar.powernbt.utils.VersionFix.getNew;
  *
  * @author DPOH-VAR
  */
-public class NBTTagByte extends NBTBase implements NBTTagNumeric {
+public class NBTTagByte extends NBTTagNumeric {
     private static Class clazz = classNBTTagByte;
     private static Class[] classes = new Class[]{String.class, byte.class};
     private static Field fieldData;
@@ -99,9 +99,9 @@ public class NBTTagByte extends NBTBase implements NBTTagNumeric {
         return null;
     }
 
-    public void set(byte value) {
+    public void set(Number value) {
         try {
-            fieldData.set(handle, value);
+            fieldData.set(handle, value.byteValue());
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }

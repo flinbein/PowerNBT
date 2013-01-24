@@ -11,7 +11,7 @@ import static me.dpohvar.powernbt.utils.VersionFix.getNew;
  *
  * @author DPOH-VAR
  */
-public class NBTTagShort extends NBTBase implements NBTTagNumeric {
+public class NBTTagShort extends NBTTagNumeric {
     private static Class clazz = classNBTTagShort;
     private static Class[] classes = new Class[]{String.class, short.class};
     private static Field fieldData;
@@ -99,9 +99,9 @@ public class NBTTagShort extends NBTBase implements NBTTagNumeric {
         return null;
     }
 
-    public void set(short value) {
+    public void set(Number value) {
         try {
-            fieldData.set(handle, value);
+            fieldData.set(handle, value.shortValue());
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }

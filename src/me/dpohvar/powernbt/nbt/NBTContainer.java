@@ -47,13 +47,8 @@ public abstract class NBTContainer {
                 int index = (Integer) t;
                 if (index == -1) index = list.size() - 1;
                 current = list.get(index);
-            } else if (current instanceof NBTTagByteArray && t instanceof Integer) {
-                NBTTagByteArray array = (NBTTagByteArray) current;
-                int index = (Integer) t;
-                if (index == -1) index = array.size() - 1;
-                current = NBTBase.getByValue(array.get(index));
-            } else if (current instanceof NBTTagIntArray && t instanceof Integer) {
-                NBTTagIntArray array = (NBTTagIntArray) current;
+            } else if (current instanceof NBTTagNumericArray && t instanceof Integer) {
+                NBTTagNumericArray array = (NBTTagNumericArray) current;
                 int index = (Integer) t;
                 if (index == -1) index = array.size() - 1;
                 current = NBTBase.getByValue(array.get(index));
@@ -92,23 +87,13 @@ public abstract class NBTContainer {
                     else list.set(index, base.clone());
                     setTag(root);
                     return true;
-                } else if (current instanceof NBTTagByteArray && t instanceof Integer) {
-                    NBTTagByteArray array = (NBTTagByteArray) current;
+                } else if (current instanceof NBTTagNumericArray && t instanceof Integer) {
+                    NBTTagNumericArray array = (NBTTagNumericArray) current;
                     int index = (Integer) t;
                     if (index == -1) index = array.size();
                     if (!(base instanceof NBTTagNumeric))
                         throw new RuntimeException(plugin.translate("error_notnumber", base.getName()));
-                    byte value = ((NBTTagNumeric) base).get().byteValue();
-                    array.set(index, value);
-                    setTag(root);
-                    return true;
-                } else if (current instanceof NBTTagIntArray && t instanceof Integer) {
-                    NBTTagIntArray array = (NBTTagIntArray) current;
-                    int index = (Integer) t;
-                    if (index == -1) index = array.size();
-                    if (!(base instanceof NBTTagNumeric))
-                        throw new RuntimeException(plugin.translate("error_notnumber", base.getName()));
-                    int value = ((NBTTagNumeric) base).get().intValue();
+                    Number value = ((NBTTagNumeric) base).get();
                     array.set(index, value);
                     setTag(root);
                     return true;
@@ -176,15 +161,8 @@ public abstract class NBTContainer {
                     boolean b = list.remove(index);
                     setTag(root);
                     return b;
-                } else if (current instanceof NBTTagByteArray && t instanceof Integer) {
-                    NBTTagByteArray array = (NBTTagByteArray) current;
-                    int index = (Integer) t;
-                    if (index == -1) index = array.size() - 1;
-                    boolean b = array.remove(index);
-                    setTag(root);
-                    return b;
-                } else if (current instanceof NBTTagIntArray && t instanceof Integer) {
-                    NBTTagIntArray array = (NBTTagIntArray) current;
+                } else if (current instanceof NBTTagNumericArray && t instanceof Integer) {
+                    NBTTagNumericArray array = (NBTTagNumericArray) current;
                     int index = (Integer) t;
                     if (index == -1) index = array.size() - 1;
                     boolean b = array.remove(index);

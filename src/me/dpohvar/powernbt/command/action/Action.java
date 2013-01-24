@@ -50,7 +50,7 @@ public abstract class Action {
                         NBTBase b = e.getValue();
                         NBTType t = NBTType.fromBase(b);
                         if (t.equals(NBTType.LIST)) {
-                            NBTType subType = NBTType.fromByte((Byte) b.getTypeId());
+                            NBTType subType = NBTType.fromByte((Byte) ((NBTTagList)b).getSubTypeId());
                             s += subType.color + t.prefix + ChatColor.BOLD + b.getName() + ": " + ChatColor.RESET + getNBTValue(b, args) + '\n';
                         } else {
                             s += t.color + t.prefix + ChatColor.BOLD + b.getName() + ": " + ChatColor.RESET + getNBTValue(b, args) + '\n';

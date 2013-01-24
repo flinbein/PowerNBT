@@ -1,19 +1,36 @@
 package me.dpohvar.powernbt.utils;
 
+import me.dpohvar.powernbt.PowerNBT;
 import org.bukkit.ChatColor;
 
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class StringParser {
+    private static char char_color = 0;
+    private static char char_space = 0;
+    static {
+        try{
+            PowerNBT plugin = PowerNBT.plugin;
+            String s;
+            s = plugin.getConfig().getString("formatting.char_color");
+            if(s!=null && s.length()==1) char_color = s.charAt(0);
+            s = plugin.getConfig().getString("formatting.char_space");
+            if(s!=null && s.length()==1) char_space = s.charAt(0);
+        } catch (Exception ignored){
+        }
+    }
+
     public static String parse(String input) {
         Queue<Character> chars = new LinkedList<Character>();
         StringBuilder sb = new StringBuilder();
         for (char c : input.toCharArray()) chars.add(c);
         while (!chars.isEmpty()) {
             char c = chars.poll();
-            if (c == '&') {
+            if (c == char_color && c != 0) {
                 sb.append(ChatColor.COLOR_CHAR);
+            } else if (c == char_space && c != 0) {
+                sb.append(' ');
             } else if (c == '\\') {
                 if (chars.isEmpty()) throw new RuntimeException("\\ is last symbol in string");
                 char t = chars.poll();
@@ -59,7 +76,9 @@ public class StringParser {
                         break;
                     }
                     default:
-                        throw new RuntimeException("no char: \\" + t);
+                        if(t != 0 && t == char_color) sb.append(char_color);
+                        else if (t != 0 && t == char_space) sb.append(char_space);
+                        else throw new RuntimeException("no char: \\" + t);
                 }
             } else {
                 sb.append(c);
@@ -74,10 +93,11 @@ public class StringParser {
         raw = raw.replace("\b", "\\b");
         raw = raw.replace("\r", "\\r");
         raw = raw.replace("\t", "\\t");
-        raw = raw.replace("&", "\\&");
         raw = raw.replace("\f", "\\f");
-        raw = raw.replace("" + ChatColor.COLOR_CHAR, "\\c");
-        raw = raw.replace(" ", "\\_");
+        if(char_color!=0) raw = raw.replace(""+char_color, "\\"+char_color);
+        if(char_space!=0) raw = raw.replace(""+char_space, "\\"+char_space);
+        if(char_color!=0) raw = raw.replace("" + ChatColor.COLOR_CHAR, ""+char_color);
+        if(char_space!=0) raw = raw.replace(" ", ""+char_space);
         return raw;
     }
 }

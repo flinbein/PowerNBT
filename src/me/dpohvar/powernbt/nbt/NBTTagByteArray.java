@@ -2,6 +2,7 @@ package me.dpohvar.powernbt.nbt;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,7 +14,7 @@ import static me.dpohvar.powernbt.utils.VersionFix.getNew;
  *
  * @author DPOH-VAR
  */
-public class NBTTagByteArray extends NBTBase implements NBTTagDatable {
+public class NBTTagByteArray extends NBTTagNumericArray {
     private static Class clazz = classNBTTagByteArray;
     private static Class[] classes = new Class[]{String.class, byte[].class};
     private static Field fieldData;
@@ -109,6 +110,21 @@ public class NBTTagByteArray extends NBTBase implements NBTTagDatable {
         }
     }
 
+    @Override
+    public ArrayList<Number> asList() {
+        ArrayList<Number> list = new ArrayList<Number>();
+        for (byte b : get()) list.add(b);
+        return list;
+    }
+
+    @Override
+    public void setList(List<Number> list) {
+        byte[] bytes = new byte[list.size()];
+        int t = 0;
+        for(Number n:list) bytes[t++]=n.byteValue();
+        set(bytes);
+    }
+
     public int size() {
         return get().length;
     }
@@ -119,14 +135,14 @@ public class NBTTagByteArray extends NBTBase implements NBTTagDatable {
         return array[i];
     }
 
-    public void set(int i, byte value) {
+    public void set(int i, Number value) {
         byte[] array = get();
         List<Byte> list = new LinkedList<Byte>();
         for (byte b : array) list.add(b);
         while (list.size() <= i) {
             list.add((byte) 0);
         }
-        list.set(i, value);
+        list.set(i, value.byteValue());
         byte[] result = new byte[list.size()];
         int t = 0;
         for (byte b : list) result[t++] = b;
@@ -147,6 +163,18 @@ public class NBTTagByteArray extends NBTBase implements NBTTagDatable {
         for (byte b : list) result[t++] = b;
         set(result);
         return true;
+    }
+
+    @Override
+    public void add(Number value) {
+        byte[] array = get();
+        List<Byte> list = new LinkedList<Byte>();
+        for (byte b : array) list.add(b);
+        list.add(value.byteValue());
+        byte[] result = new byte[list.size()];
+        int t = 0;
+        for (byte b : list) result[t++] = b;
+        set(result);
     }
 
     @Override

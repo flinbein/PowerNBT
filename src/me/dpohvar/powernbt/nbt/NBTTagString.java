@@ -11,7 +11,7 @@ import static me.dpohvar.powernbt.utils.VersionFix.getNew;
  *
  * @author DPOH-VAR
  */
-public class NBTTagString extends NBTBase implements NBTTagDatable {
+public class NBTTagString extends NBTTagDatable {
     private static Class clazz = classNBTTagString;
     private static Class[] classes = new Class[]{String.class, String.class};
     private static Field fieldData;

@@ -211,6 +211,8 @@ public class Argument {
                 return null;
             } else {
                 NBTType type = NBTType.fromString(param);
+                if(type.equals(NBTType.BYTEARRAY)) type = NBTType.BYTE;
+                else if(type.equals(NBTType.INTARRAY)) type = NBTType.INT;
                 return new NBTContainerBase(type.parse(object));
             }
         } else if (object.equals("*") || object.equals("self") || object.equals("this")) {
@@ -310,8 +312,6 @@ public class Argument {
                     q.remove(q.size() - 1);
                     NBTQuery nq = new NBTQuery(q);
                     NBTType nt = NBTType.fromBase(paramContainer.getTag(nq));
-                    if (nt == NBTType.BYTEARRAY) type = NBTType.BYTE;
-                    else if (nt == NBTType.INTARRAY) type = NBTType.INT;
                 }
                 if (type == NBTType.END) {
                     TypeCompleter comp = plugin.getTypeCompleter();
@@ -324,6 +324,8 @@ public class Argument {
                     }
                 }
             }
+            if (type == NBTType.BYTEARRAY) type = NBTType.BYTE;
+            else if (type == NBTType.INTARRAY) type = NBTType.INT;
 
             this.container = new NBTContainerBase(type.parse(objectFuture));
             this.query = emptyQuery;

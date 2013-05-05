@@ -33,12 +33,12 @@ public class ActionRename extends Action {
         List<Object> v = query.getParent().getValues();
         v.addAll(query2.getValues());
         NBTQuery newQuery = new NBTQuery(v);
-        NBTBase base = container.getTag(query);
+        NBTBase base = container.getCustomTag(query);
         if (base == null) {
             caller.send(PowerNBT.plugin.translate("fail_rename"));
         } else {
             container.removeTag(query);
-            container.setTag(newQuery, base);
+            container.setCustomTag(newQuery, base);
             caller.send(PowerNBT.plugin.translate("success_rename", name) + getNBTShortView(base, null));
         }
     }

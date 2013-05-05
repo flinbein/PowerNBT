@@ -31,20 +31,20 @@ public class ActionInsert extends Action {
             arg2.prepare(this, container1, query1);
             return;
         }
-        NBTBase base1 = container1.getTag(query1);
+        NBTBase base1 = container1.getCustomTag(query1);
         NBTContainer container2 = arg2.getContainer();
         NBTQuery query2 = arg2.getQuery();
-        NBTBase base2 = container2.getTag(query2);
+        NBTBase base2 = container2.getCustomTag(query2);
         if (base1 instanceof NBTTagList){
             NBTTagList tag1 = (NBTTagList) base1;
             tag1.add(pos,base2);
-            container1.setTag(query1,tag1);
+            container1.setCustomTag(query1,tag1);
             caller.send(PowerNBT.plugin.translate("success_insert") + getNBTShortView(base2, null));
         } else if (base1 instanceof NBTTagNumericArray && base2 instanceof NBTTagNumeric){
             NBTTagNumericArray list1 = (NBTTagNumericArray) base1;
             NBTTagNumeric num = (NBTTagNumeric) base2;
             list1.add(pos,num.get());
-            container1.setTag(query1,list1);
+            container1.setCustomTag(query1,list1);
             caller.send(PowerNBT.plugin.translate("success_add") + getNBTShortView(num, null));
         } else {
             caller.send(PowerNBT.plugin.translate("fail_insert"));

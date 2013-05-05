@@ -30,34 +30,47 @@ public class ActionAddAll extends Action {
             arg2.prepare(this, container1, query1);
             return;
         }
-        NBTBase base1 = container1.getTag(query1);
+        NBTBase base1 = container1.getCustomTag(query1);
         NBTContainer container2 = arg2.getContainer();
         NBTQuery query2 = arg2.getQuery();
-        NBTBase base2 = container2.getTag(query2);
+        NBTBase base2 = container2.getCustomTag(query2);
         if (base1 instanceof NBTTagCompound && base2 instanceof NBTTagCompound){
             NBTTagCompound tag1 = (NBTTagCompound) base1;
             NBTTagCompound tag2 = (NBTTagCompound) base2;
             tag1.add(tag2.asMap());
-            container1.setTag(query1,tag1);
+            container1.setCustomTag(query1,tag1);
             caller.send(PowerNBT.plugin.translate("success_add") + getNBTShortView(tag2, null));
         } else if (base1 instanceof NBTTagList && base2 instanceof NBTTagList){
             NBTTagList list1 = (NBTTagList) base1;
             NBTTagList list2 = (NBTTagList) base2;
             list1.addAll(list2.asList());
-            container1.setTag(query1,list1);
+            container1.setCustomTag(query1,list1);
             caller.send(PowerNBT.plugin.translate("success_add") + getNBTShortView(list2, null));
         } else if (base1 instanceof NBTTagNumericArray && base2 instanceof NBTTagNumericArray){
             NBTTagNumericArray list1 = (NBTTagNumericArray) base1;
             NBTTagNumericArray list2 = (NBTTagNumericArray) base2;
             list1.addAll(list2);
-            container1.setTag(query1,list1);
+            container1.setCustomTag(query1,list1);
             caller.send(PowerNBT.plugin.translate("success_add") + getNBTShortView(list2, null));
         } else if (base1 instanceof NBTTagString && base2 instanceof NBTTagString){
             NBTTagString s1 = (NBTTagString) base1;
             NBTTagString s2 = (NBTTagString) base2;
             s1.set(s1.get().concat(s2.get()));
-            container1.setTag(query1,s1);
+            container1.setCustomTag(query1,s1);
             caller.send(PowerNBT.plugin.translate("success_add") + getNBTShortView(s2, null));
+        } else if (base1 instanceof NBTTagNumeric && base2 instanceof NBTTagNumeric){
+            NBTTagNumeric n1 = (NBTTagNumeric) base1.clone();
+            NBTTagNumeric n2 = (NBTTagNumeric) base2;
+            Number x1 = n1.get();
+            Number x2 = n2.get();
+            if(x1 instanceof Float || x1 instanceof Double){
+                x1 = x1.doubleValue()+x2.doubleValue();
+            } else {
+                x1 = x1.longValue()+x2.longValue();
+            }
+            n1.set(x1);
+            container1.setCustomTag(query1,n1);
+            caller.send(PowerNBT.plugin.translate("success_add") + getNBTShortView(n2, null));
         } else {
             caller.send(PowerNBT.plugin.translate("fail_add"));
         }

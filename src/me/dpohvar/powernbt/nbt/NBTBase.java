@@ -12,7 +12,7 @@ import static me.dpohvar.powernbt.utils.VersionFix.callMethod;
  */
 public abstract class NBTBase {
 
-    static Field fieldName;
+    private static Field fieldName;
 
     static {
         try {

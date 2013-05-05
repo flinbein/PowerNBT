@@ -24,9 +24,9 @@ public class ActionCut extends Action {
         }
         NBTContainer container = arg.getContainer();
         NBTQuery query = arg.getQuery();
-        NBTBase base = container.getTag(query);
+        NBTBase base = container.getCustomTag(query);
         if (base == null) throw new RuntimeException(PowerNBT.plugin.translate("error_null"));
-        caller.setTag(base);
+        caller.setCustomTag(base);
         caller.send(PowerNBT.plugin.translate("success_cut") + getNBTShortView(base, null));
         arg.getContainer().removeTag(arg.getQuery());
     }

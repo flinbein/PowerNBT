@@ -32,16 +32,16 @@ public class ActionSwap extends Action {
         }
         NBTContainer container2 = arg2.getContainer();
         NBTQuery query2 = arg2.getQuery();
-        NBTBase base1 = container1.getTag(query1);
-        NBTBase base2 = container2.getTag(query2);
+        NBTBase base1 = container1.getCustomTag(query1);
+        NBTBase base2 = container2.getCustomTag(query2);
         if (base1 == null && base2 == null) {
             caller.send(PowerNBT.plugin.translate("success_swap_null"));
             return;
         }
         if (base2 == null) container1.removeTag(query1);
-        else container1.setTag(query1, base2);
+        else container1.setCustomTag(query1, base2);
         if (base1 == null) container2.removeTag(query2);
-        else container2.setTag(query2, base1);
+        else container2.setCustomTag(query2, base1);
         caller.send(PowerNBT.plugin.translate("success_swap"));
     }
 }

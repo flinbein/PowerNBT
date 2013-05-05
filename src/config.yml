@@ -1,0 +1,12 @@
+debug: false
+lang: system
+formatting:
+  char_color: '&'
+  char_space:
+tags:
+  block_ignore_location: true
+  entity_ignore_UUID: true
+  entity_ignore_Pos: false
+  entity_ignore_Motion: false
+  entity_ignore_Rotation: false
+  entity_set_Riding: false

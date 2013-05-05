@@ -24,7 +24,7 @@ public class ActionRemove extends Action {
         }
         NBTContainer container = arg.getContainer();
         NBTQuery query = arg.getQuery();
-        NBTBase base = container.getTag(query);
+        NBTBase base = container.getCustomTag(query);
         container.removeTag(query);
         caller.send(PowerNBT.plugin.translate("success_removed") + getNBTShortView(base, null));
     }

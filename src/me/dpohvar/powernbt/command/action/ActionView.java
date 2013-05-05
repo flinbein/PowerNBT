@@ -31,6 +31,6 @@ public class ActionView extends Action {
         }
         NBTContainer container = arg.getContainer();
         NBTQuery query = arg.getQuery();
-        caller.send(getNBTView(container.getTag(query), args));
+        caller.send(getNBTView(container.getCustomTag(query), args));
     }
 }

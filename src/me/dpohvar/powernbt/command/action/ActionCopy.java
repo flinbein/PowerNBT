@@ -24,8 +24,8 @@ public class ActionCopy extends Action {
         }
         NBTContainer container = arg.getContainer();
         NBTQuery query = arg.getQuery();
-        NBTBase base = container.getTag(query);
-        caller.setTag(container.getTag(query));
+        NBTBase base = container.getCustomTag(query);
+        caller.setCustomTag(container.getCustomTag(query));
         caller.send(PowerNBT.plugin.translate("success_copied") + getNBTShortView(base, null));
     }
 }

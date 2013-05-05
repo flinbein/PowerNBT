@@ -59,6 +59,12 @@ public class StringParser {
                     case 'n':
                         sb.append('\n');
                         break;
+                    case '"':
+                        sb.append('\"');
+                        break;
+                    case '\'':
+                        sb.append('\'');
+                        break;
                     case 'c':
                         sb.append(ChatColor.COLOR_CHAR);
                         break;
@@ -94,6 +100,7 @@ public class StringParser {
         raw = raw.replace("\r", "\\r");
         raw = raw.replace("\t", "\\t");
         raw = raw.replace("\f", "\\f");
+        raw = raw.replace("\"", "\\");
         if(char_color!=0) raw = raw.replace(""+char_color, "\\"+char_color);
         if(char_space!=0) raw = raw.replace(""+char_space, "\\"+char_space);
         if(char_color!=0) raw = raw.replace("" + ChatColor.COLOR_CHAR, ""+char_color);

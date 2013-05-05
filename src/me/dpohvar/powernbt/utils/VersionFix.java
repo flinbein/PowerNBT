@@ -1,5 +1,6 @@
 package me.dpohvar.powernbt.utils;
 
+import me.dpohvar.powernbt.PowerNBT;
 import org.bukkit.Bukkit;
 
 import java.lang.reflect.*;
@@ -121,6 +122,7 @@ public class VersionFix {
             method.setAccessible(true);
             return method.invoke(o, params);
         } catch (Exception e) {
+            if(PowerNBT.plugin.isDebug()) e.printStackTrace();
             return null;
         }
     }

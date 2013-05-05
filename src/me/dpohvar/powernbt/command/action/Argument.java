@@ -110,6 +110,9 @@ public class Argument {
         } else if (object.equals("block") || object.equals("b")) {
             if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
             return new NBTContainerBlock(((Player) caller.getOwner()).getTargetBlock(null, 20));
+        } else if (object.equals("chunk") || object.equals("ch")) {
+            if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
+            return new NBTContainerChunk(((Player) caller.getOwner()).getLocation().getChunk());
         } else if (object.equals("buffer") || object.equals("clipboard") || object.equals("c")) {
             return caller;
         } else if (object.startsWith("*") && object.length() > 1) {
@@ -164,7 +167,7 @@ public class Argument {
             return new NBTContainerBase(new NBTTagIntArray());
         } else if (object.equals("byte[]")) {
             return new NBTContainerBase(new NBTTagByteArray());
-        } else if (object.matches("(-?[0-9]+):(-?[0-9]+):(-?[0-9]+)(:.*)?")) {
+        } else if (object.matches("(-?[0-9]+):(-?[0-9]+):(-?[0-9]+):.*")) {
             String[] t = object.split(":");
             int x = Integer.parseInt(t[0]);
             int y = Integer.parseInt(t[1]);
@@ -181,6 +184,22 @@ public class Argument {
                 throw new RuntimeException(PowerNBT.plugin.translate("error_noworld", ww));
             }
             return new NBTContainerBlock(w.getBlockAt(x, y, z));
+        } else if (object.matches("(-?[0-9]+):(-?[0-9]+):.*?")) {
+            String[] t = object.split(":");
+            int x = Integer.parseInt(t[0]);
+            int z = Integer.parseInt(t[1]);
+            World w;
+            String ww = "";
+            if (t.length >= 3) ww = t[2];
+            if (ww.isEmpty() && caller.getOwner() instanceof Player) {
+                w = ((Player) caller.getOwner()).getWorld();
+            } else {
+                w = Bukkit.getWorld(t[2]);
+            }
+            if (w == null) {
+                throw new RuntimeException(PowerNBT.plugin.translate("error_noworld", ww));
+            }
+            return new NBTContainerChunk(w.getChunkAt(x,z));
         } else if (object.startsWith("@") && !object.contains(File.separator)) {
             File baseDir = (Bukkit.getWorlds().get(0)).getWorldFolder();
             File playerDir = new File(baseDir, "players");
@@ -302,16 +321,38 @@ public class Argument {
             this.container = paramContainer;
             this.query = NBTQuery.fromString(queryFuture);
             action.execute();
+        } else if (objectFuture.equals("hand") || objectFuture.equals("h")) {
+            if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
+            Player p = (Player) caller.getOwner();
+            NBTContainerEntity player = new NBTContainerEntity(p);
+            int pslot = p.getInventory().getHeldItemSlot();
+            int ind = 0;
+            int result = -1;
+            NBTTagList inventory = player.getCustomTag().getList("Inventory");
+            for(NBTBase bt: inventory){
+                NBTTagCompound ct = (NBTTagCompound) bt;
+                if( ct.getByte("Slot") == pslot ){
+                    result = ind;
+                    break;
+                }
+                ind++;
+            }
+            if (result == -1) throw new RuntimeException(plugin.translate("error_null"));
+            NBTQuery q = new NBTQuery("Inventory",result);
+            this.container = new NBTContainerComplex(player,q);
+            this.query = NBTQuery.fromString(queryFuture);
+            action.execute();
         } else if (objectFuture.matches("-?[0-9]*(.[0-9]*)?")) {
-            if (paramContainer == null)
+            if (paramContainer == null){
                 throw new RuntimeException(plugin.translate("error_undefinedtype", objectFuture));
-            NBTType type = NBTType.fromBase(paramContainer.getTag(paramQuery));
+            }
+            NBTType type = NBTType.fromBase(paramContainer.getCustomTag(paramQuery));
             if (type == NBTType.END && paramQuery != null) {
                 List<Object> q = paramQuery.getValues();
                 if (!q.isEmpty()) {
                     q.remove(q.size() - 1);
                     NBTQuery nq = new NBTQuery(q);
-                    NBTType nt = NBTType.fromBase(paramContainer.getTag(nq));
+                    NBTType nt = NBTType.fromBase(paramContainer.getCustomTag(nq));
                 }
                 if (type == NBTType.END) {
                     TypeCompleter comp = plugin.getTypeCompleter();
@@ -326,6 +367,12 @@ public class Argument {
             }
             if (type == NBTType.BYTEARRAY) type = NBTType.BYTE;
             else if (type == NBTType.INTARRAY) type = NBTType.INT;
+            if (type == NBTType.END && paramQuery!=null) {
+                NBTBase bx = paramContainer.getCustomTag(paramQuery.getParent());
+                if(bx instanceof NBTTagList){
+                    type = NBTType.fromByte(((NBTTagList) bx).getSubTypeId());
+                }
+            }
 
             this.container = new NBTContainerBase(type.parse(objectFuture));
             this.query = emptyQuery;
@@ -333,7 +380,7 @@ public class Argument {
         } else if (objectFuture.matches("\\[((-?[0-9]+|#-?[0-9a-fA-F]+)(,(?!\\])|(?=\\])))*\\]")) {
             if (paramContainer == null)
                 throw new RuntimeException(plugin.translate("error_undefinedtype", objectFuture));
-            NBTType type = NBTType.fromBase(paramContainer.getTag(paramQuery));
+            NBTType type = NBTType.fromBase(paramContainer.getCustomTag(paramQuery));
             if (type == NBTType.INT) type = NBTType.INTARRAY;
             else if (type == NBTType.BYTE) type = NBTType.BYTEARRAY;
             else if (type == null || type == NBTType.END) {

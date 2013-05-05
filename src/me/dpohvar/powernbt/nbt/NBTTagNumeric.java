@@ -5,7 +5,7 @@ package me.dpohvar.powernbt.nbt;
  *
  * @author DPOH-VAR
  */
-public abstract class NBTTagNumeric extends NBTTagDatable {
+public abstract class NBTTagNumeric extends NBTTagDatable{
     NBTTagNumeric(Object handle) {
         super(handle);
     }

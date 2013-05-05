@@ -12,7 +12,7 @@ import static me.dpohvar.powernbt.utils.VersionFix.getNew;
  *
  * @author DPOH-VAR
  */
-public class NBTTagList extends NBTBase {
+public class NBTTagList extends NBTBase implements Iterable<NBTBase> {
     private static Class clazz = classNBTTagList;
     private static Class[] classes = new Class[]{String.class};
     private static Field fieldList;
@@ -20,6 +20,7 @@ public class NBTTagList extends NBTBase {
     private static Method methodRead;
     private static Method methodWrite;
     private static Method methodClone;
+    private static Random random;
 
     static {
         try {
@@ -197,11 +198,12 @@ public class NBTTagList extends NBTBase {
         return c;
     }
 
-    public boolean remove(int i) {
+    public NBTBase remove(int i) {
         List<Object> list = getHandleList();
-        if (i < 0 || i >= list.size()) return false;
-        getHandleList().remove(i);
-        return true;
+        if (i < 0 || i >= list.size()) return null;
+        Object t = getHandleList().remove(i);
+        if (t==null) return null;
+        return NBTBase.getByValue(t);
     }
 
     public void clear() {
@@ -238,16 +240,10 @@ public class NBTTagList extends NBTBase {
         }
     }
 
-
-    /**
-     * set(4,(long)15);
-     * set(26,"string");
-     * set(99,elementNBTBase);
-     *
-     * @param i     key
-     * @param value NBTBase or some primitive value
-     */
-    public void set(int i, Object value) {
+    public NBTBase set(int i, NBTBase value) {
+        return set(i,(Object)value);
+    }
+    public NBTBase set(int i, Object value) {
         NBTBase base = NBTBase.getByValue(value);
         byte type = base.getTypeId();
         if (type == 0) {
@@ -262,20 +258,24 @@ public class NBTTagList extends NBTBase {
         }
         if (list.size() == i) {
             list.add(base.getHandle());
+            return null;
         } else {
-            list.set(i, base.getHandle());
+            Object b = list.set(i, base.getHandle());
+            return NBTBase.getByValue(b);
         }
     }
 
-    public void add(Object value) {
-        NBTBase base = NBTBase.getByValue(value);
+    public boolean add(NBTBase base) {
         byte listType = getSubTypeId();
         if (listType != 0 && listType != base.getTypeId()) throw new IllegalArgumentException();
         if (listType == 0) setSubTypeId(base.getTypeId());
-        getHandleList().add(base.getHandle());
+        return getHandleList().add(base.getHandle());
+    }
+    public boolean add(Object val) {
+        return add(NBTBase.getByValue(val));
     }
 
-    public void addAll(Collection<?> values) {
+    public boolean addAll(Collection<?> values) {
         List<Object> list = getHandleList();
         for (Object value : values) {
             NBTBase base = NBTBase.getByValue(value);
@@ -284,6 +284,7 @@ public class NBTTagList extends NBTBase {
             if (listType == 0) setSubTypeId(base.getTypeId());
             list.add(base.getHandle());
         }
+        return !values.isEmpty();
     }
 
     public void add(int i, Object value) {
@@ -313,9 +314,42 @@ public class NBTTagList extends NBTBase {
         return 0;
     }
 
+    public NBTBase getRandom() {
+        List<Object> list = getHandleList();
+        if (list.isEmpty()) return null;
+        Object x = list.get(random.nextInt(list.size()));
+        return NBTBase.getByValue(x);
+    }
+
     @Override
     public byte getTypeId() {
         return 9;
     }
 
+    @Override
+    public NBTTagListIterator iterator() {
+        return new NBTTagListIterator(getHandleList().iterator());
+    }
+
+    public class NBTTagListIterator implements Iterator<NBTBase>{
+        Iterator<Object> iterator;
+        NBTTagListIterator(Iterator<Object> iterator){
+         this.iterator=iterator;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        @Override
+        public NBTBase next() {
+            return NBTBase.getByValue(iterator.next());
+        }
+
+        @Override
+        public void remove() {
+            iterator.remove();
+        }
+    }
 }

@@ -2,10 +2,7 @@ package me.dpohvar.powernbt.nbt;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static me.dpohvar.powernbt.utils.StaticValues.classNBTBase;
 import static me.dpohvar.powernbt.utils.StaticValues.classNBTTagCompound;
@@ -16,7 +13,7 @@ import static me.dpohvar.powernbt.utils.VersionFix.getNew;
  *
  * @author DPOH-VAR
  */
-public class NBTTagCompound extends NBTBase {
+public class NBTTagCompound extends NBTBase implements Iterable<NBTBase> {
     private static Class clazz = classNBTTagCompound;
     private static Class[] classes = new Class[]{String.class};
     private static Field fieldMap;
@@ -295,6 +292,13 @@ public class NBTTagCompound extends NBTBase {
             e.printStackTrace();
         }
     }
+    public void set(String key,NBTBase value){
+        try {
+            methodSet.invoke(handle, key, value.getHandle());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public void add(Map<String,?> values){
         for(Map.Entry<String,?> e:values.entrySet()){
@@ -315,4 +319,30 @@ public class NBTTagCompound extends NBTBase {
         return 10;
     }
 
+    @Override
+    public NBTTagCompoundIterator iterator() {
+        return new NBTTagCompoundIterator(getHandleMap().values().iterator());
+    }
+
+    public class NBTTagCompoundIterator implements Iterator<NBTBase>{
+        Iterator<Object> iterator;
+        NBTTagCompoundIterator(Iterator<Object> iterator){
+            this.iterator=iterator;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        @Override
+        public NBTBase next() {
+            return NBTBase.getByValue(iterator.next());
+        }
+
+        @Override
+        public void remove() {
+            iterator.remove();
+        }
+    }
 }

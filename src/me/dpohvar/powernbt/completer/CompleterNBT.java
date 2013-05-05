@@ -120,7 +120,7 @@ public class CompleterNBT extends Completer {
             word = former.poll(); // command;
         }
         try {
-            base = container.getTag(query);
+            base = container.getCustomTag(query);
         } catch (Throwable ignored) {
         }
         if (word.isEmpty()) {
@@ -299,7 +299,7 @@ public class CompleterNBT extends Completer {
             return;
         }
         if (!query.endsWith(".") && (query.isEmpty() || els.length == 1)) {
-            NBTBase base = container.getTag();
+            NBTBase base = container.getCustomTag();
             if (base != null) {
                 if (base instanceof NBTTagCompound) {
                     for (String s : ((NBTTagCompound) base).getHandleMap().keySet()) {
@@ -339,7 +339,7 @@ public class CompleterNBT extends Completer {
             option = option.substring(0, option.length() - 1);
         }
         NBTQuery q = NBTQuery.fromString(option);
-        NBTBase base = container.getTag(q);
+        NBTBase base = container.getCustomTag(q);
         if (base != null) {
             if (base instanceof NBTTagCompound) {
                 for (String s : ((NBTTagCompound) base).getHandleMap().keySet()) {

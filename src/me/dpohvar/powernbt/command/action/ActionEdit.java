@@ -30,9 +30,9 @@ public class ActionEdit extends Action {
             arg2.prepare(this, container, query);
             return;
         }
-        NBTBase base = arg2.getContainer().getTag(arg2.getQuery());
+        NBTBase base = arg2.getContainer().getCustomTag(arg2.getQuery());
         if (base == null) throw new RuntimeException(PowerNBT.plugin.translate("error_null"));
-        boolean result = container.setTag(query, base);
+        boolean result = container.setCustomTag(query, base);
         if (!result) {
             throw new RuntimeException(PowerNBT.plugin.translate("fail_edit", query.getQuery()));
         }

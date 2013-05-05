@@ -97,8 +97,8 @@ public class PowerNBT extends JavaPlugin {
         String lang = this.getConfig().getString("lang");
         this.translator = new Translator(this, lang);
         this.typeCompleter = new TypeCompleter(getTemplateFolder());
-        getCommand("nbt").setExecutor(new CommandNBT());
-        getCommand("nbt").setTabCompleter(new CompleterNBT());
+        getCommand("powernbt").setExecutor(new CommandNBT());
+        getCommand("powernbt").setTabCompleter(new CompleterNBT());
     }
 
     public TypeCompleter getTypeCompleter() {

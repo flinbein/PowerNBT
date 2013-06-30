@@ -1,5 +1,7 @@
 package me.dpohvar.powernbt.nbt;
 
+import me.dpohvar.powernbt.utils.StaticValues;
+
 import java.util.List;
 import java.util.Queue;
 
@@ -7,13 +9,16 @@ import static me.dpohvar.powernbt.PowerNBT.plugin;
 
 public abstract class NBTContainer {
 
-    abstract public NBTBase getTag();
+    static final Class class_NBTBase = StaticValues.getClass("NBTBase");
+    static final Class class_NBTTagCompound = StaticValues.getClass("NBTTagCompound");
+
+    abstract protected NBTBase getTag();
 
     public NBTBase getCustomTag(){
         return getTag();
     }
 
-    abstract public void setTag(NBTBase base);
+    abstract protected void setTag(NBTBase base);
 
     public void setCustomTag(NBTBase base){
         setTag(base);
@@ -21,11 +26,11 @@ public abstract class NBTContainer {
 
     abstract public String getName();
 
-    public void removeTag() {
+    protected void removeTag() {
         setTag(new NBTTagCompound());
     }
 
-    public boolean removeTag(Object... values) {
+    boolean removeTag(Object... values) {
         NBTQuery q = new NBTQuery(values);
         return removeTag(q);
     }
@@ -61,7 +66,7 @@ public abstract class NBTContainer {
         NBTQuery q = new NBTQuery(values);
         return getTag(q);
     }
-    public NBTBase getTag(NBTQuery query){
+    NBTBase getTag(NBTQuery query){
         return getTag(query,getTag());
     }
     public NBTBase getCustomTag(NBTQuery query){
@@ -72,7 +77,7 @@ public abstract class NBTContainer {
         return getCustomTag(q);
     }
 
-    public boolean setTag(NBTQuery query, NBTBase base) {
+    boolean setTag(NBTQuery query, NBTBase base) {
         if (query == null || query.isEmpty()) {
             setTag(base);
             return true;

@@ -1,13 +1,13 @@
 package me.dpohvar.powernbt.nbt;
 
+import me.dpohvar.powernbt.utils.StaticValues;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static me.dpohvar.powernbt.utils.StaticValues.classNBTTagByteArray;
-import static me.dpohvar.powernbt.utils.VersionFix.getNew;
 
 /**
  * 14.01.13 17:54
@@ -15,8 +15,7 @@ import static me.dpohvar.powernbt.utils.VersionFix.getNew;
  * @author DPOH-VAR
  */
 public class NBTTagByteArray extends NBTTagNumericArray {
-    private static Class clazz = classNBTTagByteArray;
-    private static Class[] classes = new Class[]{String.class, byte[].class};
+    private static Class clazz = StaticValues.getClass("NBTTagByteArray");
     private static Field fieldData;
     private static Method methodRead;
     private static Method methodWrite;
@@ -24,10 +23,10 @@ public class NBTTagByteArray extends NBTTagNumericArray {
 
     static {
         try {
-            methodRead = clazz.getDeclaredMethod("load", java.io.DataInput.class);
-            methodWrite = clazz.getDeclaredMethod("write", java.io.DataOutput.class);
-            methodClone = clazz.getDeclaredMethod("clone");
-            fieldData = clazz.getDeclaredField("data");
+            methodRead = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataInput.class);
+            methodWrite = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataOutput.class);
+            methodClone = StaticValues.getMethodByTypeTypes(class_NBTBase, NBTBase.class_NBTBase);
+            fieldData = StaticValues.getFieldByType(clazz, byte[].class);
             methodRead.setAccessible(true);
             methodWrite.setAccessible(true);
             methodClone.setAccessible(true);
@@ -50,7 +49,16 @@ public class NBTTagByteArray extends NBTTagNumericArray {
     }
 
     public NBTTagByteArray(String s, byte[] b) {
-        super(getNew(clazz, classes, s, b));
+        super(getNew(s, b));
+    }
+
+    private static Object getNew(String s, byte[] b) {
+        try{
+            return clazz.getConstructor(String.class,byte[].class).newInstance(s,b);
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public NBTTagByteArray(boolean ignored, Object tag) {
@@ -111,8 +119,8 @@ public class NBTTagByteArray extends NBTTagNumericArray {
     }
 
     @Override
-    public ArrayList<Number> asList() {
-        ArrayList<Number> list = new ArrayList<Number>();
+    public ArrayList<Byte> asList() {
+        ArrayList<Byte> list = new ArrayList<Byte>();
         for (byte b : get()) list.add(b);
         return list;
     }

@@ -5,7 +5,7 @@ import java.util.List;
 
 public class NBTContainerBase extends NBTContainer {
 
-    NBTBase base;
+    private NBTBase base;
 
     public NBTContainerBase(NBTBase base) {
         this.base = base;

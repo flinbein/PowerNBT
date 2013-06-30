@@ -1,12 +1,11 @@
 package me.dpohvar.powernbt.nbt;
 
+import me.dpohvar.powernbt.utils.StaticValues;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static me.dpohvar.powernbt.utils.StaticValues.classNBTBase;
-import static me.dpohvar.powernbt.utils.StaticValues.classNBTTagCompound;
-import static me.dpohvar.powernbt.utils.VersionFix.getNew;
 
 /**
  * 14.01.13 17:54
@@ -14,8 +13,7 @@ import static me.dpohvar.powernbt.utils.VersionFix.getNew;
  * @author DPOH-VAR
  */
 public class NBTTagCompound extends NBTBase implements Iterable<NBTBase> {
-    private static Class clazz = classNBTTagCompound;
-    private static Class[] classes = new Class[]{String.class};
+    private static final Class clazz = StaticValues.getClass("NBTTagCompound");
     private static Field fieldMap;
     private static Method methodRead;
     private static Method methodWrite;
@@ -24,11 +22,19 @@ public class NBTTagCompound extends NBTBase implements Iterable<NBTBase> {
 
     static {
         try {
-            methodRead = clazz.getDeclaredMethod("load", java.io.DataInput.class);
-            methodWrite = clazz.getDeclaredMethod("write", java.io.DataOutput.class);
-            methodClone = clazz.getDeclaredMethod("clone");
-            methodSet = clazz.getDeclaredMethod("set", String.class, classNBTBase);
-            fieldMap = clazz.getDeclaredField("map");
+            if(StaticValues.isMCPC){
+                methodRead = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataInput.class);
+                methodWrite = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataOutput.class);
+                methodClone = StaticValues.getMethodByTypeTypes(class_NBTBase, class_NBTBase);
+                methodSet = StaticValues.getMethodByTypeTypes(clazz, void.class, String.class, class_NBTBase);
+                fieldMap = StaticValues.getFieldByType(clazz,java.util.Map.class);
+            } else {
+                methodRead = clazz.getDeclaredMethod("load", java.io.DataInput.class);
+                methodWrite = clazz.getDeclaredMethod("write", java.io.DataOutput.class);
+                methodClone = clazz.getDeclaredMethod("clone");
+                methodSet = clazz.getDeclaredMethod("set", String.class, class_NBTBase);
+                fieldMap = clazz.getDeclaredField("map");
+            }
             methodRead.setAccessible(true);
             methodWrite.setAccessible(true);
             methodClone.setAccessible(true);
@@ -44,10 +50,20 @@ public class NBTTagCompound extends NBTBase implements Iterable<NBTBase> {
     }
 
     public NBTTagCompound(String b) {
-        super(getNew(clazz, classes, b));
+        super(getNew(b));
     }
 
-    public NBTTagCompound(boolean fromHandle, Object tag) {
+    private static Object getNew(String b) {
+        try{
+            if (b==null) return clazz.getConstructor().newInstance();
+            return clazz.getConstructor(String.class).newInstance(b);
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public NBTTagCompound(boolean ignored, Object tag) {
         super(tag);
         if (!clazz.isInstance(tag)) throw new IllegalArgumentException();
     }
@@ -263,7 +279,7 @@ public class NBTTagCompound extends NBTBase implements Iterable<NBTBase> {
         Object base = null;
         if (value instanceof NBTBase) {
             base = ((NBTBase) value).getHandle();
-        } else if (classNBTBase.isInstance(value)) {
+        } else if (class_NBTBase.isInstance(value)) {
             //do nothing//
         } else if (value instanceof Byte) {
             base = new NBTTagByte((Byte) value).getHandle();

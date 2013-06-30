@@ -1,10 +1,10 @@
 package me.dpohvar.powernbt.nbt;
 
+import me.dpohvar.powernbt.utils.StaticValues;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import static me.dpohvar.powernbt.utils.StaticValues.classNBTTagDouble;
-import static me.dpohvar.powernbt.utils.VersionFix.getNew;
 
 /**
  * 14.01.13 17:54
@@ -12,8 +12,7 @@ import static me.dpohvar.powernbt.utils.VersionFix.getNew;
  * @author DPOH-VAR
  */
 public class NBTTagDouble extends NBTTagNumeric {
-    private static Class clazz = classNBTTagDouble;
-    private static Class[] classes = new Class[]{String.class, double.class};
+    private static Class clazz = StaticValues.getClass("NBTTagDouble");
     private static Field fieldData;
     private static Method methodRead;
     private static Method methodWrite;
@@ -21,10 +20,10 @@ public class NBTTagDouble extends NBTTagNumeric {
 
     static {
         try {
-            methodRead = clazz.getDeclaredMethod("load", java.io.DataInput.class);
-            methodWrite = clazz.getDeclaredMethod("write", java.io.DataOutput.class);
-            methodClone = clazz.getDeclaredMethod("clone");
-            fieldData = clazz.getDeclaredField("data");
+            methodRead = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataInput.class);
+            methodWrite = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataOutput.class);
+            methodClone = StaticValues.getMethodByTypeTypes(class_NBTBase, NBTBase.class_NBTBase);
+            fieldData = StaticValues.getFieldByType(clazz, double.class);
             methodRead.setAccessible(true);
             methodWrite.setAccessible(true);
             methodClone.setAccessible(true);
@@ -47,7 +46,16 @@ public class NBTTagDouble extends NBTTagNumeric {
     }
 
     public NBTTagDouble(String s, double b) {
-        super(getNew(clazz, classes, s, b));
+        super(getNew(s, b));
+    }
+
+    private static Object getNew(String s, double b) {
+        try{
+            return clazz.getConstructor(String.class,double.class).newInstance(s,b);
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public NBTTagDouble(boolean ignored, Object tag) {

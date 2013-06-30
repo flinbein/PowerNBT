@@ -17,7 +17,7 @@ import static me.dpohvar.powernbt.PowerNBT.plugin;
 public abstract class Completer implements TabCompleter {
     public class TabFormer {
         private final String query;
-        private LinkedHashSet<String> tabs = new LinkedHashSet<String>();
+        private final LinkedHashSet<String> tabs = new LinkedHashSet<String>();
         LinkedList<String> words = new LinkedList<String>();
 
         public boolean isQueryEmpty() {
@@ -101,7 +101,7 @@ public abstract class Completer implements TabCompleter {
         }
     }
 
-    public abstract void fillTabs(Caller caller, TabFormer former) throws Exception;
+    protected abstract void fillTabs(Caller caller, TabFormer former) throws Exception;
 
     protected static boolean isEmpty(String s) {
         return s == null || s.isEmpty();

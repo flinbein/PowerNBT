@@ -1,30 +1,79 @@
 package me.dpohvar.powernbt.nbt;
 
 import me.dpohvar.powernbt.PowerNBT;
+import me.dpohvar.powernbt.utils.StaticValues;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 
-import javax.persistence.EntityListeners;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
-import static me.dpohvar.powernbt.utils.StaticValues.*;
-import static me.dpohvar.powernbt.utils.VersionFix.callMethod;
 
 public class NBTContainerEntity extends NBTContainer {
+    private static final Class classNBTTagCompound = StaticValues.getClass("NBTTagCompound");
+    private static final Class classEntityList = StaticValues.getClass("EntityList");
+    private static final Class classEntityTypes = StaticValues.getClass("EntityTypes");
+    private static final Class classWorld = StaticValues.getClass("World");
+    private static final Class classCraftWorld = StaticValues.getClass("CraftWorld");
+    private static final Class classEntity = StaticValues.getClass("Entity");
+    private static final Class classCraftEntity = StaticValues.getClass("CraftEntity");
+    private static final Class classEntityPlayer = StaticValues.getClass("EntityPlayer");
+    private static final Class classEntityPlayerMP = StaticValues.getClass("EntityPlayerMP");
 
     Entity entity;
-    static Method createEntityFromNBT;
-    static Method setPassengerOf;
+    static Method method_createEntityFromNBT;
+    static Method method_getHandleEntity;
+    static Method method_getHandleWorld;
+    static Method method_setPassengerOf;
+    static Method method_WriteEntity;
+    static ArrayList<Method> method_ReadPlayerList = new ArrayList<Method>();
+    static Method method_WritePlayer;
+    static Method method_ReadEntity;
+    static Method method_ReadPlayer;
     static {
         try{
-            createEntityFromNBT = classEntityTypes.getDeclaredMethod("a",classNBTTagCompound,classWorld);
-            setPassengerOf = classEntity.getDeclaredMethod("setPassengerOf",classEntity);
+            method_setPassengerOf = StaticValues.getMethodByTypeTypes(classEntity,void.class,classEntity);
+            method_getHandleEntity = StaticValues.getMethodByTypeTypes(classCraftEntity,classEntity);
+            method_getHandleWorld = StaticValues.getMethodByTypeTypes(classCraftWorld,classWorld);
+
+            if(StaticValues.isMCPC){
+                method_createEntityFromNBT = StaticValues.getMethodByTypeTypes(
+                        classEntityList,
+                        classEntity,
+                        classNBTTagCompound,
+                        classWorld);
+                method_setPassengerOf = classEntity.getDeclaredMethod("setPassengerOf",classEntity);
+                for(Method m:classEntity.getDeclaredMethods()){
+                    if (m.getParameterTypes().length!=1) continue;
+                    if (!m.getParameterTypes()[0].equals(classNBTTagCompound)) continue;
+                    if (m.getName().endsWith("c")) method_ReadEntity = m;
+                    if (m.getName().endsWith("e")) method_WriteEntity = m;
+                    if (m.getName().endsWith("d")) method_ReadPlayer = m;
+                    method_ReadPlayerList.add(m);
+                }
+                method_ReadPlayerList.add(null);
+                for(Method m:classEntityPlayerMP.getDeclaredMethods()){
+                    if (m.getParameterTypes().length!=1) continue;
+                    if (!m.getParameterTypes()[0].equals(classNBTTagCompound)) continue;
+                    //if (m.getName().endsWith("b")) method_ReadPlayer = m;
+                    if (m.getName().endsWith("a")) method_WritePlayer = m;
+                    method_ReadPlayerList.add(m);
+                }
+            } else {
+                for(Method m:classEntity.getDeclaredMethods()){
+                    if (m.getParameterTypes().length!=1) continue;
+                    if (!m.getParameterTypes()[0].equals(classNBTTagCompound)) continue;
+                    if (m.getName().endsWith("c")) method_ReadEntity = m;
+                    if (m.getName().endsWith("f")) method_WriteEntity = m;
+                    if (m.getName().endsWith("e")) method_ReadPlayer = m;
+                    method_ReadPlayerList.add(m);
+                }
+                method_createEntityFromNBT = classEntityTypes.getDeclaredMethod("a",classNBTTagCompound,classWorld);
+            }
+
         } catch (Exception e) {
             if(PowerNBT.plugin.isDebug()) e.printStackTrace();
         }
@@ -48,12 +97,18 @@ public class NBTContainerEntity extends NBTContainer {
 
     @Override
     public NBTTagCompound getTag() {
-        Object liv = callMethod(entity, "getHandle", noInput);
         NBTTagCompound base = new NBTTagCompound();
-        if (classEntityPlayer.isInstance(liv)){
-            callMethod(liv, "e", oneNBTTagCompound, base.getHandle());
-        } else {
-            callMethod(liv, "c", oneNBTTagCompound, base.getHandle());
+        try{
+            Object liv = method_getHandleEntity.invoke(entity);
+
+            if (classEntityPlayer.isInstance(liv)){
+                method_ReadPlayer.invoke(liv,base.getHandle());
+            } else {
+                method_ReadEntity.invoke(liv,base.getHandle());
+                //callMethod(liv, "c", oneNBTTagCompound, base.getHandle());
+            }
+        } catch (Exception e){
+            e.printStackTrace();
         }
         return base;
     }
@@ -67,8 +122,18 @@ public class NBTContainerEntity extends NBTContainer {
 
     @Override
     public void setTag(NBTBase base) {
-        Object liv = callMethod(entity, "getHandle", noInput);
-        callMethod(liv, "f", oneNBTTagCompound, base.getHandle());
+        try {
+            Object liv = method_getHandleEntity.invoke(entity);
+            //callMethod(entity, "getHandle", noInput);
+            if(StaticValues.isMCPC && classEntityPlayerMP.isInstance(liv)){
+                method_WritePlayer.invoke(liv, base.getHandle());
+            } else {
+                method_WriteEntity.invoke(liv, base.clone().getHandle());
+            }
+            //callMethod(liv, "f", oneNBTTagCompound, base.getHandle());
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -96,22 +161,25 @@ public class NBTContainerEntity extends NBTContainer {
     }
 
     public static Object spawnEntity(NBTTagCompound compound,World world,Object ridable){
-        Object cworld = callMethod(world, "getHandle", new Class[0]);
-        Object entity = null;
+        //callMethod(world, "getHandle", new Class[0]);
         try {
-            entity = createEntityFromNBT.invoke(null,compound.getHandle(),cworld);
+            Object cworld = method_getHandleWorld.invoke(world);
+            Object entity;
+            entity = method_createEntityFromNBT.invoke(null,compound.getHandle(),cworld);
             if (ridable instanceof Entity) {
-                ridable = callMethod(ridable, "getHandle", noInput);
+                ridable = method_getHandleEntity.invoke(ridable);
+                //callMethod(ridable, "getHandle", noInput);
             }
-            if (ridable != null) setPassengerOf.invoke(ridable,entity);
+            if (ridable != null) method_setPassengerOf.invoke(ridable,entity);
             NBTTagCompound compoundRiding = compound.getCompound("Riding");
             if(compoundRiding!=null) {
                 spawnEntity(compoundRiding,world,entity);
             }
+            return entity;
         } catch (Exception e) {
             if(PowerNBT.plugin.isDebug()) e.printStackTrace();
         }
-        return entity;
+        return null;
 
     }
 

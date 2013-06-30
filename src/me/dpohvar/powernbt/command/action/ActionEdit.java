@@ -5,6 +5,7 @@ import me.dpohvar.powernbt.nbt.NBTBase;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.nbt.NBTQuery;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.NBTViewer;
 
 public class ActionEdit extends Action {
 
@@ -36,6 +37,6 @@ public class ActionEdit extends Action {
         if (!result) {
             throw new RuntimeException(PowerNBT.plugin.translate("fail_edit", query.getQuery()));
         }
-        caller.send(PowerNBT.plugin.translate("success_edit") + getNBTShortView(base, null));
+        caller.send(PowerNBT.plugin.translate("success_edit") + NBTViewer.getShortValueWithPrefix(base, false));
     }
 }

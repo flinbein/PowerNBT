@@ -1,11 +1,10 @@
 package me.dpohvar.powernbt.nbt;
 
+import me.dpohvar.powernbt.utils.StaticValues;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
-
-import static me.dpohvar.powernbt.utils.StaticValues.classNBTTagList;
-import static me.dpohvar.powernbt.utils.VersionFix.getNew;
 
 /**
  * 14.01.13 17:54
@@ -13,8 +12,7 @@ import static me.dpohvar.powernbt.utils.VersionFix.getNew;
  * @author DPOH-VAR
  */
 public class NBTTagList extends NBTBase implements Iterable<NBTBase> {
-    private static Class clazz = classNBTTagList;
-    private static Class[] classes = new Class[]{String.class};
+    private static Class clazz = StaticValues.getClass("NBTTagList");
     private static Field fieldList;
     private static Field fieldType;
     private static Method methodRead;
@@ -24,11 +22,11 @@ public class NBTTagList extends NBTBase implements Iterable<NBTBase> {
 
     static {
         try {
-            methodRead = clazz.getDeclaredMethod("load", java.io.DataInput.class);
-            methodWrite = clazz.getDeclaredMethod("write", java.io.DataOutput.class);
-            methodClone = clazz.getDeclaredMethod("clone");
-            fieldList = clazz.getDeclaredField("list");
-            fieldType = clazz.getDeclaredField("type");
+            methodRead = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataInput.class);
+            methodWrite = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataOutput.class);
+            methodClone = StaticValues.getMethodByTypeTypes(class_NBTBase, NBTBase.class_NBTBase);
+            fieldList = StaticValues.getFieldByType(clazz,List.class);
+            fieldType = StaticValues.getFieldByType(clazz,byte.class);
             methodRead.setAccessible(true);
             methodWrite.setAccessible(true);
             methodClone.setAccessible(true);
@@ -49,7 +47,16 @@ public class NBTTagList extends NBTBase implements Iterable<NBTBase> {
     }
 
     public NBTTagList(String b) {
-        super(getNew(clazz, classes, b));
+        super(getNew(b));
+    }
+
+    private static Object getNew(String b) {
+        try{
+            return clazz.getConstructor(String.class).newInstance(b);
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public NBTTagList(boolean fromHandle, Object tag) {

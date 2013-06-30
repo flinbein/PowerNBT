@@ -6,6 +6,7 @@ import me.dpohvar.powernbt.command.action.Action;
 import me.dpohvar.powernbt.command.action.Argument;
 import me.dpohvar.powernbt.nbt.*;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.NBTViewer;
 import me.dpohvar.powernbt.utils.StringParser;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -18,8 +19,8 @@ import java.io.File;
 import java.util.List;
 
 public class CompleterNBT extends Completer {
-    TypeCompleter typeCompleter;
-    NBTQuery emptyQuery = new NBTQuery();
+    private final TypeCompleter typeCompleter;
+    private final NBTQuery emptyQuery = new NBTQuery();
 
     public CompleterNBT() {
         super();
@@ -146,7 +147,7 @@ public class CompleterNBT extends Completer {
             return;
         } else if (matches(word, "insert", "ins")) {
             if (base == null) return;
-            int size = 0;
+            int size;
             if(base instanceof NBTTagList) size = ((NBTTagList) base).size();
             else if(base instanceof NBTTagNumericArray) size = ((NBTTagNumericArray) base).size();
             else return;
@@ -175,11 +176,11 @@ public class CompleterNBT extends Completer {
                             case DOUBLE:
                             case BYTEARRAY:
                             case INTARRAY:
-                                String s = Action.getNBTValue(base, null);
+                                String s = NBTViewer.getShortValue(base, false);
                                 former.add(s);
                                 return;
                             case STRING:
-                                String t = Action.getNBTValue(base, null);
+                                String t = NBTViewer.getShortValue(base, false);
                                 String w = StringParser.wrap(t);
                                 former.add("\"" + w + "\"");
                                 return;
@@ -201,11 +202,11 @@ public class CompleterNBT extends Completer {
                                     case DOUBLE:
                                     case BYTEARRAY:
                                     case INTARRAY:
-                                        String s = Action.getNBTValue(b, null);
+                                        String s = NBTViewer.getShortValue(b, false);
                                         former.add(s);
                                         return;
                                     case STRING:
-                                        String t = Action.getNBTValue(b, null);
+                                        String t = NBTViewer.getShortValue(b, false);
                                         String w = StringParser.wrap(t);
                                         former.add("\"" + w + "\"");
                                         return;

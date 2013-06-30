@@ -1,16 +1,26 @@
 package me.dpohvar.powernbt.nbt;
 
+import me.dpohvar.powernbt.utils.StaticValues;
+
 import java.io.*;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
-import static me.dpohvar.powernbt.utils.StaticValues.classNBTBase;
-import static me.dpohvar.powernbt.utils.VersionFix.callStaticMethod;
 
 public class NBTContainerFile extends NBTContainer {
-
     File file;
+    protected static Method method_NBTRead;
+    protected static Method method_NBTWrite;
+    static{
+        try{
+            method_NBTRead = StaticValues.getMethodByTypeTypes(class_NBTBase,class_NBTBase,java.io.DataInput.class);
+            method_NBTWrite = StaticValues.getMethodByTypeTypes(class_NBTBase,void.class,class_NBTBase,java.io.DataOutput.class);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 
     public NBTContainerFile(File file) {
         this.file = file;
@@ -24,13 +34,14 @@ public class NBTContainerFile extends NBTContainer {
     public NBTBase getTag() {
         try {
             DataInputStream input = new DataInputStream(new FileInputStream(file));
-            Object mBase = callStaticMethod(classNBTBase, "b", new Class[]{java.io.DataInput.class}, input);
+            Object mBase = method_NBTRead.invoke(null,input);
+            //callStaticMethod(class_NBTBase, "b", new Class[]{java.io.DataInput.class}, input);
             input.close();
             return NBTBase.wrap(mBase);
-        } catch (FileNotFoundException e) {
-            return null;
         } catch (Exception e) {
-            throw new RuntimeException(plugin.translate("IO error", e));
+            e.printStackTrace();
+            //throw new RuntimeException(plugin.translate("IO error", e));
+            return null;
         }
     }
 
@@ -42,7 +53,8 @@ public class NBTContainerFile extends NBTContainer {
                 file.createNewFile();
             }
             DataOutputStream output = new DataOutputStream(new FileOutputStream(file));
-            callStaticMethod(classNBTBase, "a", new Class[]{classNBTBase, DataOutput.class}, base.getHandle(), output);
+            method_NBTWrite.invoke(null,base.getHandle(), output);
+            //callStaticMethod(class_NBTBase, "a", new Class[]{class_NBTBase, DataOutput.class}, base.getHandle(), output);
             output.close();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(plugin.translate("error_nofile", file.getName()), e);

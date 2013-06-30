@@ -3,6 +3,7 @@ package me.dpohvar.powernbt.command.action;
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.nbt.*;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.NBTViewer;
 
 public class ActionInsert extends Action {
 
@@ -39,13 +40,13 @@ public class ActionInsert extends Action {
             NBTTagList tag1 = (NBTTagList) base1;
             tag1.add(pos,base2);
             container1.setCustomTag(query1,tag1);
-            caller.send(PowerNBT.plugin.translate("success_insert") + getNBTShortView(base2, null));
+            caller.send(PowerNBT.plugin.translate("success_insert") + NBTViewer.getShortValueWithPrefix(base2, false));
         } else if (base1 instanceof NBTTagNumericArray && base2 instanceof NBTTagNumeric){
             NBTTagNumericArray list1 = (NBTTagNumericArray) base1;
             NBTTagNumeric num = (NBTTagNumeric) base2;
             list1.add(pos,num.get());
             container1.setCustomTag(query1,list1);
-            caller.send(PowerNBT.plugin.translate("success_add") + getNBTShortView(num, null));
+            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(num, false));
         } else {
             caller.send(PowerNBT.plugin.translate("fail_insert"));
         }

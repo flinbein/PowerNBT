@@ -1,28 +1,33 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.utils.VersionFix;
+import me.dpohvar.powernbt.utils.StaticValues;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-
-import static me.dpohvar.powernbt.utils.StaticValues.classItemStack;
-import static me.dpohvar.powernbt.utils.StaticValues.noInput;
-import static me.dpohvar.powernbt.utils.VersionFix.callMethod;
-import static me.dpohvar.powernbt.utils.VersionFix.getShell;
 
 public class NBTContainerItem extends NBTContainer {
 
     ItemStack item;
-    static Field fieldTag;
+
+    private static final Class class_CraftItemStack = StaticValues.getClass("CraftItemStack");
+    private static final Class class_ItemStack = StaticValues.getClass("ItemStack");
+    private static final Class class_NBTTagCompound = StaticValues.getClass("NBTTagCompound");
+    static Field field_Tag;
+    static Field field_Handle;
+    static Method method_getHandle;
 
     static {
-        try {
-            fieldTag = classItemStack.getField("tag");
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        }
+        field_Tag = StaticValues.getFieldByType(class_ItemStack,class_NBTTagCompound);
+        field_Handle = StaticValues.getFieldByType(class_CraftItemStack,class_ItemStack);
+        method_getHandle = StaticValues.getMethodByTypeTypes(class_CraftItemStack, class_ItemStack);
+        if(field_Tag!=null) field_Tag.setAccessible(true);
+        if(field_Handle!=null) field_Handle.setAccessible(true);
+        if(method_getHandle!=null) method_getHandle.setAccessible(true);
     }
 
     public NBTContainerItem(ItemStack item) {
@@ -62,20 +67,34 @@ public class NBTContainerItem extends NBTContainer {
     public NBTTagCompound getTag() {
         Object is = null;
         try {
-            is = callMethod(item, "getHandle", noInput);
+            is = method_getHandle.invoke(item);
+            //callMethod(item, "getHandle", noInput);
         } catch (Exception ignored) {
         }
         if (is == null) {
-            is = getShell(VersionFix.FixInterface.class, item).getProxyField("handle");
+            try {
+                is = field_Handle.get(item);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            //getShell(VersionFix.FixInterface.class, item).getProxyField("handle");
         }
-        Object tag = callMethod(is, "getTag", noInput);
-        return (NBTTagCompound) NBTBase.wrap(tag);
+        Object tag = null;
+        try {
+            tag = field_Tag.get(is);
+            //callMethod(is, "getTag", noInput);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        if (tag==null) return null;
+        else return (NBTTagCompound) NBTBase.wrap(tag).clone();
     }
 
     @Override
     public void setTag(NBTBase base) {
         try {
-            fieldTag.set(getItemStackHandle(), base.getHandle());
+            Object handle = getItemStackHandle();
+            if(handle!=null) field_Tag.set(getItemStackHandle(), base.getHandle());
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -89,7 +108,7 @@ public class NBTContainerItem extends NBTContainer {
     @Override
     public void removeTag() {
         try {
-            fieldTag.set(getItemStackHandle(), null);
+            field_Tag.set(getItemStackHandle(), null);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -98,11 +117,17 @@ public class NBTContainerItem extends NBTContainer {
     private Object getItemStackHandle() {
         Object is = null;
         try {
-            is = callMethod(item, "getHandle", noInput);
+            is = method_getHandle.invoke(item);
+            //callMethod(item, "getHandle", noInput);
         } catch (Exception ignored) {
         }
         if (is == null) {
-            is = getShell(VersionFix.FixInterface.class, item).getProxyField("handle");
+            try {
+                is = field_Handle.get(item);
+                //getShell(VersionFix.FixInterface.class, item).getProxyField("handle");
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
         }
         return is;
     }

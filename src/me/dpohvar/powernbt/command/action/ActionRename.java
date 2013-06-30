@@ -5,6 +5,7 @@ import me.dpohvar.powernbt.nbt.NBTBase;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.nbt.NBTQuery;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.NBTViewer;
 
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class ActionRename extends Action {
         } else {
             container.removeTag(query);
             container.setCustomTag(newQuery, base);
-            caller.send(PowerNBT.plugin.translate("success_rename", name) + getNBTShortView(base, null));
+            caller.send(PowerNBT.plugin.translate("success_rename", name) + NBTViewer.getShortValueWithPrefix(base, false));
         }
     }
 }

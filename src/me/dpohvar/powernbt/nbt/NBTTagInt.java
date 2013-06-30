@@ -1,10 +1,9 @@
 package me.dpohvar.powernbt.nbt;
 
+import me.dpohvar.powernbt.utils.StaticValues;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-
-import static me.dpohvar.powernbt.utils.StaticValues.classNBTTagInt;
-import static me.dpohvar.powernbt.utils.VersionFix.getNew;
 
 /**
  * 14.01.13 17:54
@@ -12,8 +11,7 @@ import static me.dpohvar.powernbt.utils.VersionFix.getNew;
  * @author DPOH-VAR
  */
 public class NBTTagInt extends NBTTagNumeric {
-    private static Class clazz = classNBTTagInt;
-    private static Class[] classes = new Class[]{String.class, int.class};
+    private static Class clazz = StaticValues.getClass("NBTTagInt");
     private static Field fieldData;
     private static Method methodRead;
     private static Method methodWrite;
@@ -21,10 +19,10 @@ public class NBTTagInt extends NBTTagNumeric {
 
     static {
         try {
-            methodRead = clazz.getDeclaredMethod("load", java.io.DataInput.class);
-            methodWrite = clazz.getDeclaredMethod("write", java.io.DataOutput.class);
-            methodClone = clazz.getDeclaredMethod("clone");
-            fieldData = clazz.getDeclaredField("data");
+            methodRead = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataInput.class);
+            methodWrite = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataOutput.class);
+            methodClone = StaticValues.getMethodByTypeTypes(class_NBTBase, NBTBase.class_NBTBase);
+            fieldData = StaticValues.getFieldByType(clazz, int.class);
             methodRead.setAccessible(true);
             methodWrite.setAccessible(true);
             methodClone.setAccessible(true);
@@ -47,7 +45,16 @@ public class NBTTagInt extends NBTTagNumeric {
     }
 
     public NBTTagInt(String s, int b) {
-        super(getNew(clazz, classes, s, b));
+        super(getNew(s, b));
+    }
+
+    private static Object getNew(String s, int b) {
+        try{
+            return clazz.getConstructor(String.class,int.class).newInstance(s,b);
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public NBTTagInt(boolean ignored, Object tag) {

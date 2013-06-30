@@ -5,6 +5,7 @@ import me.dpohvar.powernbt.nbt.NBTBase;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.nbt.NBTQuery;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.NBTViewer;
 
 public class ActionCut extends Action {
 
@@ -27,7 +28,7 @@ public class ActionCut extends Action {
         NBTBase base = container.getCustomTag(query);
         if (base == null) throw new RuntimeException(PowerNBT.plugin.translate("error_null"));
         caller.setCustomTag(base);
-        caller.send(PowerNBT.plugin.translate("success_cut") + getNBTShortView(base, null));
+        caller.send(PowerNBT.plugin.translate("success_cut") + NBTViewer.getShortValueWithPrefix(base, false));
         arg.getContainer().removeTag(arg.getQuery());
     }
 }

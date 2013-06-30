@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class Translator {
 
-    Map<String, String> tran = new HashMap<String, String>();
+    private Map<String, String> tran = new HashMap<String, String>();
 
     public Translator(PowerNBT plugin, String locale) {
         if (locale.contains(File.separator)) throw new RuntimeException("locale name is not valid");

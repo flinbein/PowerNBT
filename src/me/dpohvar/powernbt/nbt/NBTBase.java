@@ -1,9 +1,10 @@
 package me.dpohvar.powernbt.nbt;
 
-import java.lang.reflect.Field;
+import me.dpohvar.powernbt.utils.StaticValues;
 
-import static me.dpohvar.powernbt.utils.StaticValues.classNBTBase;
-import static me.dpohvar.powernbt.utils.VersionFix.callMethod;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 
 /**
  * 14.01.13 17:53
@@ -13,17 +14,34 @@ import static me.dpohvar.powernbt.utils.VersionFix.callMethod;
 public abstract class NBTBase {
 
     private static Field fieldName;
+    private static Method methodGetTypeId;
+    static final Class class_NBTBase = StaticValues.getClass("NBTBase");
 
     static {
-        try {
-            fieldName = classNBTBase.getDeclaredField("name");
+        try { // field "name"
+            fieldName = class_NBTBase.getDeclaredField("name");
             fieldName.setAccessible(true);
         } catch (NoSuchFieldException e) {
-            e.printStackTrace();
+            for(Field f: class_NBTBase.getFields()){
+                if(f.getType().equals(String.class)) {
+                    fieldName = f; break;
+                }
+            }
+            fieldName.setAccessible(true);
+        }
+        try { // method getTypeId
+            methodGetTypeId = class_NBTBase.getMethod("getTypeId",byte.class);
+        } catch (NoSuchMethodException e) {
+            for(Method m: class_NBTBase.getMethods()){
+                if(m.getReturnType().equals(byte.class)) {
+                    methodGetTypeId = m; break;
+                }
+            }
+            methodGetTypeId.setAccessible(true);
         }
     }
 
-    protected final Object handle;
+    final Object handle;
 
     NBTBase(Object handle) {
         this.handle = handle;
@@ -50,13 +68,19 @@ public abstract class NBTBase {
         }
     }
 
-    public NBTBase getDefault() {
+    NBTBase getDefault() {
         return getDefault(getTypeId());
     }
 
     public static NBTBase wrap(Object handle) {
         byte b = 0;
-        if (classNBTBase.isInstance(handle)) b = (Byte) callMethod(handle, "getTypeId", new Class[0]);
+        if (class_NBTBase.isInstance(handle)){
+            try {
+                b= (Byte) methodGetTypeId.invoke(handle);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         switch (b) {
             case 1:
                 return new NBTTagByte(true, handle);
@@ -116,11 +140,15 @@ public abstract class NBTBase {
 
     public abstract byte getTypeId();
 
+    public NBTType getType(){
+        return NBTType.fromByte(getTypeId());
+    }
+
     public abstract NBTBase clone();
 
     public static NBTBase getByValue(Object o) {
         if (o instanceof NBTBase) return ((NBTBase) o).clone();
-        if (classNBTBase.isInstance(o)) return wrap(o);
+        if (class_NBTBase.isInstance(o)) return wrap(o);
         if (o instanceof Byte) return new NBTTagByte((Byte) o);
         if (o instanceof Short) return new NBTTagShort((Short) o);
         if (o instanceof Integer) return new NBTTagInt((Integer) o);

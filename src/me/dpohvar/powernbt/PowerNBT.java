@@ -23,13 +23,13 @@ public class PowerNBT extends JavaPlugin {
     // public HashMap<Block,NBTTagCompound> tileExtra = new HashMap<Block, NBTTagCompound>();
 
     public static PowerNBT plugin;
-    private HashMap<String, Caller> callers = new HashMap<String, Caller>();
+    private final HashMap<String, Caller> callers = new HashMap<String, Caller>();
     private Translator translator;
-    private static Tokenizer tokenizer = new Tokenizer(
+    private static final Tokenizer tokenizer = new Tokenizer(
             null, null, null, Arrays.asList('\"'), null, Arrays.asList(' ')
     );
-    private String prefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[" + ChatColor.YELLOW + "PowerNBT" + ChatColor.GOLD + ChatColor.BOLD + "] " + ChatColor.RESET;
-    private String errorPrefix = ChatColor.DARK_RED.toString() + ChatColor.BOLD + "[" + ChatColor.RED + "PowerNBT" + ChatColor.DARK_RED + ChatColor.BOLD + "] " + ChatColor.RESET;
+    private final String prefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[" + ChatColor.YELLOW + "PowerNBT" + ChatColor.GOLD + ChatColor.BOLD + "] " + ChatColor.RESET;
+    private final String errorPrefix = ChatColor.DARK_RED.toString() + ChatColor.BOLD + "[" + ChatColor.RED + "PowerNBT" + ChatColor.DARK_RED + ChatColor.BOLD + "] " + ChatColor.RESET;
     private TypeCompleter typeCompleter;
 
     public File getNBTFilesFolder() {

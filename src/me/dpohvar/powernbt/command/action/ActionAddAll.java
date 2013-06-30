@@ -3,6 +3,7 @@ package me.dpohvar.powernbt.command.action;
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.nbt.*;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.NBTViewer;
 
 import java.util.Map;
 
@@ -39,25 +40,25 @@ public class ActionAddAll extends Action {
             NBTTagCompound tag2 = (NBTTagCompound) base2;
             tag1.add(tag2.asMap());
             container1.setCustomTag(query1,tag1);
-            caller.send(PowerNBT.plugin.translate("success_add") + getNBTShortView(tag2, null));
+            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(tag2, false));
         } else if (base1 instanceof NBTTagList && base2 instanceof NBTTagList){
             NBTTagList list1 = (NBTTagList) base1;
             NBTTagList list2 = (NBTTagList) base2;
             list1.addAll(list2.asList());
             container1.setCustomTag(query1,list1);
-            caller.send(PowerNBT.plugin.translate("success_add") + getNBTShortView(list2, null));
+            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(list2,false));
         } else if (base1 instanceof NBTTagNumericArray && base2 instanceof NBTTagNumericArray){
             NBTTagNumericArray list1 = (NBTTagNumericArray) base1;
             NBTTagNumericArray list2 = (NBTTagNumericArray) base2;
             list1.addAll(list2);
             container1.setCustomTag(query1,list1);
-            caller.send(PowerNBT.plugin.translate("success_add") + getNBTShortView(list2, null));
+            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(list2,false));
         } else if (base1 instanceof NBTTagString && base2 instanceof NBTTagString){
             NBTTagString s1 = (NBTTagString) base1;
             NBTTagString s2 = (NBTTagString) base2;
             s1.set(s1.get().concat(s2.get()));
             container1.setCustomTag(query1,s1);
-            caller.send(PowerNBT.plugin.translate("success_add") + getNBTShortView(s2, null));
+            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(s2,false));
         } else if (base1 instanceof NBTTagNumeric && base2 instanceof NBTTagNumeric){
             NBTTagNumeric n1 = (NBTTagNumeric) base1.clone();
             NBTTagNumeric n2 = (NBTTagNumeric) base2;
@@ -70,7 +71,7 @@ public class ActionAddAll extends Action {
             }
             n1.set(x1);
             container1.setCustomTag(query1,n1);
-            caller.send(PowerNBT.plugin.translate("success_add") + getNBTShortView(n2, null));
+            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(n2,false));
         } else {
             caller.send(PowerNBT.plugin.translate("fail_add"));
         }

@@ -50,12 +50,13 @@ public class CommandNBT extends Command {
         }
         RuntimeException exceptionArgs = new RuntimeException(plugin.translate("error_toomanyarguments"));
         if (action == null) {
-            if (argsBefore.size() > 2) throw exceptionArgs;
-            Action a = new ActionView(caller, argsBefore.poll(), argsBefore.poll());
+            if (argsBefore.size() > 3) throw exceptionArgs;
+            Action a = new ActionView(caller, argsBefore.poll(), argsBefore.poll(), argsBefore.poll());
             a.execute();
         } else if (action.equals("view") || action.equals("?")) {
-            if (argsBefore.size() > 2) throw exceptionArgs;
-            Action a = new ActionView(caller, argsBefore.poll(), argsBefore.poll(), argsAfter);
+            if (argsBefore.size() > 3) throw exceptionArgs;
+            if (argsAfter.size() > 0) throw exceptionArgs;
+            Action a = new ActionView(caller, argsBefore.poll(), argsBefore.poll(), argsBefore.poll());
             a.execute();
         } else if (action.equals("paste")) {
             if (argsBefore.size() > 2) throw exceptionArgs;
@@ -142,7 +143,6 @@ public class CommandNBT extends Command {
     }
 
     public static NBTContainer getContainer(final Caller caller, String word, NBTType type) {
-
         return null;
     }
 

@@ -27,7 +27,7 @@ import static me.dpohvar.powernbt.PowerNBT.plugin;
 
 public class Argument {
 
-    static final NBTQuery emptyQuery = new NBTQuery();
+    private static final NBTQuery emptyQuery = new NBTQuery();
 
     private final Caller caller;
     private NBTContainer container;
@@ -110,6 +110,10 @@ public class Argument {
         } else if (object.equals("block") || object.equals("b")) {
             if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
             return new NBTContainerBlock(((Player) caller.getOwner()).getTargetBlock(null, 20));
+        } else if (object.equals("scoreboard") || object.equals("score") || object.equals("board")) {
+            return new NBTContainerScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+        } else if (object.startsWith("#")&&object.length()>1) {
+            return new NBTContainerScoreboard(Bukkit.getPlayer(object.substring(1)).getScoreboard());
         } else if (object.equals("chunk") || object.equals("ch")) {
             if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
             return new NBTContainerChunk(((Player) caller.getOwner()).getLocation().getChunk());
@@ -351,17 +355,13 @@ public class Argument {
                 List<Object> q = paramQuery.getValues();
                 if (!q.isEmpty()) {
                     q.remove(q.size() - 1);
-                    NBTQuery nq = new NBTQuery(q);
-                    NBTType nt = NBTType.fromBase(paramContainer.getCustomTag(nq));
                 }
-                if (type == NBTType.END) {
-                    TypeCompleter comp = plugin.getTypeCompleter();
-                    for (String name : paramContainer.getTypes()) {
-                        NBTType t = comp.getType(name, paramQuery);
-                        if (t != null) {
-                            type = t;
-                            break;
-                        }
+                TypeCompleter comp = plugin.getTypeCompleter();
+                for (String name : paramContainer.getTypes()) {
+                    NBTType t = comp.getType(name, paramQuery);
+                    if (t != null) {
+                        type = t;
+                        break;
                     }
                 }
             }

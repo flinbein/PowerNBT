@@ -3,6 +3,7 @@ package me.dpohvar.powernbt.command.action;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.nbt.NBTQuery;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.NBTViewer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,16 +12,16 @@ public class ActionView extends Action {
 
     private final Caller caller;
     private final Argument arg;
-    private List<String> args = new ArrayList<String>();
+    private String[] args;
 
-    public ActionView(Caller caller, String object, String query) {
+    private ActionView(Caller caller, String object, String query) {
         this.caller = caller;
         this.arg = new Argument(caller, object, query);
     }
 
-    public ActionView(Caller caller, String object, String query, List<String> args) {
+    public ActionView(Caller caller, String object, String query, String args) {
         this(caller, object, query);
-        this.args = args;
+        if(args!=null) this.args = args.split(",|\\.|-");
     }
 
     @Override
@@ -31,6 +32,32 @@ public class ActionView extends Action {
         }
         NBTContainer container = arg.getContainer();
         NBTQuery query = arg.getQuery();
-        caller.send(getNBTView(container.getCustomTag(query), args));
+        int start=-1, end=-1;
+        boolean hex = false;
+        if(args!=null) {
+            for(String s:args){
+                if (s.equalsIgnoreCase("hex")||s.equalsIgnoreCase("h")) hex=true;
+                else if (s.equalsIgnoreCase("full")||s.equalsIgnoreCase("f")) {
+                    start=0; end=Integer.MAX_VALUE;
+                }
+                else if (s.matches("[0-9]+")){
+                    if(end==-1) end = Integer.parseInt(s);
+                    else start = Integer.parseInt(s);
+                }
+            }
+        }
+        if(start==-1) start=0;
+        if(end==-1) end=0;
+        if(start>end){int t=start; start=end; end=t;}
+        caller.send(NBTViewer.getFullValue(container.getCustomTag(query), start, end, hex));
     }
 }
+
+
+
+
+
+
+
+
+

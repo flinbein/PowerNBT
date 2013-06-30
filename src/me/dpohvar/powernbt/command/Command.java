@@ -26,5 +26,5 @@ public abstract class Command implements CommandExecutor {
         }
     }
 
-    abstract public boolean command(Caller caller, LinkedList<String> words) throws Throwable;
+    abstract protected boolean command(Caller caller, LinkedList<String> words) throws Throwable;
 }

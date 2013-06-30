@@ -1,17 +1,29 @@
 package me.dpohvar.powernbt.nbt;
 
+import me.dpohvar.powernbt.utils.StaticValues;
+
 import java.io.*;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
-import static me.dpohvar.powernbt.utils.StaticValues.classCompressedStreamTools;
-import static me.dpohvar.powernbt.utils.StaticValues.classNBTTagCompound;
-import static me.dpohvar.powernbt.utils.VersionFix.callStaticMethod;
 
 public class NBTContainerFileGZip extends NBTContainer {
 
     File file;
+    private static final Class class_NBTCompressedStreamTools = StaticValues.getClass("NBTCompressedStreamTools");
+    private static final Class class_NBTTagCompound = StaticValues.getClass("NBTTagCompound");
+    private static Method method_read;
+    private static Method method_write;
+    static{
+        try {
+            method_read = StaticValues.getMethodByTypeTypes(class_NBTCompressedStreamTools,class_NBTTagCompound,InputStream.class);
+            method_write = StaticValues.getMethodByTypeTypes(class_NBTCompressedStreamTools,void.class,class_NBTCompressedStreamTools,OutputStream.class);
+        }catch (Throwable e){
+            throw new RuntimeException("NBTContainerFileGZip can not init",e);
+        }
+    }
 
     public NBTContainerFileGZip(File file) {
         this.file = file;
@@ -30,13 +42,14 @@ public class NBTContainerFileGZip extends NBTContainer {
     public NBTBase getTag() {
         try {
             FileInputStream input = new FileInputStream(file);
-            Object tag = callStaticMethod(classCompressedStreamTools, "a", new Class[]{InputStream.class}, input);
+            Object tag = method_read.invoke(null,input);
+            //callStaticMethod(classCompressedStreamTools, "a", new Class[]{InputStream.class}, input);
             input.close();
             return NBTBase.wrap(tag);
         } catch (FileNotFoundException e) {
             return null;
         } catch (Exception e) {
-            throw new RuntimeException(plugin.translate("IO error", e));
+            throw new RuntimeException("IO error", e);
         }
     }
 
@@ -48,7 +61,8 @@ public class NBTContainerFileGZip extends NBTContainer {
                 file.createNewFile();
             }
             FileOutputStream output = new FileOutputStream(file);
-            callStaticMethod(classCompressedStreamTools, "a", new Class[]{classNBTTagCompound, OutputStream.class}, base.getHandle(), output);
+            method_write.invoke(null,base.getHandle(),output);
+            //callStaticMethod(classCompressedStreamTools, "a", new Class[]{classNBTTagCompound, OutputStream.class}, base.getHandle(), output);
             output.close();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(plugin.translate("error_nofile", file.getName()), e);

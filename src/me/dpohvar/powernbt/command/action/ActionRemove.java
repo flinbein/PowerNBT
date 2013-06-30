@@ -5,6 +5,7 @@ import me.dpohvar.powernbt.nbt.NBTBase;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.nbt.NBTQuery;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.NBTViewer;
 
 public class ActionRemove extends Action {
 
@@ -26,6 +27,6 @@ public class ActionRemove extends Action {
         NBTQuery query = arg.getQuery();
         NBTBase base = container.getCustomTag(query);
         container.removeTag(query);
-        caller.send(PowerNBT.plugin.translate("success_removed") + getNBTShortView(base, null));
+        caller.send(PowerNBT.plugin.translate("success_removed") + NBTViewer.getShortValueWithPrefix(base, false));
     }
 }

@@ -1,9 +1,9 @@
 package me.dpohvar.powernbt.nbt;
 
 import me.dpohvar.powernbt.PowerNBT;
+import me.dpohvar.powernbt.utils.StaticValues;
 import org.bukkit.Chunk;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_5_R1.block.CraftBlock;
 import org.bukkit.entity.Player;
 
 import java.io.File;
@@ -14,11 +14,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static me.dpohvar.powernbt.utils.StaticValues.*;
-import static me.dpohvar.powernbt.utils.VersionFix.*;
 
 public class NBTContainerChunk extends NBTContainer {
+    private static final Class classNBTTagCompound = StaticValues.getClass("NBTTagCompound");
+    private static final Class classChunkRegionLoader = StaticValues.getClass("ChunkRegionLoader");
+    private static final Class classCraftPlayer = StaticValues.getClass("CraftPlayer");
+    private static final Class classChunk = StaticValues.getClass("Chunk");
+    private static final Class classWorld = StaticValues.getClass("World");
+    private static final Class classEntityPlayer = StaticValues.getClass("EntityPlayer");
+    private static final Class classWorldServer = StaticValues.getClass("WorldServer");
+    private static final Class classChunkProviderServer = StaticValues.getClass("ChunkProviderServer");
+    private static final Class classChunkCoordIntPair = StaticValues.getClass("ChunkCoordIntPair");
+    private static final Class classLongObjectHashMap = StaticValues.getClass("LongObjectHashMap");
 
     Chunk chunk;
+
 
     static Method methodLoadChunk;
     static Method methodSetChunk;
@@ -36,7 +46,7 @@ public class NBTContainerChunk extends NBTContainer {
         try {
             Constructor conChunkRegionLoader = classChunkRegionLoader.getConstructor(File.class);
             chunkRegionLoader = conChunkRegionLoader.newInstance(new Object[]{null});
-            loader = getNew(classChunkRegionLoader, new Class[]{File.class}, new Object[]{null});
+            loader = null;//todo: getNew(classChunkRegionLoader, new Class[]{File.class}, new Object[]{null});
             methodCraftPlayerGetHandle = classCraftPlayer.getDeclaredMethod("getHandle");
             methodLoadChunk = classChunkRegionLoader.getDeclaredMethod("a", classChunk, classWorld, classNBTTagCompound);
             methodSetChunk = classChunkRegionLoader.getDeclaredMethod("a", classWorld, classNBTTagCompound);
@@ -70,8 +80,8 @@ public class NBTContainerChunk extends NBTContainer {
     @Override
     public NBTTagCompound getTag() {
         NBTTagCompound compound = new NBTTagCompound();
-        Object chank = callMethod(chunk,"getHandle",new Class[0]);
-        Object world = callMethod(chunk.getWorld(), "getHandle", new Class[0]);
+        Object chank = null;//todo:callMethod(chunk,"getHandle",new Class[0]);
+        Object world = null;//todo:callMethod(chunk.getWorld(), "getHandle", new Class[0]);
         try {
             methodLoadChunk.invoke(loader, chank, world, compound.getHandle());
         } catch (Exception e) {
@@ -89,20 +99,18 @@ public class NBTContainerChunk extends NBTContainer {
         chunk.unload();
         compound.set("xPos",x);
         compound.set("zPos",z);
-        Object world = callMethod(chunk.getWorld(), "getHandle", new Class[0]);
+        Object world = null;//todo:callMethod(chunk.getWorld(), "getHandle", new Class[0]);
 
         NBTTagList tiles = compound.getList("TileEntities");
         if(tiles!=null) for(NBTBase b: tiles){
             NBTTagCompound c = (NBTTagCompound) b;
             Integer bx = c.getInt("x");
-            Integer by = c.getInt("y");
             Integer bz = c.getInt("z");
             if ( bx==null || bz==null ) continue;
             int rx = chunk.getX()*16 + bx%16;
-            int ry = by;
             int rz = chunk.getZ()*16 + bz%16;
             c.set("x", rx );
-            c.set("z", ry );
+            c.set("z", rz );
         }
         try {
             Object chank = methodSetChunk.invoke(loader,world,compound.getHandle());

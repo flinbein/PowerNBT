@@ -1,10 +1,10 @@
 package me.dpohvar.powernbt.nbt;
 
+import me.dpohvar.powernbt.utils.StaticValues;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-
-import static me.dpohvar.powernbt.utils.StaticValues.classNBTTagString;
-import static me.dpohvar.powernbt.utils.VersionFix.getNew;
+import java.util.List;
 
 /**
  * 14.01.13 17:54
@@ -12,8 +12,7 @@ import static me.dpohvar.powernbt.utils.VersionFix.getNew;
  * @author DPOH-VAR
  */
 public class NBTTagString extends NBTTagDatable {
-    private static Class clazz = classNBTTagString;
-    private static Class[] classes = new Class[]{String.class, String.class};
+    private static Class clazz = StaticValues.getClass("NBTTagString");
     private static Field fieldData;
     private static Method methodRead;
     private static Method methodWrite;
@@ -21,10 +20,10 @@ public class NBTTagString extends NBTTagDatable {
 
     static {
         try {
-            methodRead = clazz.getDeclaredMethod("load", java.io.DataInput.class);
-            methodWrite = clazz.getDeclaredMethod("write", java.io.DataOutput.class);
-            methodClone = clazz.getDeclaredMethod("clone");
-            fieldData = clazz.getDeclaredField("data");
+            methodRead = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataInput.class);
+            methodWrite = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataOutput.class);
+            methodClone = StaticValues.getMethodByTypeTypes(class_NBTBase, NBTBase.class_NBTBase);
+            fieldData = StaticValues.getFieldByType(clazz, String.class);
             methodRead.setAccessible(true);
             methodWrite.setAccessible(true);
             methodClone.setAccessible(true);
@@ -43,13 +42,24 @@ public class NBTTagString extends NBTTagDatable {
     }
 
     public NBTTagString(String s, String b) {
-        super(getNew(clazz, classes, s, b));
+        super(getNew(s, b));
+    }
+
+    private static Object getNew(String s, String b) {
+        try{
+            return clazz.getConstructor(String.class,String.class).newInstance(s,b);
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public NBTTagString(boolean ignored, Object tag) {
         super(tag);
         if (!clazz.isInstance(tag)) throw new IllegalArgumentException();
     }
+
+
 
     public void write(java.io.DataOutput output) {
         try {

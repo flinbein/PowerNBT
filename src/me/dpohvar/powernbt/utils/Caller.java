@@ -15,7 +15,7 @@ public class Caller extends NBTContainer {
     private CommandSender owner;
     private TempListener listener;
     private NBTBase base;
-    private HashMap<String, NBTContainer> variables = new HashMap<String, NBTContainer>();
+    private final HashMap<String, NBTContainer> variables = new HashMap<String, NBTContainer>();
 
     public CommandSender getOwner() {
         return owner;

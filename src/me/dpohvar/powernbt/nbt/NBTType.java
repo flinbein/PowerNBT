@@ -6,18 +6,18 @@ import static me.dpohvar.powernbt.PowerNBT.plugin;
 import static org.bukkit.ChatColor.*;
 
 public enum NBTType {
-    END((byte) 0, "end", "\u24CD ", WHITE),
-    BYTE((byte) 1, "byte", "\u24B7 ", RED),//b
-    SHORT((byte) 2, "short", "\u24C8 ", YELLOW),//s
-    INT((byte) 3, "int", "\u24BE ", BLUE),//i
-    LONG((byte) 4, "long", "\u24C1 ", AQUA),//l
-    FLOAT((byte) 5, "float", "\u24BB ", DARK_PURPLE),//f
-    DOUBLE((byte) 6, "double", "\u24B9 ", LIGHT_PURPLE),//d
-    BYTEARRAY((byte) 7, "byte[]", ChatColor.BOLD + "\u24B7 ", DARK_RED),//b
-    STRING((byte) 8, "string", "\u24C9 ", GREEN),
-    LIST((byte) 9, "list", "\u2630 ", DARK_GRAY),
-    COMPOUND((byte) 10, "compound", "\u27B2 ", GRAY), //27B2
-    INTARRAY((byte) 11, "int[] ", ChatColor.BOLD + "\u24BE ", DARK_BLUE),//i
+    END((byte) 0, "end", "\u24CD", WHITE),
+    BYTE((byte) 1, "byte", "\u24B7", RED),//b
+    SHORT((byte) 2, "short", "\u24C8", YELLOW),//s
+    INT((byte) 3, "int", "\u24BE", BLUE),//i
+    LONG((byte) 4, "long", "\u24C1", AQUA),//l
+    FLOAT((byte) 5, "float", "\u24BB", DARK_PURPLE),//f
+    DOUBLE((byte) 6, "double", "\u24B9", LIGHT_PURPLE),//d
+    BYTEARRAY((byte) 7, "byte[]", ChatColor.BOLD + "\u24B7", DARK_RED),//b
+    STRING((byte) 8, "string", "\u24C9", GREEN),
+    LIST((byte) 9, "list", "\u2630", DARK_GRAY),
+    COMPOUND((byte) 10, "compound", "\u27B2", GRAY), //27B2
+    INTARRAY((byte) 11, "int[] ", ChatColor.BOLD + "\u24BE", DARK_BLUE),//i
     ;
     public final String name;
     public final String prefix;

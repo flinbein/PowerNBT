@@ -12,25 +12,25 @@ public abstract class NBTContainer {
     static final Class class_NBTBase = StaticValues.getClass("NBTBase");
     static final Class class_NBTTagCompound = StaticValues.getClass("NBTTagCompound");
 
-    abstract protected NBTBase getTag();
+    abstract public NBTBase getTag();
 
     public NBTBase getCustomTag(){
         return getTag();
     }
 
-    abstract protected void setTag(NBTBase base);
+    abstract public void setTag(NBTBase base);
 
     public void setCustomTag(NBTBase base){
-        setTag(base);
+        setTag(base.clone());
     }
 
     abstract public String getName();
 
-    protected void removeTag() {
+    public void removeTag() {
         setTag(new NBTTagCompound());
     }
 
-    boolean removeTag(Object... values) {
+    public boolean removeTag(Object... values) {
         NBTQuery q = new NBTQuery(values);
         return removeTag(q);
     }
@@ -66,7 +66,7 @@ public abstract class NBTContainer {
         NBTQuery q = new NBTQuery(values);
         return getTag(q);
     }
-    NBTBase getTag(NBTQuery query){
+    public NBTBase getTag(NBTQuery query){
         return getTag(query,getTag());
     }
     public NBTBase getCustomTag(NBTQuery query){
@@ -77,7 +77,7 @@ public abstract class NBTContainer {
         return getCustomTag(q);
     }
 
-    boolean setTag(NBTQuery query, NBTBase base) {
+    public boolean setTag(NBTQuery query, NBTBase base) {
         if (query == null || query.isEmpty()) {
             setTag(base);
             return true;

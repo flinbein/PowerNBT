@@ -15,9 +15,27 @@ public abstract class NBTBase {
 
     private static Field fieldName;
     private static Method methodGetTypeId;
+    protected static Method methodRead;
+    protected static Method methodClone;
+    protected static Method methodWrite;
+    private static boolean useInt = false;
     static final Class class_NBTBase = StaticValues.getClass("NBTBase");
 
     static {
+        try {
+            methodRead = StaticValues.getMethodByTypeTypes(class_NBTBase, void.class, java.io.DataInput.class);
+            if(methodRead==null) {
+                useInt = true;
+                methodRead = StaticValues.getMethodByTypeTypes(class_NBTBase, void.class, java.io.DataInput.class, int.class);
+            }
+            methodWrite = StaticValues.getMethodByTypeTypes(class_NBTBase, void.class, java.io.DataOutput.class);
+            methodClone = StaticValues.getMethodByTypeTypes(class_NBTBase, NBTBase.class_NBTBase);
+            methodRead.setAccessible(true);
+            methodWrite.setAccessible(true);
+            methodClone.setAccessible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         try { // field "name"
             fieldName = class_NBTBase.getDeclaredField("name");
             fieldName.setAccessible(true);
@@ -40,6 +58,25 @@ public abstract class NBTBase {
             methodGetTypeId.setAccessible(true);
         }
     }
+
+    public void read(java.io.DataInput input) {
+        try {
+            if (useInt) methodRead.invoke(handle, input, 0);
+            else methodRead.invoke(handle, input);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void write(java.io.DataOutput output) {
+        try {
+            methodWrite.invoke(handle, output);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     final Object handle;
 
@@ -144,7 +181,15 @@ public abstract class NBTBase {
         return NBTType.fromByte(getTypeId());
     }
 
-    public abstract NBTBase clone();
+    public NBTBase clone() {
+        try {
+            Object h = methodClone.invoke(handle);
+            return wrap(h);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public static NBTBase getByValue(Object o) {
         if (o instanceof NBTBase) return ((NBTBase) o).clone();

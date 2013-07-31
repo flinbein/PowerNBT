@@ -15,29 +15,11 @@ import java.util.*;
 public class NBTTagCompound extends NBTBase implements Iterable<NBTBase> {
     private static final Class clazz = StaticValues.getClass("NBTTagCompound");
     private static Field fieldMap;
-    private static Method methodRead;
-    private static Method methodWrite;
-    private static Method methodClone;
     private static Method methodSet;
-
     static {
         try {
-            if(StaticValues.isMCPC){
-                methodRead = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataInput.class);
-                methodWrite = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataOutput.class);
-                methodClone = StaticValues.getMethodByTypeTypes(class_NBTBase, class_NBTBase);
-                methodSet = StaticValues.getMethodByTypeTypes(clazz, void.class, String.class, class_NBTBase);
-                fieldMap = StaticValues.getFieldByType(clazz,java.util.Map.class);
-            } else {
-                methodRead = clazz.getDeclaredMethod("load", java.io.DataInput.class);
-                methodWrite = clazz.getDeclaredMethod("write", java.io.DataOutput.class);
-                methodClone = clazz.getDeclaredMethod("clone");
-                methodSet = clazz.getDeclaredMethod("set", String.class, class_NBTBase);
-                fieldMap = clazz.getDeclaredField("map");
-            }
-            methodRead.setAccessible(true);
-            methodWrite.setAccessible(true);
-            methodClone.setAccessible(true);
+            methodSet = StaticValues.getMethodByTypeTypes(clazz, void.class, String.class, class_NBTBase);
+            fieldMap = StaticValues.getFieldByType(clazz,java.util.Map.class);
             methodSet.setAccessible(true);
             fieldMap.setAccessible(true);
         } catch (Exception e) {
@@ -66,32 +48,6 @@ public class NBTTagCompound extends NBTBase implements Iterable<NBTBase> {
     public NBTTagCompound(boolean ignored, Object tag) {
         super(tag);
         if (!clazz.isInstance(tag)) throw new IllegalArgumentException();
-    }
-
-    public void write(java.io.DataOutput output) {
-        try {
-            methodWrite.invoke(handle, output);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void read(java.io.DataInput input) {
-        try {
-            methodRead.invoke(handle, input);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public NBTTagCompound clone() {
-        try {
-            Object h = methodClone.invoke(handle);
-            return new NBTTagCompound(true, h);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public boolean equals(Object o) {

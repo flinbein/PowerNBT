@@ -17,10 +17,7 @@ import java.util.HashMap;
 
 public class PowerNBT extends JavaPlugin {
 
-    public static final int versionAPI = 0x000401;
-
-    // public HashMap<Integer,NBTTagCompound> entityExtra = new HashMap<Integer, NBTTagCompound>();
-    // public HashMap<Block,NBTTagCompound> tileExtra = new HashMap<Block, NBTTagCompound>();
+    public static final int versionAPI = 0x000402;
 
     public static PowerNBT plugin;
     private final HashMap<String, Caller> callers = new HashMap<String, Caller>();

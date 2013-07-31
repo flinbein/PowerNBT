@@ -110,13 +110,6 @@ public class Argument {
         } else if (object.equals("block") || object.equals("b")) {
             if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
             return new NBTContainerBlock(((Player) caller.getOwner()).getTargetBlock(null, 20));
-        } else if (object.equals("scoreboard") || object.equals("score") || object.equals("board")) {
-            return new NBTContainerScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-        } else if (object.startsWith("#")&&object.length()>1) {
-            return new NBTContainerScoreboard(Bukkit.getPlayer(object.substring(1)).getScoreboard());
-        } else if (object.equals("chunk") || object.equals("ch")) {
-            if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
-            return new NBTContainerChunk(((Player) caller.getOwner()).getLocation().getChunk());
         } else if (object.equals("buffer") || object.equals("clipboard") || object.equals("c")) {
             return caller;
         } else if (object.startsWith("*") && object.length() > 1) {
@@ -188,22 +181,6 @@ public class Argument {
                 throw new RuntimeException(PowerNBT.plugin.translate("error_noworld", ww));
             }
             return new NBTContainerBlock(w.getBlockAt(x, y, z));
-        } else if (object.matches("(-?[0-9]+):(-?[0-9]+):.*?")) {
-            String[] t = object.split(":");
-            int x = Integer.parseInt(t[0]);
-            int z = Integer.parseInt(t[1]);
-            World w;
-            String ww = "";
-            if (t.length >= 3) ww = t[2];
-            if (ww.isEmpty() && caller.getOwner() instanceof Player) {
-                w = ((Player) caller.getOwner()).getWorld();
-            } else {
-                w = Bukkit.getWorld(t[2]);
-            }
-            if (w == null) {
-                throw new RuntimeException(PowerNBT.plugin.translate("error_noworld", ww));
-            }
-            return new NBTContainerChunk(w.getChunkAt(x,z));
         } else if (object.startsWith("@") && !object.contains(File.separator)) {
             File baseDir = (Bukkit.getWorlds().get(0)).getWorldFolder();
             File playerDir = new File(baseDir, "players");

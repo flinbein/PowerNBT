@@ -139,7 +139,7 @@ public class NBTContainerEntity extends NBTContainer {
     @Override
     public void setCustomTag(NBTBase base){
         if (!(base instanceof NBTTagCompound)) return;
-        NBTTagCompound tag = ((NBTTagCompound) base).clone();
+        NBTTagCompound tag = (NBTTagCompound)base.clone();
         if(plugin.getConfig().getBoolean("tags.entity_ignore_Pos")) tag.remove("Pos");
         if(plugin.getConfig().getBoolean("tags.entity_ignore_Rotation")) tag.remove("Rotation");
         if(plugin.getConfig().getBoolean("tags.entity_ignore_Motion")) tag.remove("Motion");

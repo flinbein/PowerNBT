@@ -95,9 +95,6 @@ public class StaticValues {
             classes.put("TileEntity", fixBukkitClass("net.minecraft.server.TileEntity"));
             classes.put("PlayerConnection", fixBukkitClass("net.minecraft.server.PlayerConnection"));
             classes.put("Packet", fixBukkitClass("net.minecraft.server.Packet"));
-            classes.put("Scoreboard", fixBukkitClass("net.minecraft.server.Scoreboard"));
-            classes.put("ServerScoreboard", fixBukkitClass("net.minecraft.server.ServerScoreboard"));
-            classes.put("ScoreboardSaveData", fixBukkitClass("net.minecraft.server.ScoreboardSaveData"));
             classes.put("WorldServer", fixBukkitClass("net.minecraft.server.WorldServer"));
             classes.put("MinecraftServer", fixBukkitClass("net.minecraft.server.MinecraftServer"));
         } catch (Exception e){

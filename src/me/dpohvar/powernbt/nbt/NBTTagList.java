@@ -15,21 +15,12 @@ public class NBTTagList extends NBTBase implements Iterable<NBTBase> {
     private static Class clazz = StaticValues.getClass("NBTTagList");
     private static Field fieldList;
     private static Field fieldType;
-    private static Method methodRead;
-    private static Method methodWrite;
-    private static Method methodClone;
     private static Random random;
 
     static {
         try {
-            methodRead = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataInput.class);
-            methodWrite = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataOutput.class);
-            methodClone = StaticValues.getMethodByTypeTypes(class_NBTBase, NBTBase.class_NBTBase);
             fieldList = StaticValues.getFieldByType(clazz,List.class);
             fieldType = StaticValues.getFieldByType(clazz,byte.class);
-            methodRead.setAccessible(true);
-            methodWrite.setAccessible(true);
-            methodClone.setAccessible(true);
             fieldList.setAccessible(true);
             fieldType.setAccessible(true);
         } catch (Exception e) {
@@ -62,32 +53,6 @@ public class NBTTagList extends NBTBase implements Iterable<NBTBase> {
     public NBTTagList(boolean fromHandle, Object tag) {
         super(tag);
         if (!clazz.isInstance(tag)) throw new IllegalArgumentException();
-    }
-
-    public void write(java.io.DataOutput output) {
-        try {
-            methodWrite.invoke(handle, output);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void read(java.io.DataInput input) {
-        try {
-            methodRead.invoke(handle, input);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public NBTTagList clone() {
-        try {
-            Object h = methodClone.invoke(handle);
-            return new NBTTagList(true, h);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public boolean equals(Object o) {

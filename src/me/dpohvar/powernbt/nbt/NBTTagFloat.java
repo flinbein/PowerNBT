@@ -13,18 +13,11 @@ import java.lang.reflect.Method;
 public class NBTTagFloat extends NBTTagNumeric {
     private static Class clazz = StaticValues.getClass("NBTTagFloat");
     private static Field fieldData;
-    private static Method methodRead;
-    private static Method methodWrite;
-    private static Method methodClone;
 
     static {
         try {
-            methodRead = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataInput.class);
-            methodWrite = StaticValues.getMethodByTypeTypes(clazz, void.class, java.io.DataOutput.class);
             methodClone = StaticValues.getMethodByTypeTypes(class_NBTBase, NBTBase.class_NBTBase);
             fieldData = StaticValues.getFieldByType(clazz, float.class);
-            methodRead.setAccessible(true);
-            methodWrite.setAccessible(true);
             methodClone.setAccessible(true);
             fieldData.setAccessible(true);
         } catch (Exception e) {
@@ -60,32 +53,6 @@ public class NBTTagFloat extends NBTTagNumeric {
     public NBTTagFloat(boolean ignored, Object tag) {
         super(tag);
         if (!clazz.isInstance(tag)) throw new IllegalArgumentException();
-    }
-
-    public void write(java.io.DataOutput output) {
-        try {
-            methodWrite.invoke(handle, output);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void read(java.io.DataInput input) {
-        try {
-            methodRead.invoke(handle, input);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public NBTTagFloat clone() {
-        try {
-            Object h = methodClone.invoke(handle);
-            return new NBTTagFloat(true, h);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public boolean equals(Object o) {

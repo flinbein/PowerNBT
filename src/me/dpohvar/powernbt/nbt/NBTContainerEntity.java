@@ -145,7 +145,9 @@ public class NBTContainerEntity extends NBTContainer {
         if(plugin.getConfig().getBoolean("tags.entity_ignore_Motion")) tag.remove("Motion");
         if(plugin.getConfig().getBoolean("tags.entity_ignore_UUID")) {
             tag.remove("UUIDMost");
+            tag.remove("UUIDWorldMost");
             tag.remove("UUIDLeast");
+            tag.remove("UUIDWorldLeast");
         }
         if(plugin.getConfig().getBoolean("tags.entity_set_Riding")) try {
             spawnEntity(tag,entity.getWorld(),entity);

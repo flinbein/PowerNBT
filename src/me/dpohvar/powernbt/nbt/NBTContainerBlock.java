@@ -86,11 +86,6 @@ public class NBTContainerBlock extends NBTContainer {
     public NBTTagCompound getCustomTag() {
         NBTTagCompound compound = getTag();
         if (compound==null) return null;
-        if( plugin.getConfig().getBoolean("tags.block_ignore_location")){
-            compound.remove("x");
-            compound.remove("y");
-            compound.remove("z");
-        }
         return compound;
     }
 
@@ -109,11 +104,6 @@ public class NBTContainerBlock extends NBTContainer {
     @Override
     public void setTag(NBTBase base) {
         if (!(base instanceof NBTTagCompound)) return;
-        NBTTagCompound b = (NBTTagCompound) base;
-        NBTTagCompound original = getTag();
-        if (!b.has("x")) b.set("x",original.get("x"));
-        if (!b.has("y")) b.set("y",original.get("y"));
-        if (!b.has("z")) b.set("z",original.get("z"));
         Object tile = null;
         try{
             tile = method_getTileEntityAt.invoke(block.getWorld(),block.getX(), block.getY(), block.getZ());
@@ -150,14 +140,14 @@ public class NBTContainerBlock extends NBTContainer {
     @Override
     public void setCustomTag(NBTBase base) {
         if (!(base instanceof NBTTagCompound)) return;
-        NBTTagCompound b = (NBTTagCompound) base;
+        NBTTagCompound tag = (NBTTagCompound) base.clone();
         if( plugin.getConfig().getBoolean("tags.block_ignore_location")){
             NBTTagCompound original = getTag();
-            b.set("x",original.get("x"));
-            b.set("y",original.get("y"));
-            b.set("z",original.get("z"));
+            tag.set("x", original.get("x"));
+            tag.set("y", original.get("y"));
+            tag.set("z", original.get("z"));
         }
-        setTag(base);
+        setTag(tag);
     }
 
     @Override

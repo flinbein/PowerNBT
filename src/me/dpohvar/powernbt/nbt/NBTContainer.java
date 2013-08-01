@@ -35,9 +35,14 @@ public abstract class NBTContainer {
         return removeTag(q);
     }
 
+    public boolean setTag(NBTBase base, Object... values) {
+        NBTQuery q = new NBTQuery(values);
+        return setTag(q,base);
+    }
+
     public abstract List<String> getTypes();
 
-    private NBTBase getTag(NBTQuery query, NBTBase tag) {
+    private NBTBase getQueryTag(NBTQuery query, NBTBase tag) {
         if (query == null) return tag;
         Queue<Object> queue = query.getQueue();
         NBTBase current = tag;
@@ -67,10 +72,10 @@ public abstract class NBTContainer {
         return getTag(q);
     }
     public NBTBase getTag(NBTQuery query){
-        return getTag(query,getTag());
+        return getQueryTag(query, getTag());
     }
     public NBTBase getCustomTag(NBTQuery query){
-        return getTag(query,getCustomTag());
+        return getQueryTag(query, getCustomTag());
     }
     public NBTBase getCustomTag(Object... values) {
         NBTQuery q = new NBTQuery(values);
@@ -282,8 +287,14 @@ public abstract class NBTContainer {
             } else throw new RuntimeException(plugin.translate("error_nochildren", current.getName()));
         }
     }
-    public boolean removeCustomTag(NBTQuery query, NBTBase base) {
-        return removeTag(query, base);
+    public void removeCustomTag(NBTQuery query) {
+        removeTag(query);
+    }
+    public void removeCustomTag() {
+        removeTag();
+    }
+    public void removeCustomTag(Object... values) {
+        removeTag(values);
     }
 
 }

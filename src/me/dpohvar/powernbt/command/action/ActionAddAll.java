@@ -5,8 +5,6 @@ import me.dpohvar.powernbt.nbt.*;
 import me.dpohvar.powernbt.utils.Caller;
 import me.dpohvar.powernbt.utils.NBTViewer;
 
-import java.util.Map;
-
 public class ActionAddAll extends Action {
 
     private final Caller caller;
@@ -70,7 +68,7 @@ public class ActionAddAll extends Action {
                 x1 = x1.longValue()+x2.longValue();
             }
             n1.set(x1);
-            container1.setCustomTag(query1,n1);
+            container1.setCustomTag(query1, n1);
             caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(n2,false));
         } else {
             caller.send(PowerNBT.plugin.translate("fail_add"));

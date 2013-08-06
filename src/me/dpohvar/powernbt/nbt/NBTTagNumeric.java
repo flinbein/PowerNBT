@@ -10,6 +10,10 @@ public abstract class NBTTagNumeric extends NBTTagDatable{
         super(handle);
     }
 
+    public final String toString(){
+        return get().toString();
+    }
+
     abstract public Number get();
     abstract public void set(Number value);
 }

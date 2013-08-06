@@ -2,6 +2,10 @@ package me.dpohvar.powernbt.nbt;
 
 import me.dpohvar.powernbt.utils.StaticValues;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -59,7 +63,7 @@ public abstract class NBTBase {
         }
     }
 
-    public void read(java.io.DataInput input) {
+    final public void read(java.io.DataInput input) {
         try {
             if (useInt) methodRead.invoke(handle, input, 0);
             else methodRead.invoke(handle, input);
@@ -68,7 +72,7 @@ public abstract class NBTBase {
         }
     }
 
-    public void write(java.io.DataOutput output) {
+    final public void write(java.io.DataOutput output) {
         try {
             methodWrite.invoke(handle, output);
         } catch (Exception e) {
@@ -76,7 +80,21 @@ public abstract class NBTBase {
         }
     }
 
+    final public byte[] toBytes(){
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        DataOutputStream out = new DataOutputStream(buffer);
+        write(out);
+        return buffer.toByteArray();
+    }
 
+    final public void fromBytes(byte[] source){
+        ByteArrayInputStream buffer = new ByteArrayInputStream(source);
+        DataInputStream in = new DataInputStream(buffer);
+        read(in);
+    }
+
+    @Override
+    abstract public String toString();
 
     final Object handle;
 
@@ -177,7 +195,7 @@ public abstract class NBTBase {
 
     public abstract byte getTypeId();
 
-    public NBTType getType(){
+    public final NBTType getType(){
         return NBTType.fromByte(getTypeId());
     }
 

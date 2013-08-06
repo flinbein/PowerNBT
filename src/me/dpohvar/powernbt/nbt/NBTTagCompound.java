@@ -2,6 +2,7 @@ package me.dpohvar.powernbt.nbt;
 
 import me.dpohvar.powernbt.utils.StaticValues;
 
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -14,12 +15,17 @@ import java.util.*;
  */
 public class NBTTagCompound extends NBTBase implements Iterable<NBTBase> {
     private static final Class clazz = StaticValues.getClass("NBTTagCompound");
+    private static final Class class_NBTCompressedStreamTools = StaticValues.getClass("NBTCompressedStreamTools");
+    private static Method method_read;
+    private static Method method_write;
     private static Field fieldMap;
     private static Method methodSet;
     static {
         try {
             methodSet = StaticValues.getMethodByTypeTypes(clazz, void.class, String.class, class_NBTBase);
             fieldMap = StaticValues.getFieldByType(clazz,java.util.Map.class);
+            method_read = StaticValues.getMethodByTypeTypes(class_NBTCompressedStreamTools,clazz,InputStream.class);
+            method_write = StaticValues.getMethodByTypeTypes(class_NBTCompressedStreamTools,void.class,class_NBTCompressedStreamTools,OutputStream.class);
             methodSet.setAccessible(true);
             fieldMap.setAccessible(true);
         } catch (Exception e) {
@@ -43,6 +49,36 @@ public class NBTTagCompound extends NBTBase implements Iterable<NBTBase> {
             e.printStackTrace();
             return null;
         }
+    }
+
+    static public NBTTagCompound readGZip(java.io.DataInput input) {
+        try {
+            return (NBTTagCompound) NBTBase.wrap(method_read.invoke(null,input));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    final public void writeGZip(java.io.DataOutput output) {
+        try {
+            method_write.invoke(null,handle,output);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public byte[] toBytesGZip(){
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        DataOutputStream out = new DataOutputStream(buffer);
+        writeGZip(out);
+        return buffer.toByteArray();
+    }
+
+    public static NBTTagCompound fromBytesGzip(byte[] source){
+        ByteArrayInputStream buffer = new ByteArrayInputStream(source);
+        DataInputStream in = new DataInputStream(buffer);
+        return readGZip(in);
     }
 
     public NBTTagCompound(boolean ignored, Object tag) {
@@ -284,6 +320,11 @@ public class NBTTagCompound extends NBTBase implements Iterable<NBTBase> {
                 set(e.getKey(),e.getValue());
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return asMap().toString();
     }
 
     @Override

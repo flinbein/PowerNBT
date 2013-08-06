@@ -2,7 +2,7 @@ name: PowerNBT
 description: Powerful nbt editor for bukkit server
 author: DPOH-VAR
 main: me.dpohvar.powernbt.PowerNBT
-version: 0.5.3
+version: 0.5.3.2
 commands:
     powernbt:
         description: use nbt commands

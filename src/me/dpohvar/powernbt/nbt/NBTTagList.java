@@ -294,6 +294,11 @@ public class NBTTagList extends NBTBase implements Iterable<NBTBase> {
     }
 
     @Override
+    public String toString() {
+        return asList().toString();
+    }
+
+    @Override
     public byte getTypeId() {
         return 9;
     }

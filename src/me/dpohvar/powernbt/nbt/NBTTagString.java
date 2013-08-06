@@ -77,6 +77,11 @@ public class NBTTagString extends NBTTagDatable {
     }
 
     @Override
+    public String toString() {
+        return get();
+    }
+
+    @Override
     public byte getTypeId() {
         return 8;
     }

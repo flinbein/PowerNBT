@@ -5,6 +5,7 @@ import me.dpohvar.powernbt.utils.StaticValues;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -147,6 +148,11 @@ public class NBTTagIntArray extends NBTTagNumericArray {
         int t = 0;
         for (int b : list) result[t++] = b;
         set(result);
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(get());
     }
 
     @Override

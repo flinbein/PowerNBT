@@ -1,6 +1,6 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.utils.StaticValues;
+import me.dpohvar.powernbt.utils.Reflections;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -8,6 +8,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -17,67 +20,41 @@ import java.lang.reflect.Method;
  */
 public abstract class NBTBase {
 
-    private static Field fieldName;
-    private static Method methodGetTypeId;
+    public static final Class class_NBTBase = Reflections.getClass("{nms}.NBTBase","net.minecraft.nbt.NBTBase");
     protected static Method methodRead;
-    protected static Method methodClone;
-    protected static Method methodWrite;
+//    private static Field fieldName = Reflections.getField(class_NBTBase,String.class);
+    private static Method methodGetTypeId = Reflections.getMethodByTypes(class_NBTBase,byte.class);
+    private static Method methodWrite = Reflections.getMethodByTypes(class_NBTBase, void.class, java.io.DataOutput.class);
+    private static Method methodClone = Reflections.getMethodByTypes(class_NBTBase, NBTBase.class_NBTBase);
     private static boolean useInt = false;
-    static final Class class_NBTBase = StaticValues.getClass("NBTBase");
 
     static {
         try {
-            methodRead = StaticValues.getMethodByTypeTypes(class_NBTBase, void.class, java.io.DataInput.class);
-            if(methodRead==null) {
-                useInt = true;
-                methodRead = StaticValues.getMethodByTypeTypes(class_NBTBase, void.class, java.io.DataInput.class, int.class);
-            }
-            methodWrite = StaticValues.getMethodByTypeTypes(class_NBTBase, void.class, java.io.DataOutput.class);
-            methodClone = StaticValues.getMethodByTypeTypes(class_NBTBase, NBTBase.class_NBTBase);
-            methodRead.setAccessible(true);
-            methodWrite.setAccessible(true);
-            methodClone.setAccessible(true);
+            methodRead = Reflections.getMethodByTypes(class_NBTBase, void.class, java.io.DataInput.class);
         } catch (Exception e) {
-            e.printStackTrace();
+            useInt = true;
+            methodRead = Reflections.getMethodByTypes(class_NBTBase, void.class, java.io.DataInput.class, int.class);
         }
-        try { // field "name"
-            fieldName = class_NBTBase.getDeclaredField("name");
-            fieldName.setAccessible(true);
-        } catch (NoSuchFieldException e) {
-            for(Field f: class_NBTBase.getFields()){
-                if(f.getType().equals(String.class)) {
-                    fieldName = f; break;
-                }
-            }
-            fieldName.setAccessible(true);
-        }
-        try { // method getTypeId
-            methodGetTypeId = class_NBTBase.getMethod("getTypeId",byte.class);
-        } catch (NoSuchMethodException e) {
-            for(Method m: class_NBTBase.getMethods()){
-                if(m.getReturnType().equals(byte.class)) {
-                    methodGetTypeId = m; break;
-                }
-            }
-            methodGetTypeId.setAccessible(true);
+    }
+
+    private NBTContainer container;
+    private boolean customMethod;
+    private NBTBase rootTag;
+
+    final public void update(){
+        if(container != null && rootTag!= null){
+            if(customMethod) container.writeCustomTag(rootTag);
+            else container.writeTag(rootTag);
         }
     }
 
     final public void read(java.io.DataInput input) {
-        try {
-            if (useInt) methodRead.invoke(handle, input, 0);
-            else methodRead.invoke(handle, input);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        if (useInt) Reflections.invoke(methodRead,handle, input, 0);
+        else Reflections.invoke(methodRead,handle, input);
     }
 
     final public void write(java.io.DataOutput output) {
-        try {
-            methodWrite.invoke(handle, output);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Reflections.invoke(methodWrite,handle,output);
     }
 
     final public byte[] toBytes(){
@@ -96,7 +73,10 @@ public abstract class NBTBase {
     @Override
     abstract public String toString();
 
-    final Object handle;
+    @Override
+    abstract public int hashCode();
+
+    final protected Object handle;
 
     NBTBase(Object handle) {
         this.handle = handle;
@@ -107,20 +87,12 @@ public abstract class NBTBase {
     }
 
     public String getName() {
-        try {
-            return (String) fieldName.get(handle);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return null;
+//        return (String) Reflections.getFieldValue(fieldName,handle);
+        return "";
     }
 
     public void setName(String name) {
-        try {
-            fieldName.set(handle, name);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+//        Reflections.setFieldValue(fieldName,handle,name);
     }
 
     NBTBase getDefault() {
@@ -128,6 +100,7 @@ public abstract class NBTBase {
     }
 
     public static NBTBase wrap(Object handle) {
+        if(handle==null) return null;
         byte b = 0;
         if (class_NBTBase.isInstance(handle)){
             try {
@@ -210,7 +183,7 @@ public abstract class NBTBase {
     }
 
     public static NBTBase getByValue(Object o) {
-        if (o instanceof NBTBase) return ((NBTBase) o).clone();
+        if (o instanceof NBTBase) return (NBTBase) o;
         if (class_NBTBase.isInstance(o)) return wrap(o);
         if (o instanceof Byte) return new NBTTagByte((Byte) o);
         if (o instanceof Short) return new NBTTagShort((Short) o);
@@ -221,6 +194,21 @@ public abstract class NBTBase {
         if (o instanceof byte[]) return new NBTTagByteArray((byte[]) o);
         if (o instanceof String) return new NBTTagString((String) o);
         if (o instanceof int[]) return new NBTTagIntArray((int[]) o);
+        if (o instanceof Map){
+            NBTTagCompound tag = new NBTTagCompound();
+            for(Map.Entry e:((Map<?,?>)o).entrySet()){
+                tag.putToHandle(e.toString(), getByValue(e.getValue()));
+            }
+            return tag;
+        }
+        if (o instanceof Object[]) o = Arrays.asList((Object[])o);
+        if (o instanceof List) {
+            NBTTagList tag = new NBTTagList();
+            for(Object t:(List)o){
+                tag.add_b(getByValue(t));
+            }
+            return tag;
+        }
         throw new IllegalArgumentException();
     }
 

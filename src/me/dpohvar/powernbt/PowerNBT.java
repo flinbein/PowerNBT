@@ -3,6 +3,7 @@ package me.dpohvar.powernbt;
 import me.dpohvar.powernbt.command.CommandNBT;
 import me.dpohvar.powernbt.completer.CompleterNBT;
 import me.dpohvar.powernbt.completer.TypeCompleter;
+import me.dpohvar.powernbt.listener.SelectListener;
 import me.dpohvar.powernbt.nbt.NBTTagCompound;
 import me.dpohvar.powernbt.utils.Caller;
 import me.dpohvar.powernbt.utils.Tokenizer;
@@ -94,6 +95,7 @@ public class PowerNBT extends JavaPlugin {
         String lang = this.getConfig().getString("lang");
         this.translator = new Translator(this, lang);
         this.typeCompleter = new TypeCompleter(getTemplateFolder());
+        getServer().getPluginManager().registerEvents(new SelectListener(), this);
         getCommand("powernbt").setExecutor(new CommandNBT());
         getCommand("powernbt").setTabCompleter(new CompleterNBT());
     }

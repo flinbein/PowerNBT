@@ -3,7 +3,7 @@ package me.dpohvar.powernbt.nbt;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NBTContainerBase extends NBTContainer {
+public class NBTContainerBase extends NBTContainer<NBTBase> {
 
     private NBTBase base;
 
@@ -21,22 +21,27 @@ public class NBTContainerBase extends NBTContainer {
     }
 
     @Override
-    public NBTBase getTag() {
+    public NBTBase readTag() {
         return this.base;
     }
 
     @Override
-    public void setTag(NBTBase base) {
+    public void writeTag(NBTBase base) {
         this.base = base;
     }
 
     @Override
-    public String getName() {
-        return base.getName();
+    public void eraseTag() {
+        this.base = null;
     }
 
     @Override
-    public void removeTag() {
-        this.base = null;
+    protected Class<NBTBase> getContainerClass() {
+        return NBTBase.class;
+    }
+
+    @Override
+    public String toString(){
+        return base.getType().name;
     }
 }

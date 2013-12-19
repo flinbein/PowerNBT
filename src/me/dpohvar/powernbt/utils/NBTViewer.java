@@ -7,7 +7,9 @@ import org.bukkit.ChatColor;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * User: DPOH-VAR
@@ -21,26 +23,7 @@ public class NBTViewer {
 
     public static String getShortValueWithPrefix(NBTBase base, boolean hex){
         NBTType type = base.getType();
-        String name = base.getName();
-        StringBuilder buffer = new StringBuilder();
-        if (name.isEmpty()) buffer
-                .append(type.color)
-                .append(type.name)
-                .append(':')
-                .append(' ')
-                .append(ChatColor.RESET)
-                .append(getShortValue(base, hex));
-        else buffer
-                .append(type.color)
-                .append(type.name)
-                .append(' ')
-                .append(ChatColor.BOLD)
-                .append(base.getName())
-                .append(':')
-                .append(' ')
-                .append(ChatColor.RESET)
-                .append(getShortValue(base,hex));
-        return buffer.toString();
+        return String.valueOf(type.color) + type.name + ':' + ' ' + ChatColor.RESET + getShortValue(base, hex);
     }
     public static String getShortValue(NBTBase base, boolean hex){
         String value = "";
@@ -127,11 +110,10 @@ public class NBTViewer {
                     value = PowerNBT.plugin.translate("data_emptycompound");
                 } else {
                     ArrayList<String> h = new ArrayList<String>();
-                    for(NBTBase b: tag){
-                        NBTType t = b.getType();
-                        h.add(t.color+b.getName()+ChatColor.RESET);
+                    for(Map.Entry<String, NBTBase> b: tag.entrySet()){
+                        h.add(b.getValue().getType().color+b.getKey());
                     }
-                    value=tag.size()+": "+StringUtils.join(h,',');
+                    value=tag.size()+": "+StringUtils.join(h,ChatColor.RESET+",");
                 }
                 break;
             }
@@ -153,6 +135,10 @@ public class NBTViewer {
             }
         }
         int overtext = Math.max(ChatColor.stripColor(value).length()-v_limit,value.length()-v_limit*2);
+        String reretPattern = ChatColor.RESET.toString();
+        if ( value.endsWith(reretPattern) ) {
+            value = value.substring(0,value.length()-reretPattern.length());
+        }
         if (overtext>0){
             value=value.substring(0,v_limit-1).concat("\u2026");
         }
@@ -207,7 +193,7 @@ public class NBTViewer {
             }
             case 7:{ // bytearray
                 if(start==0 && end==0) end = h_limit;
-                List<Byte> v = ((NBTTagByteArray) base).asList();
+                NBTTagByteArray v = ((NBTTagByteArray) base);
                 if (v.size()==0) {
                     value = PowerNBT.plugin.translate("data_emptyarray");
                     break;
@@ -258,7 +244,7 @@ public class NBTViewer {
             case 9:{ // list
                 if(start==0 && end==0) end = h_limit;
                 NBTType listType = NBTType.fromByte(((NBTTagList)base).getSubTypeId());
-                List<NBTBase> list = ((NBTTagList)base).asList();
+                NBTTagList list = ((NBTTagList)base);
                 if (list.size()==0){
                     value = PowerNBT.plugin.translate("data_emptylist");
                     break;
@@ -277,13 +263,13 @@ public class NBTViewer {
                             .append(getShortValue(b,hex));
                 }
                 value = PowerNBT.plugin.translate("data_elements",list.size())
-                        + " " + listType.color + listType.name + ChatColor.RESET
+                        + " " + listType.color + listType.name
                         + buffer.toString();
                 break;
             }
             case 10:{ // compound
                 if(start==0 && end==0) end = h_limit;
-                List<NBTBase> list = ((NBTTagCompound)base).asList();
+                List<Map.Entry<String,NBTBase>> list = new ArrayList<Map.Entry<String,NBTBase>>(((NBTTagCompound)base).entrySet());
                 if (list.size()==0){
                     value = PowerNBT.plugin.translate("data_emptycompound");
                     break;
@@ -291,7 +277,8 @@ public class NBTViewer {
                 StringBuilder buffer = new StringBuilder();
                 for(int i=start; i<end; i++){
                     if(i>=list.size()) break;
-                    NBTBase b = list.get(i);
+                    NBTBase b = list.get(i).getValue();
+                    String currentName = list.get(i).getKey();
                     NBTType t = b.getType();
                     ChatColor c;
                     if (b instanceof NBTTagList) c=NBTType.fromByte(((NBTTagList)b).getSubTypeId()).color;
@@ -307,7 +294,7 @@ public class NBTViewer {
                             .append(t.prefix)
                             .append(' ')
                             .append(bolder)
-                            .append(b.getName())
+                            .append(currentName)
                             .append(':')
                             .append(ChatColor.RESET)
                             .append(' ')
@@ -318,7 +305,7 @@ public class NBTViewer {
             }
             case 11:{ // intarray
                 if(start==0 && end==0) end = h_limit;
-                List<Integer> v = ((NBTTagIntArray) base).asList();
+                NBTTagIntArray v = ((NBTTagIntArray) base);
                 if (v.size()==0) {
                     value = PowerNBT.plugin.translate("data_emptyarray");
                     break;

@@ -5,15 +5,14 @@ package me.dpohvar.powernbt.nbt;
  *
  * @author DPOH-VAR
  */
-public abstract class NBTTagNumeric extends NBTTagDatable{
+public abstract class NBTTagNumeric<T extends Number> extends NBTTagDatable<T> {
     NBTTagNumeric(Object handle) {
         super(handle);
     }
 
+    public abstract void setNumber(Number number);
+
     public final String toString(){
         return get().toString();
     }
-
-    abstract public Number get();
-    abstract public void set(Number value);
 }

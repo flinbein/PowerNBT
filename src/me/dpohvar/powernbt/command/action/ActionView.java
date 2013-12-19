@@ -1,12 +1,9 @@
 package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.nbt.NBTContainer;
-import me.dpohvar.powernbt.nbt.NBTQuery;
+import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.Caller;
 import me.dpohvar.powernbt.utils.NBTViewer;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ActionView extends Action {
 
@@ -25,7 +22,7 @@ public class ActionView extends Action {
     }
 
     @Override
-    public void execute() {
+    public void execute() throws Exception {
         if (arg.needPrepare()) {
             arg.prepare(this, null, null);
             return;
@@ -49,7 +46,8 @@ public class ActionView extends Action {
         if(start==-1) start=0;
         if(end==-1) end=0;
         if(start>end){int t=start; start=end; end=t;}
-        caller.send(NBTViewer.getFullValue(container.getCustomTag(query), start, end, hex));
+        String answer = NBTViewer.getFullValue(container.getCustomTag(query), start, end, hex);
+        caller.send(answer);
     }
 }
 

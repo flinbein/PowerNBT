@@ -1,9 +1,10 @@
 package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.PowerNBT;
+import me.dpohvar.powernbt.exception.NBTTagNotFound;
 import me.dpohvar.powernbt.nbt.NBTBase;
 import me.dpohvar.powernbt.nbt.NBTContainer;
-import me.dpohvar.powernbt.nbt.NBTQuery;
+import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.Caller;
 import me.dpohvar.powernbt.utils.NBTViewer;
 
@@ -18,7 +19,7 @@ public class ActionCut extends Action {
     }
 
     @Override
-    public void execute() {
+    public void execute() throws Exception {
         if (arg.needPrepare()) {
             arg.prepare(this, null, null);
             return;

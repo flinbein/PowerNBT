@@ -1,96 +1,202 @@
 package me.dpohvar.powernbt.utils;
 
-import me.dpohvar.powernbt.PowerNBT;
+import me.dpohvar.powernbt.exception.ParseException;
 import org.bukkit.ChatColor;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import static me.dpohvar.powernbt.utils.StringParser.Mode.*;
 
+/**
+ * Created with IntelliJ IDEA.
+ * User: DPOH-VAR
+ * Date: 25.07.13
+ * Time: 1:35
+ */
 public class StringParser {
-    private static char char_color = 0;
-    private static char char_space = 0;
-    static {
-        try{
-            PowerNBT plugin = PowerNBT.plugin;
-            String s;
-            s = plugin.getConfig().getString("formatting.char_color");
-            if(s!=null && s.length()==1) char_color = s.charAt(0);
-            s = plugin.getConfig().getString("formatting.char_space");
-            if(s!=null && s.length()==1) char_space = s.charAt(0);
-        } catch (Exception ignored){
-        }
+    public static enum Mode {
+        CHAR, ESCAPE, UNICODE, SPACE
     }
 
-    public static String parse(String input) {
-        Queue<Character> chars = new LinkedList<Character>();
-        StringBuilder sb = new StringBuilder();
-        for (char c : input.toCharArray()) chars.add(c);
-        while (!chars.isEmpty()) {
-            char c = chars.poll();
-            if (c == char_color && c != 0) {
-                sb.append(ChatColor.COLOR_CHAR);
-            } else if (c == char_space && c != 0) {
-                sb.append(' ');
-            } else if (c == '\\') {
-                if (chars.isEmpty()) throw new RuntimeException("\\ is last symbol in string");
-                char t = chars.poll();
-                switch (t) {
-                    case 'r':
-                        sb.append('\r');
-                        break;
-                    case '&':
-                        sb.append('&');
-                        break;
-                    case '\\':
-                        sb.append('\\');
-                        break;
-                    case 't':
-                        sb.append('\t');
-                        break;
-                    case '_':
-                        sb.append(' ');
-                        break;
-                    case 'f':
-                        sb.append('\f');
-                        break;
-                    case 'b':
-                        sb.append('\b');
-                        break;
-                    case 'n':
-                        sb.append('\n');
-                        break;
-                    case '"':
-                        sb.append('\"');
-                        break;
-                    case '\'':
-                        sb.append('\'');
-                        break;
-                    case 'c':
-                        sb.append(ChatColor.COLOR_CHAR);
-                        break;
-                    case 'u': {
-                        if (chars.size() < 4) throw new RuntimeException("\\uXXXX");
-                        StringBuilder s = new StringBuilder();
-                        s.append(chars.poll());
-                        s.append(chars.poll());
-                        s.append(chars.poll());
-                        s.append(chars.poll());
-                        String l = s.toString();
-                        if (!l.matches("[a-fA-F0-9]{4}")) throw new RuntimeException("unresolved unicode char \\u" + l);
-                        int u = Integer.parseInt(l, 16);
-                        sb.append((char) u);
-                        break;
-                    }
-                    default:
-                        if(t != 0 && t == char_color) sb.append(char_color);
-                        else if (t != 0 && t == char_space) sb.append(char_space);
-                        else throw new RuntimeException("no char: \\" + t);
-                }
+    public static String parse(String input) throws ParseException {
+        char[] chars = input.toCharArray();
+        StringBuilder buffer = new StringBuilder();
+        StringBuilder unicode = new StringBuilder();
+        Mode mode = Mode.CHAR;
+        int row = 0;
+        int col = -1;
+        parse:
+        for (char c : chars) {
+            if (c == '\n') {
+                col = 0;
+                row++;
             } else {
-                sb.append(c);
+                col++;
+            }
+            switch (mode) {
+                case CHAR: {
+                    switch (c) {
+                        case '\\': {
+                            mode = ESCAPE;
+                            continue parse;
+                        }
+                        case '&': {
+                            buffer.append(ChatColor.COLOR_CHAR);
+                            continue parse;
+                        }
+                        case '\"': {
+                            throw new ParseException(input, row, col, "unescaped '\"'");
+                        }
+                        default: {
+                            buffer.append(c);
+                            continue parse;
+                        }
+                    }
+                }
+                case ESCAPE: {
+                    switch (c) {
+                        case '\\':
+                            buffer.append('\\');
+                            break;
+                        case '\'':
+                            buffer.append('\'');
+                            break;
+                        case '\"':
+                            buffer.append('\"');
+                            break;
+                        case '0':
+                            buffer.append('\0');
+                            break;
+                        case '1':
+                            buffer.append('\1');
+                            break;
+                        case '2':
+                            buffer.append('\2');
+                            break;
+                        case '3':
+                            buffer.append('\3');
+                            break;
+                        case '4':
+                            buffer.append('\4');
+                            break;
+                        case '5':
+                            buffer.append('\5');
+                            break;
+                        case '6':
+                            buffer.append('\6');
+                            break;
+                        case '7':
+                            buffer.append('\7');
+                            break;
+                        case 'r':
+                            buffer.append('\r');
+                            break;
+                        case 't':
+                            buffer.append('\t');
+                            break;
+                        case 'f':
+                            buffer.append('\f');
+                            break;
+                        case 'b':
+                            buffer.append('\b');
+                            break;
+                        case 'n':
+                            buffer.append('\n');
+                            break;
+                        case '&':
+                            buffer.append('&');
+                            break;
+                        case 'u': {
+                            mode = UNICODE;
+                            continue parse;
+                        }
+                        case ' ':
+                        case '\t': {
+                            mode = SPACE;
+                            continue parse;
+                        }
+                        case '\r':
+                        case '\n': {
+                            buffer.append(c);
+                            mode = SPACE;
+                            continue parse;
+                        }
+                        default: {
+                            throw new ParseException(input, row, col, "can't escape symbol " + c);
+                        }
+                    }
+                    mode = CHAR;
+                    continue parse;
+                }
+                case UNICODE: {
+                    switch (c) {
+                        case '0':
+                        case '1':
+                        case '2':
+                        case '3':
+                        case '4':
+                        case '5':
+                        case '6':
+                        case '7':
+                        case '8':
+                        case '9':
+                        case 'A':
+                        case 'B':
+                        case 'C':
+                        case 'D':
+                        case 'E':
+                        case 'F':
+                        case 'a':
+                        case 'b':
+                        case 'c':
+                        case 'd':
+                        case 'e':
+                        case 'f': {
+                            unicode.append(c);
+                            if (unicode.length() == 4) {
+                                char character = (char) Integer.parseInt(unicode.toString(), 16);
+                                buffer.append(character);
+                                unicode = new StringBuilder();
+                                mode = CHAR;
+                            }
+                            continue parse;
+                        }
+                        default: {
+                            throw new ParseException(input, row, col, "unexpected hex character: " + c);
+                        }
+                    }
+                }
+                case SPACE: {
+                    switch (c) {
+                        case '\t':
+                        case '\r':
+                        case ' ': {
+                            continue parse;
+                        }
+                        case '\n': {
+                            buffer.append(c);
+                            continue parse;
+                        }
+                        case '\\': {
+                            mode = ESCAPE;
+                            continue parse;
+                        }
+                        case '\"': {
+                            throw new ParseException(input, row, col, "unescaped '\"'");
+                        }
+                        default: {
+                            buffer.append(c);
+                            mode = CHAR;
+                            continue parse;
+                        }
+
+                    }
+                }
+                default: {
+                    throw new ParseException(input, row, col, "unknown");
+                }
             }
         }
-        return sb.toString();
+        if (mode == CHAR) return buffer.toString();
+        else throw new ParseException(input, row, col, "unexpected end of string");
     }
 
     public static String wrap(String raw) {
@@ -100,11 +206,9 @@ public class StringParser {
         raw = raw.replace("\r", "\\r");
         raw = raw.replace("\t", "\\t");
         raw = raw.replace("\f", "\\f");
-        raw = raw.replace("\"", "\\");
-        if(char_color!=0) raw = raw.replace(""+char_color, "\\"+char_color);
-        if(char_space!=0) raw = raw.replace(""+char_space, "\\"+char_space);
-        if(char_color!=0) raw = raw.replace("" + ChatColor.COLOR_CHAR, ""+char_color);
-        if(char_space!=0) raw = raw.replace(" ", ""+char_space);
+        raw = raw.replace("\"", "\\\"");
+        raw = raw.replace("&", "\\&");
+        raw = raw.replace(String.valueOf(ChatColor.COLOR_CHAR), "&");
         return raw;
     }
 }

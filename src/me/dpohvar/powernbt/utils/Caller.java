@@ -1,5 +1,7 @@
 package me.dpohvar.powernbt.utils;
 
+import me.dpohvar.powernbt.command.action.Action;
+import me.dpohvar.powernbt.command.action.Argument;
 import me.dpohvar.powernbt.nbt.NBTBase;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import org.bukkit.ChatColor;
@@ -11,11 +13,25 @@ import java.util.List;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
-public class Caller extends NBTContainer {
+public class Caller extends NBTContainer<Caller> {
     private CommandSender owner;
-    private TempListener listener;
     private NBTBase base;
+    private Argument argument;
+    private Action action;
     private final HashMap<String, NBTContainer> variables = new HashMap<String, NBTContainer>();
+
+    public Argument getArgument() {
+        return argument;
+    }
+
+    public Action getAction() {
+        return action;
+    }
+
+    public void hold(Argument argument, Action action) {
+        this.argument = argument;
+        this.action = action;
+    }
 
     public CommandSender getOwner() {
         return owner;
@@ -51,7 +67,7 @@ public class Caller extends NBTContainer {
         } else {
             owner.sendMessage(plugin.getErrorPrefix() +
                     ChatColor.RED.toString() + ChatColor.BOLD +
-                    o.getClass().getSimpleName() + ChatColor.GOLD + ": " + o.getMessage());
+                    o.getClass().getSimpleName() + ": " + ChatColor.RESET+ o.getMessage());
         }
         if (plugin.isDebug()) o.printStackTrace();
     }
@@ -60,42 +76,33 @@ public class Caller extends NBTContainer {
         this.owner = owner;
     }
 
-    public TempListener getListener() {
-        return listener;
-    }
-
-    public void unregisterListener() {
-        if (listener != null) listener.unregister();
-        listener = null;
-    }
-
-    public void setListener(TempListener listener) {
-        this.listener = listener;
-    }
-
-
     @Override
     public List<String> getTypes() {
         return Arrays.asList("entity", "living", "entity_Player");
     }
 
     @Override
-    public NBTBase getTag() {
+    public Caller getObject() {
+        return this;
+    }
+
+    @Override
+    public NBTBase readTag() {
         return this.base;
     }
 
     @Override
-    public void setTag(NBTBase base) {
+    public void writeTag(NBTBase base) {
         this.base = base;
     }
 
     @Override
-    public String getName() {
-        return owner.getName();
+    public Class<Caller> getContainerClass() {
+        return Caller.class;
     }
 
     @Override
-    public void removeTag() {
+    public void eraseTag() {
         this.base = null;
     }
 }

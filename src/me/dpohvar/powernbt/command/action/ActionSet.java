@@ -4,7 +4,7 @@ import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.nbt.NBTContainerComplex;
 import me.dpohvar.powernbt.nbt.NBTContainerVariable;
-import me.dpohvar.powernbt.nbt.NBTQuery;
+import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.Caller;
 
 public class ActionSet extends Action {
@@ -21,7 +21,7 @@ public class ActionSet extends Action {
     }
 
     @Override
-    public void execute() {
+    public void execute() throws Exception {
         if (arg1.needPrepare()) {
             arg1.prepare(this, null, null);
             return;
@@ -41,6 +41,6 @@ public class ActionSet extends Action {
             container = new NBTContainerComplex(container, query);
         }
         variable.setContainer(container);
-        caller.send(PowerNBT.plugin.translate("success_select", container.getName(), variable.getVariableName()));
+        caller.send(PowerNBT.plugin.translate("success_select", container.toString(), variable.getVariableName()));
     }
 }

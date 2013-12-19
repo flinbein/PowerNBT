@@ -1,6 +1,6 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.utils.StaticValues;
+import me.dpohvar.powernbt.utils.Reflections;
 
 import java.io.*;
 import java.lang.reflect.Method;
@@ -9,18 +9,11 @@ import java.util.List;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
-public class NBTContainerFile extends NBTContainer {
-    File file;
-    protected static Method method_NBTRead;
-    protected static Method method_NBTWrite;
-    static{
-        try{
-            method_NBTRead = StaticValues.getMethodByTypeTypes(class_NBTBase,class_NBTBase,java.io.DataInput.class);
-            method_NBTWrite = StaticValues.getMethodByTypeTypes(class_NBTBase,void.class,class_NBTBase,java.io.DataOutput.class);
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }
+public class NBTContainerFile extends NBTContainer<File> {
+    final File file;
+    protected static Method method_NBTWrite = Reflections.getMethodByTypes(class_NBTBase,void.class,java.io.DataOutput.class);
+    protected static Method method_NBTRead = Reflections.getMethodByTypes(class_NBTBase,void.class,java.io.DataInput.class,int.class);
+    protected static Method method_NBTCreate = Reflections.getMethodByTypes(class_NBTBase,NBTBase.class_NBTBase,byte.class);
 
     public NBTContainerFile(File file) {
         this.file = file;
@@ -31,41 +24,46 @@ public class NBTContainerFile extends NBTContainer {
     }
 
     @Override
-    public NBTBase getTag() {
+    public NBTBase readTag() {
+        DataInputStream input = null;
         try {
-            DataInputStream input = new DataInputStream(new FileInputStream(file));
-            Object mBase = method_NBTRead.invoke(null,input);
-            //callStaticMethod(class_NBTBase, "b", new Class[]{java.io.DataInput.class}, input);
-            input.close();
+            input = new DataInputStream(new FileInputStream(file));
+            byte type = (byte)input.read();
+            input.readUTF();
+            Object mBase = Reflections.invoke(method_NBTCreate,null,type);
+            Reflections.invoke(method_NBTRead,mBase,input,0);
             return NBTBase.wrap(mBase);
-        } catch (Exception e) {
-            e.printStackTrace();
-            //throw new RuntimeException(plugin.translate("IO error", e));
+        } catch (FileNotFoundException e) {
             return null;
+        } catch (IOException e) {
+            throw new RuntimeException("can't read file",e);
+        } catch (Exception e) {
+            throw new RuntimeException("wrong format",e);
+        } finally {
+            if (input!=null) try{
+                input.close();
+            } catch (IOException ignored) {
+            }
         }
     }
 
     @Override
-    public void setTag(NBTBase base) {
+    public void writeTag(NBTBase base) {
         try {
             if (!file.exists()) {
                 new File(file.getParent()).mkdirs();
                 file.createNewFile();
             }
             DataOutputStream output = new DataOutputStream(new FileOutputStream(file));
-            method_NBTWrite.invoke(null,base.getHandle(), output);
-            //callStaticMethod(class_NBTBase, "a", new Class[]{class_NBTBase, DataOutput.class}, base.getHandle(), output);
+            output.write(base.getTypeId());
+            output.writeUTF("");
+            Reflections.invoke(method_NBTWrite,base.getHandle(), output);
             output.close();
         } catch (FileNotFoundException e) {
-            throw new RuntimeException(plugin.translate("error_nofile", file.getName()), e);
+            throw new RuntimeException("file "+file+" not found", e);
         } catch (Exception e) {
-            throw new RuntimeException(plugin.translate("IO error"), e);
+            throw new RuntimeException("can't write to file", e);
         }
-    }
-
-    @Override
-    public String getName() {
-        return "file " + file.getName();
     }
 
     @Override
@@ -74,7 +72,17 @@ public class NBTContainerFile extends NBTContainer {
     }
 
     @Override
-    public void removeTag() {
+    public void eraseTag() {
         file.delete();
+    }
+
+    @Override
+    protected Class<File> getContainerClass() {
+        return File.class;
+    }
+
+    @Override
+    public String toString(){
+        return "file:"+file.toString();
     }
 }

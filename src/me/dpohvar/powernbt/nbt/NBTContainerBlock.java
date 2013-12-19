@@ -1,7 +1,6 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.PowerNBT;
-import me.dpohvar.powernbt.utils.StaticValues;
+import me.dpohvar.powernbt.utils.Reflections;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -13,59 +12,46 @@ import java.util.List;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
-public class NBTContainerBlock extends NBTContainer {
+public class NBTContainerBlock extends NBTContainer<Block> {
 
-    private static final Class class_EntityPlayer = StaticValues.getClass("EntityPlayer");
-    private static final Class class_EntityPlayerMP = StaticValues.getClass("EntityPlayerMP");
-    private static final Class class_CraftWorld = StaticValues.getClass("CraftWorld");
-    private static final Class class_TileEntity = StaticValues.getClass("TileEntity");
-    private static final Class class_Packet = StaticValues.getClass("Packet");
-    private static final Class class_sCraftPlayer = StaticValues.getClass("CraftPlayer");
-    private static final Class class_NetServerHandler  = StaticValues.getClass("NetServerHandler");
-    private static final Class class_PlayerConnection  = StaticValues.getClass("PlayerConnection");
+    private static final Class class_EntityPlayer = Reflections.getClass("{nms}.EntityPlayer","net.minecraft.entity.player.EntityPlayer");
+    private static final Class class_EntityPlayerMP = Reflections.getClass(null,"net.minecraft.entity.player.EntityPlayerMP");
+    private static final Class class_CraftWorld = Reflections.getClass("{cb}.CraftWorld");
+    private static final Class class_TileEntity = Reflections.getClass("{nms}.TileEntity","net.minecraft.tileentity.TileEntity");
+    private static final Class class_Packet = Reflections.getClass("{nms}.Packet","net.minecraft.network.packet.Packet");
+    private static final Class class_sCraftPlayer = Reflections.getClass("{cb}.entity.CraftPlayer");
+    private static final Class class_NetServerHandler  = Reflections.getClass(null,"net.minecraft.network.NetServerHandler");
+    private static final Class class_PlayerConnection  = Reflections.getClass("{nms}.PlayerConnection",null);
+    private static final Method method_getUpdatePacket = Reflections.getMethodByTypes(class_TileEntity, class_Packet);
+    private static final Method method_getTileEntityAt = Reflections.getMethodByTypes(class_CraftWorld, class_TileEntity,int.class,int.class,int.class);
+    private static final Method method_getHandle = Reflections.getMethodByTypes(class_sCraftPlayer,class_EntityPlayer);
     private static Field field_playerNetServerHandler;
     private static Field field_playerConnection;
     private static Method method_sendPacketToPlayer;
     private static Method method_sendPacket;
-    private static Method method_getTileEntityAt;
     private static Method method_Read;
     private static Method method_Write;
-    private static Method method_getUpdatePacket;
-    private static Method method_getHandle;
     static{
-
-        try { //both
-            method_getUpdatePacket = StaticValues.getMethodByTypeTypes(class_TileEntity, class_Packet);
-            method_getTileEntityAt = StaticValues.getMethodByTypeTypes(class_CraftWorld, class_TileEntity,int.class,int.class,int.class);
-            method_getHandle = class_sCraftPlayer.getMethod("getHandle");
-        } catch (NoSuchMethodException e){
-            e.printStackTrace();
-        }
-        if( StaticValues.isMCPC ){
-            try{ //mcpc
-                field_playerNetServerHandler = StaticValues.getFieldByType(class_EntityPlayerMP, class_NetServerHandler);
-                method_sendPacketToPlayer = StaticValues.getMethodByTypeTypes(class_NetServerHandler,void.class, class_Packet);
-                for(Method m: class_TileEntity.getMethods()){
-                    if (m.getParameterTypes().length!=1) continue;
-                    if (!m.getParameterTypes()[0].equals(class_NBTTagCompound)) continue;
-                    if (m.getName().endsWith("b")) method_Read = m;
-                    if (m.getName().endsWith("a")) method_Write = m;
-                }
-            } catch (Exception e){
-                e.printStackTrace();
+        if( Reflections.isForge() ){ // forge
+            field_playerNetServerHandler = Reflections.getField(class_EntityPlayerMP, class_NetServerHandler);
+            method_sendPacketToPlayer = Reflections.getMethodByTypes(class_NetServerHandler,void.class, class_Packet);
+            for(Method m: class_TileEntity.getMethods()){
+                if (m.getParameterTypes().length!=1) continue;
+                if (!m.getParameterTypes()[0].equals(class_NBTTagCompound)) continue;
+                if (m.getName().endsWith("b")) method_Read = m;
+                if (m.getName().endsWith("a")) method_Write = m;
             }
-        }
-        else {
+        } else {
             try{ // bukkit
                 method_Read = class_TileEntity.getMethod("b", class_NBTTagCompound);
                 method_Write = class_TileEntity.getMethod("a", class_NBTTagCompound);
                 method_sendPacket = class_PlayerConnection.getMethod("sendPacket",class_Packet);
                 field_playerConnection = class_EntityPlayer.getField("playerConnection");
-            } catch (Exception ignored){
+            } catch (Exception e){
+                throw new RuntimeException("reflection error",e);
             }
         }
     }
-
 
     Block block;
 
@@ -83,75 +69,69 @@ public class NBTContainerBlock extends NBTContainer {
     }
 
     @Override
-    public NBTTagCompound getCustomTag() {
-        NBTTagCompound compound = getTag();
-        if (compound==null) return null;
-        return compound;
+    public NBTTagCompound readCustomTag() {
+        NBTTagCompound tag = readTag();
+        if (tag!=null) {
+            List<String> ignores = plugin.getConfig().getStringList("ignore_get.block");
+            if(ignores!=null) for(String s:ignores) tag.remove(s);
+        }
+        return tag;
     }
 
-    public NBTTagCompound getTag() {
-        Object tile;
-        NBTTagCompound base;
-        base = new NBTTagCompound();
-        try{
-            tile = method_getTileEntityAt.invoke(block.getWorld(),block.getX(), block.getY(), block.getZ());
-            method_Read.invoke(tile, base.getHandle());
-        } catch (Exception ignored){
-        }
+    public NBTTagCompound readTag() {
+        NBTTagCompound base = new NBTTagCompound();
+        Object tile = getTile();
+        Reflections.invoke(method_Read,tile, base.getHandle());
         return base;
     }
 
     @Override
-    public void setTag(NBTBase base) {
+    public void writeTag(NBTBase base) {
         if (!(base instanceof NBTTagCompound)) return;
-        Object tile = null;
-        try{
-            tile = method_getTileEntityAt.invoke(block.getWorld(),block.getX(), block.getY(), block.getZ());
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        if (tile != null) {
-            try{
-                method_Write.invoke(tile,base.getHandle());
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-            int maxDist = Bukkit.getServer().getViewDistance() * 32;
-            for (Player p : block.getWorld().getPlayers()) {
-                if (p.getLocation().distance(block.getLocation()) < maxDist) {
-                    try{
-                        Object packet = method_getUpdatePacket.invoke(tile);
-                        Object mPlayer = method_getHandle.invoke(p);
-                        if(StaticValues.isMCPC){
-                            Object netServerHandler = field_playerNetServerHandler.get(mPlayer);
-                            method_sendPacketToPlayer.invoke(netServerHandler,packet);
-                        } else {
-                            Object connection = field_playerConnection.get(mPlayer);
-                            method_sendPacket.invoke(connection,packet);
-                        }
-                    } catch (Exception e){
-                        e.printStackTrace();
-                    }
+        Object tile = getTile();
+        if (tile == null) return;
+        Reflections.invoke(method_Write,tile,base.getHandle());
+        int maxDist = Bukkit.getServer().getViewDistance() * 32;
+        for (Player p : block.getWorld().getPlayers()) {
+            if (p.getLocation().distance(block.getLocation()) < maxDist) {
+                Object packet = Reflections.invoke(method_getUpdatePacket,tile);
+                Object mPlayer = Reflections.invoke(method_getHandle,p);
+                if(Reflections.isForge()){
+                    Object netServerHandler = Reflections.getFieldValue(field_playerNetServerHandler,mPlayer);
+                    Reflections.invoke(method_sendPacketToPlayer,netServerHandler,packet);
+                } else {
+                    Object connection = Reflections.getFieldValue(field_playerConnection,mPlayer);
+                    Reflections.invoke(method_sendPacket,connection,packet);
                 }
             }
         }
     }
 
     @Override
-    public void setCustomTag(NBTBase base) {
+    public void writeCustomTag(NBTBase base) {
         if (!(base instanceof NBTTagCompound)) return;
         NBTTagCompound tag = (NBTTagCompound) base.clone();
-        if( plugin.getConfig().getBoolean("tags.block_ignore_location")){
-            NBTTagCompound original = getTag();
-            tag.set("x", original.get("x"));
-            tag.set("y", original.get("y"));
-            tag.set("z", original.get("z"));
-        }
-        setTag(tag);
+        List<String> ignores = plugin.getConfig().getStringList("ignore_set.block");
+        if(ignores!=null) for(String s:ignores) tag.remove(s);
+        NBTTagCompound original = readTag();
+        if(tag.getInt("x")==null)tag.put("x",original.get("x"));
+        if(tag.getInt("y")==null)tag.put("y",original.get("y"));
+        if(tag.getInt("z")==null)tag.put("z",original.get("z"));
+        writeTag(tag);
     }
 
     @Override
-    public String getName() {
-        return PowerNBT.plugin.translate("object_block", block.getType().name(), block.getX(), block.getY(), block.getZ(), block.getWorld().getName());
+    protected Class<Block> getContainerClass() {
+        return Block.class;
     }
+
+    private Object getTile(){
+        return Reflections.invoke(method_getTileEntityAt,block.getWorld(),block.getX(), block.getY(), block.getZ());
+    }
+
+    @Override
+    public String toString(){
+        return "block:" + block.getType().toString();
+    }
+
 }

@@ -2,10 +2,10 @@ package me.dpohvar.powernbt.completer;
 
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.command.CommandNBT;
-import me.dpohvar.powernbt.command.action.Action;
 import me.dpohvar.powernbt.command.action.Argument;
 import me.dpohvar.powernbt.nbt.*;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.NBTViewer;
 import me.dpohvar.powernbt.utils.StringParser;
 import org.apache.commons.lang.StringUtils;
@@ -289,7 +289,7 @@ public class CompleterNBT extends Completer {
     }
 
 
-    private void completeTag(NBTContainer container, TabFormer former) throws Exception {
+    private void completeTag(NBTContainer<?> container, TabFormer former) throws Exception {
         //todo: all tags for "*"
         String query = former.getQuery();
         String[] els = query.split("\\.|(?=\\[)");

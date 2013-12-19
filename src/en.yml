@@ -50,3 +50,4 @@ locale:
   fail_rename: "can not rename tag"
   fail_add: "can not add tags"
   fail_insert: "can not insert tags"
+  selection_cancel: "selection cancelled"

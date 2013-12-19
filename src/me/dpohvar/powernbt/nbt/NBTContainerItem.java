@@ -1,33 +1,35 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.utils.StaticValues;
+import me.dpohvar.powernbt.utils.Reflections;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NBTContainerItem extends NBTContainer {
+public class NBTContainerItem extends NBTContainer<ItemStack> {
 
     ItemStack item;
 
-    private static final Class class_CraftItemStack = StaticValues.getClass("CraftItemStack");
-    private static final Class class_ItemStack = StaticValues.getClass("ItemStack");
-    private static final Class class_NBTTagCompound = StaticValues.getClass("NBTTagCompound");
-    static Field field_Tag;
-    static Field field_Handle;
-    static Method method_getHandle;
-
+    private static final Class class_CraftItemStack = Reflections.getClass("{cb}.inventory.CraftItemStack");
+    private static final Class class_ItemStack = Reflections.getClass("{nms}.ItemStack","net.minecraft.item.ItemStack");
+    private static final Class class_NBTTagCompound = Reflections.getClass("{nms}.NBTTagCompound","net.minecraft.nbt.NBTTagCompound");
+    static Field field_Tag = Reflections.getField(class_ItemStack,class_NBTTagCompound);
+    static Field field_Handle = null;
+    static Method method_getHandle = null;
     static {
-        field_Tag = StaticValues.getFieldByType(class_ItemStack,class_NBTTagCompound);
-        field_Handle = StaticValues.getFieldByType(class_CraftItemStack,class_ItemStack);
-        method_getHandle = StaticValues.getMethodByTypeTypes(class_CraftItemStack, class_ItemStack);
-        if(field_Tag!=null) field_Tag.setAccessible(true);
-        if(field_Handle!=null) field_Handle.setAccessible(true);
-        if(method_getHandle!=null) method_getHandle.setAccessible(true);
+        try{
+            method_getHandle = Reflections.getMethodByTypes(class_CraftItemStack, class_ItemStack);
+        } catch (Exception e){
+        }
+        try{
+            field_Handle = Reflections.getField(class_CraftItemStack, class_ItemStack);
+        } catch (Exception e){
+        }
+        if (method_getHandle==null && field_Handle==null){
+            throw new RuntimeException("nbt item error: no way to get NBT tag");
+        }
     }
 
     public NBTContainerItem(ItemStack item) {
@@ -64,34 +66,16 @@ public class NBTContainerItem extends NBTContainer {
     }
 
     @Override
-    public NBTTagCompound getTag() {
-        Object is = null;
-        try {
-            is = method_getHandle.invoke(item);
-            //callMethod(item, "getHandle", noInput);
-        } catch (Exception ignored) {
-        }
-        if (is == null) {
-            try {
-                is = field_Handle.get(item);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            //getShell(VersionFix.FixInterface.class, item).getProxyField("handle");
-        }
-        Object tag = null;
-        try {
-            tag = field_Tag.get(is);
-            //callMethod(is, "getTag", noInput);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+    public NBTTagCompound readTag() {
+        Object is = getItemStackHandle();
+        if(is==null) return null;
+        Object tag = Reflections.getFieldValue(field_Tag,is);
         if (tag==null) return null;
-        else return (NBTTagCompound) NBTBase.wrap(tag).clone();
+        return (NBTTagCompound) NBTBase.wrap(tag).clone();
     }
 
     @Override
-    public void setTag(NBTBase base) {
+    public void writeTag(NBTBase base) {
         try {
             Object handle = getItemStackHandle();
             if(handle!=null) field_Tag.set(getItemStackHandle(), base.getHandle());
@@ -101,34 +85,27 @@ public class NBTContainerItem extends NBTContainer {
     }
 
     @Override
-    public String getName() {
-        return item.getType().name() + ":" + item.getData().toString();
+    public void eraseTag() {
+        Object is = getItemStackHandle();
+        if(is!=null) Reflections.setFieldValue(field_Tag,is,null);
     }
 
     @Override
-    public void removeTag() {
-        try {
-            field_Tag.set(getItemStackHandle(), null);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+    protected Class<ItemStack> getContainerClass() {
+        return ItemStack.class;
     }
 
     private Object getItemStackHandle() {
-        Object is = null;
+        //todo: create handle if not exist
         try {
-            is = method_getHandle.invoke(item);
-            //callMethod(item, "getHandle", noInput);
+            return Reflections.invoke(method_getHandle,item);
         } catch (Exception ignored) {
+            return Reflections.getFieldValue(field_Handle,item);
         }
-        if (is == null) {
-            try {
-                is = field_Handle.get(item);
-                //getShell(VersionFix.FixInterface.class, item).getProxyField("handle");
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        return is;
+    }
+
+    @Override
+    public String toString(){
+        return item.toString();
     }
 }

@@ -1,28 +1,19 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.utils.StaticValues;
+import me.dpohvar.powernbt.utils.Reflections;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.List;
 
 /**
  * 14.01.13 17:54
  *
  * @author DPOH-VAR
  */
-public class NBTTagString extends NBTTagDatable {
-    private static Class clazz = StaticValues.getClass("NBTTagString");
-    private static Field fieldData;
-
-    static {
-        try {
-            fieldData = StaticValues.getFieldByType(clazz, String.class);
-            fieldData.setAccessible(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+public class NBTTagString extends NBTTagDatable<String> {
+    private static Class clazz = Reflections.getClass("{nms}.NBTTagString", "net.minecraft.nbt.NBTTagString");
+    private static Field field_Data = Reflections.getField(clazz, String.class);
+    private static Constructor con = Reflections.getConstructorByTypes(clazz,String.class);
 
     public NBTTagString() {
         this("", "");
@@ -33,47 +24,34 @@ public class NBTTagString extends NBTTagDatable {
     }
 
     public NBTTagString(String s, String b) {
-        super(getNew(s, b));
+        super(Reflections.create(con,b));
     }
 
-    private static Object getNew(String s, String b) {
-        try{
-            return clazz.getConstructor(String.class,String.class).newInstance(s,b);
-        } catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public NBTTagString(boolean ignored, Object tag) {
+    NBTTagString(boolean ignored, Object tag) {
         super(tag);
         if (!clazz.isInstance(tag)) throw new IllegalArgumentException();
     }
 
+    @Override
     public boolean equals(Object o) {
         if (o instanceof NBTBase) o = ((NBTBase) o).getHandle();
         return handle.equals(o);
     }
 
+    @Override
     public int hashCode() {
         return handle.hashCode();
     }
 
+    @Override
     public String get() {
-        try {
-            return (String) fieldData.get(handle);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return (String) Reflections.getFieldValue(field_Data,handle);
     }
 
+    @Override
     public void set(String value) {
-        try {
-            fieldData.set(handle, value);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        Reflections.setFieldValue(field_Data,handle,value);
+        update();
     }
 
     @Override

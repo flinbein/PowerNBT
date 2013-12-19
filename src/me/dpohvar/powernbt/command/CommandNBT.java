@@ -26,6 +26,7 @@ public class CommandNBT extends Command {
                     "as",
                     "view", "?",
                     "debug",
+                    "cancel",
                     "swap", "<>",
                     ">",
                     ">>",
@@ -68,6 +69,11 @@ public class CommandNBT extends Command {
             if (argsAfter.size() > 1) throw exceptionArgs;
             Action a = new ActionDebug(caller, argsAfter.poll());
             a.execute();
+        } else if (action.equals("cancel")) {
+            if (argsBefore.size() > 0) throw exceptionArgs;
+            if (argsAfter.size() > 0) throw exceptionArgs;
+            Action a = new ActionCancel(caller);
+            a.execute();
         } else if (action.equals("=") || action.equals("<")) {
             if (argsBefore.size() > 2) throw exceptionArgs;
             if (argsAfter.size() > 2) throw exceptionArgs;
@@ -76,7 +82,7 @@ public class CommandNBT extends Command {
         } else if (action.equals(">")) {
             if (argsBefore.size() > 2) throw exceptionArgs;
             if (argsAfter.size() > 2) throw exceptionArgs;
-            Action a = new ActionEdit(caller, argsAfter.poll(), argsAfter.poll(), argsBefore.poll(), argsBefore.poll());
+            Action a = new ActionEditLast(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
             a.execute();
         } else if (action.equals("paste")) {
             if (argsBefore.size() > 2) throw exceptionArgs;
@@ -91,7 +97,7 @@ public class CommandNBT extends Command {
         } else if (action.equals("<<")) {
             if (argsBefore.size() > 2) throw exceptionArgs;
             if (argsAfter.size() > 2) throw exceptionArgs;
-            Action a = new ActionMove(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
+            Action a = new ActionMoveLast(caller, argsAfter.poll(), argsAfter.poll(), argsBefore.poll(), argsBefore.poll());
             a.execute();
         } else if (action.equals("cut")) {
             if (argsBefore.size() > 2) throw exceptionArgs;

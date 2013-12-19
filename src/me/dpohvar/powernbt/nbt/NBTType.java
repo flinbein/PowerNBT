@@ -42,6 +42,7 @@ public enum NBTType {
     }
 
     public static NBTType fromString(String name) {
+        if (name == null || name.isEmpty()) return END;
         String s = name.toLowerCase();
         for (NBTType t : values()) if (s.equalsIgnoreCase(t.name)) return t;
         for (NBTType t : values()) if (t.name.toLowerCase().startsWith(s)) return t;
@@ -200,7 +201,9 @@ public enum NBTType {
                 return new NBTTagIntArray(v);
             }
             default: {
-                throw new RuntimeException(plugin.translate("error_parsetype", name));
+                if (s.matches("-?[0-9]+")) return new NBTTagInt(Integer.parseInt(s));
+                else if (s.matches("-?[0-9]+\\.[0-9]*")) return new NBTTagDouble(Double.parseDouble(s));
+                else return new NBTTagString(s);
             }
         }
     }

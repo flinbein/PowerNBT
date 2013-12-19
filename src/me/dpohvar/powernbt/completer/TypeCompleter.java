@@ -1,6 +1,6 @@
 package me.dpohvar.powernbt.completer;
 
-import me.dpohvar.powernbt.nbt.NBTQuery;
+import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.nbt.NBTType;
 import org.yaml.snakeyaml.Yaml;
 

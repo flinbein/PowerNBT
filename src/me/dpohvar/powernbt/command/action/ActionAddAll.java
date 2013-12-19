@@ -1,8 +1,11 @@
 package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.PowerNBT;
+import me.dpohvar.powernbt.exception.NBTTagNotFound;
+import me.dpohvar.powernbt.exception.NBTTagUnexpectedType;
 import me.dpohvar.powernbt.nbt.*;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.NBTViewer;
 
 public class ActionAddAll extends Action {
@@ -18,7 +21,7 @@ public class ActionAddAll extends Action {
     }
 
     @Override
-    public void execute() {
+    public void execute() throws Exception {
         if (arg1.needPrepare()) {
             arg1.prepare(this, null, null);
             return;
@@ -36,13 +39,13 @@ public class ActionAddAll extends Action {
         if (base1 instanceof NBTTagCompound && base2 instanceof NBTTagCompound){
             NBTTagCompound tag1 = (NBTTagCompound) base1;
             NBTTagCompound tag2 = (NBTTagCompound) base2;
-            tag1.add(tag2.asMap());
+            tag1.putAll(tag2);
             container1.setCustomTag(query1,tag1);
             caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(tag2, false));
         } else if (base1 instanceof NBTTagList && base2 instanceof NBTTagList){
             NBTTagList list1 = (NBTTagList) base1;
             NBTTagList list2 = (NBTTagList) base2;
-            list1.addAll(list2.asList());
+            list1.addAll(list2);
             container1.setCustomTag(query1,list1);
             caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(list2,false));
         } else if (base1 instanceof NBTTagNumericArray && base2 instanceof NBTTagNumericArray){
@@ -60,14 +63,14 @@ public class ActionAddAll extends Action {
         } else if (base1 instanceof NBTTagNumeric && base2 instanceof NBTTagNumeric){
             NBTTagNumeric n1 = (NBTTagNumeric) base1.clone();
             NBTTagNumeric n2 = (NBTTagNumeric) base2;
-            Number x1 = n1.get();
-            Number x2 = n2.get();
+            Number x1 = (Number)n1.get();
+            Number x2 = (Number)n2.get();
             if(x1 instanceof Float || x1 instanceof Double){
                 x1 = x1.doubleValue()+x2.doubleValue();
             } else {
                 x1 = x1.longValue()+x2.longValue();
             }
-            n1.set(x1);
+            n1.setNumber(x1);
             container1.setCustomTag(query1, n1);
             caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(n2,false));
         } else {

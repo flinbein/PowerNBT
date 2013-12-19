@@ -1,6 +1,6 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.utils.StaticValues;
+import me.dpohvar.powernbt.utils.Reflections;
 
 import java.io.*;
 import java.lang.reflect.Method;
@@ -9,21 +9,14 @@ import java.util.List;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
-public class NBTContainerFileGZip extends NBTContainer {
+public class NBTContainerFileGZip extends NBTContainer<File> {
 
     File file;
-    private static final Class class_NBTCompressedStreamTools = StaticValues.getClass("NBTCompressedStreamTools");
-    private static final Class class_NBTTagCompound = StaticValues.getClass("NBTTagCompound");
-    private static Method method_read;
-    private static Method method_write;
-    static{
-        try {
-            method_read = StaticValues.getMethodByTypeTypes(class_NBTCompressedStreamTools,class_NBTTagCompound,InputStream.class);
-            method_write = StaticValues.getMethodByTypeTypes(class_NBTCompressedStreamTools,void.class,class_NBTCompressedStreamTools,OutputStream.class);
-        }catch (Throwable e){
-            throw new RuntimeException("NBTContainerFileGZip can not init",e);
-        }
-    }
+    private static final Class class_NBTTagCompound = Reflections.getClass("{nms}.NBTTagCompound", "net.minectaft.nbt.NBTTagCompound");
+    private static final Class class_NBTCompressedStreamTools = Reflections.getClass("{nms}.NBTCompressedStreamTools","net.minectaft.nbt.NBTCompressedStreamTools");
+    private static Method method_read = Reflections.getMethodByTypes(class_NBTCompressedStreamTools,class_NBTTagCompound,InputStream.class);
+    private static Method method_write = Reflections.getMethodByTypes(class_NBTCompressedStreamTools,void.class,class_NBTTagCompound,OutputStream.class);
+
 
     public NBTContainerFileGZip(File file) {
         this.file = file;
@@ -39,11 +32,10 @@ public class NBTContainerFileGZip extends NBTContainer {
     }
 
     @Override
-    public NBTBase getTag() {
+    public NBTBase readTag() {
         try {
             FileInputStream input = new FileInputStream(file);
             Object tag = method_read.invoke(null,input);
-            //callStaticMethod(classCompressedStreamTools, "a", new Class[]{InputStream.class}, input);
             input.close();
             return NBTBase.wrap(tag);
         } catch (FileNotFoundException e) {
@@ -54,7 +46,7 @@ public class NBTContainerFileGZip extends NBTContainer {
     }
 
     @Override
-    public void setTag(NBTBase base) {
+    public void writeTag(NBTBase base) {
         try {
             if (!file.exists()) {
                 new File(file.getParent()).mkdirs();
@@ -72,12 +64,17 @@ public class NBTContainerFileGZip extends NBTContainer {
     }
 
     @Override
-    public String getName() {
-        return "file " + file.getName();
+    public void eraseTag() {
+        file.delete();
     }
 
     @Override
-    public void removeTag() {
-        file.delete();
+    protected Class<File> getContainerClass() {
+        return File.class;
+    }
+
+    @Override
+    public String toString(){
+        return "gz:"+file;
     }
 }

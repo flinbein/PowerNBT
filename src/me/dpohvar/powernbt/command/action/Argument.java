@@ -4,22 +4,16 @@ import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.completer.TypeCompleter;
 import me.dpohvar.powernbt.nbt.*;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.StringParser;
-import me.dpohvar.powernbt.utils.TempListener;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -139,8 +133,12 @@ public class Argument {
                 throw new RuntimeException("file " + s + " not found", e);
             }
 
-        } else if (object.startsWith("gzip:") && object.length() > 5) {
-            String s = object.substring(5);
+        } else if (
+                (object.startsWith("gzip:") && object.length() > 5)
+                ||
+                (object.startsWith("gz:") && object.length() > 3)
+                ) {
+            String s = object.substring(object.indexOf(':')+1);
             if (s.startsWith("\"") && s.endsWith("\"")) s = StringParser.parse(s);
             try {
                 File file = new File(s).getCanonicalFile();
@@ -221,82 +219,13 @@ public class Argument {
         throw new RuntimeException(plugin.translate("error_undefinedobject", object));
     }
 
-    public void prepare(final Action action, final NBTContainer paramContainer, final NBTQuery paramQuery) {
+    public void prepare(final Action action, final NBTContainer<?> paramContainer, final NBTQuery paramQuery) throws Exception {
         if (objectFuture.equals("*")) {
-            Player tp = null;
-            if (caller.getOwner() instanceof Player) tp = (Player) caller.getOwner();
-            final Player p = tp;
+            if (!(caller.getOwner() instanceof Player)) {
+                throw new RuntimeException(plugin.translate("error_noplayer"));
+            }
             caller.send(plugin.translate("request_select"));
-            caller.unregisterListener();
-            caller.setListener(new TempListener() {
-
-                @EventHandler
-                public void block(PlayerInteractEvent event) {
-                    try {
-                        if (!event.getPlayer().equals(p)) return;
-                        if (!event.getAction().equals(org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK)) return;
-                        Block b = event.getClickedBlock();
-                        unregister();
-                        event.setCancelled(true);
-                        container = new NBTContainerBlock(b);
-                        query = NBTQuery.fromString(queryFuture);
-                        action.execute();
-                    } catch (Throwable t) {
-                        caller.handleException(t);
-                    }
-                }
-
-                @EventHandler
-                public void entity(PlayerInteractEntityEvent event) {
-                    try {
-                        if (!event.getPlayer().equals(p)) return;
-                        Entity e = event.getRightClicked();
-                        unregister();
-                        event.setCancelled(true);
-                        container = new NBTContainerEntity(e);
-                        query = NBTQuery.fromString(queryFuture);
-                        action.execute();
-                    } catch (Throwable t) {
-                        caller.handleException(t);
-                    }
-                }
-
-                @EventHandler
-                public void chat(AsyncPlayerChatEvent event) {
-                    try {
-                        if (!event.getPlayer().equals(p)) return;
-                        String s = event.getMessage();
-                        unregister();
-                        event.setCancelled(true);
-                        LinkedList<String> ll = new LinkedList<String>(plugin.getTokenizer().tokenize(s).values());
-                        if (ll.size() > 2) throw new RuntimeException(plugin.translate("error_toomanyarguments"));
-                        String p1 = ll.poll();
-                        String p2 = ll.poll();
-                        container = getContainer(caller, p1, p2);
-                        if (container == null) {
-                            objectFuture = p1;
-                            queryFuture = p2;
-                            prepare(action, paramContainer, paramQuery);
-                        } else if (container instanceof NBTContainerBase) {
-                            NBTContainerBase c = (NBTContainerBase) container;
-                            byte t = c.getObject().getTypeId();
-
-                            if (t == 9 || t == 10) {
-                                if (p2 != null) container = new NBTContainerComplex(container, NBTQuery.fromString(p2));
-                                query = NBTQuery.fromString(queryFuture);
-                            } else query = emptyQuery;
-                            action.execute();
-                        } else {
-                            if (p2 != null) container = new NBTContainerComplex(container, NBTQuery.fromString(p2));
-                            query = NBTQuery.fromString(queryFuture);
-                            action.execute();
-                        }
-                    } catch (Throwable t) {
-                        caller.handleException(t);
-                    }
-                }
-
-            }.register());
+            caller.hold(this,action);
         } else if (objectFuture.equals("self") || objectFuture.equals("this")) {
             if (paramContainer == null) throw new RuntimeException(plugin.translate("error_undefinedself"));
             this.container = paramContainer;
@@ -309,7 +238,7 @@ public class Argument {
             int pslot = p.getInventory().getHeldItemSlot();
             int ind = 0;
             int result = -1;
-            NBTTagList inventory = player.getCustomTag().getList("Inventory");
+            NBTTagList inventory = ((NBTTagCompound)player.getCustomTag()).getList("Inventory");
             for(NBTBase bt: inventory){
                 NBTTagCompound ct = (NBTTagCompound) bt;
                 if( ct.getByte("Slot") == pslot ){
@@ -327,7 +256,7 @@ public class Argument {
             if (paramContainer == null){
                 throw new RuntimeException(plugin.translate("error_undefinedtype", objectFuture));
             }
-            NBTType type = NBTType.fromBase(paramContainer.getCustomTag(paramQuery));
+            NBTType type = NBTType.fromBase(paramQuery.get(paramContainer.getCustomTag()));
             if (type == NBTType.END && paramQuery != null) {
                 List<Object> q = paramQuery.getValues();
                 if (!q.isEmpty()) {
@@ -345,7 +274,7 @@ public class Argument {
             if (type == NBTType.BYTEARRAY) type = NBTType.BYTE;
             else if (type == NBTType.INTARRAY) type = NBTType.INT;
             if (type == NBTType.END && paramQuery!=null) {
-                NBTBase bx = paramContainer.getCustomTag(paramQuery.getParent());
+                NBTBase bx = paramQuery.getParent().get(paramContainer.getCustomTag());
                 if(bx instanceof NBTTagList){
                     type = NBTType.fromByte(((NBTTagList) bx).getSubTypeId());
                 }
@@ -357,7 +286,7 @@ public class Argument {
         } else if (objectFuture.matches("\\[((-?[0-9]+|#-?[0-9a-fA-F]+)(,(?!\\])|(?=\\])))*\\]")) {
             if (paramContainer == null)
                 throw new RuntimeException(plugin.translate("error_undefinedtype", objectFuture));
-            NBTType type = NBTType.fromBase(paramContainer.getCustomTag(paramQuery));
+            NBTType type = NBTType.fromBase(paramQuery.get(paramContainer.getCustomTag()));
             if (type == NBTType.INT) type = NBTType.INTARRAY;
             else if (type == NBTType.BYTE) type = NBTType.BYTEARRAY;
             else if (type == null || type == NBTType.END) {
@@ -376,6 +305,11 @@ public class Argument {
         } else {
             throw new RuntimeException("future object type ignored");
         }
+    }
+
+    public void select(NBTContainer container) {
+        this.container = container;
+        this.query = NBTQuery.fromString(queryFuture);
     }
 
 }

@@ -1,7 +1,8 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.utils.StaticValues;
+import me.dpohvar.powernbt.utils.Reflections;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -11,23 +12,10 @@ import java.lang.reflect.Method;
  *
  * @author DPOH-VAR
  */
-public class NBTTagByte extends NBTTagNumeric {
-    private static Class clazz = StaticValues.getClass("NBTTagByte");
-    private static Field fieldData;
-    private static Method methodRead;
-    private static Method methodWrite;
-    private static Method methodClone;
-
-    static {
-        try {
-            methodClone = StaticValues.getMethodByTypeTypes(class_NBTBase, NBTBase.class_NBTBase);
-            fieldData = StaticValues.getFieldByType(clazz, byte.class);
-            methodClone.setAccessible(true);
-            fieldData.setAccessible(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+public class NBTTagByte extends NBTTagNumeric<Byte> {
+    private static Class clazz = Reflections.getClass("{nms}.NBTTagByte","net.minecraft.nbt.NBTTagByte");
+    private static Field fieldData = Reflections.getField(clazz,byte.class);
+    private static Constructor con = Reflections.getConstructorByTypes(clazz, byte.class);
 
     public NBTTagByte() {
         this("", (byte) 0);
@@ -42,16 +30,7 @@ public class NBTTagByte extends NBTTagNumeric {
     }
 
     public NBTTagByte(String s, byte b) {
-        super(getNew(s, b));
-    }
-
-    private static Object getNew(String s, byte b) {
-        try{
-            return clazz.getConstructor(String.class,byte.class).newInstance(s,b);
-        } catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
+        super(Reflections.create(con,b));
     }
 
     public NBTTagByte(boolean ignored, Object tag) {
@@ -69,20 +48,18 @@ public class NBTTagByte extends NBTTagNumeric {
     }
 
     public Byte get() {
-        try {
-            return (Byte) fieldData.get(handle);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return (Byte) Reflections.getFieldValue(fieldData,handle);
+    }
+
+    @Override
+    public void set(Byte value) {
+        Reflections.setFieldValue(fieldData,handle,(byte)value);
+        update();
     }
 
     public void set(Number value) {
-        try {
-            fieldData.set(handle, value.byteValue());
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        Reflections.setFieldValue(fieldData,handle,value.byteValue());
+        update();
     }
 
     @Override
@@ -90,4 +67,8 @@ public class NBTTagByte extends NBTTagNumeric {
         return 1;
     }
 
+    @Override
+    public void setNumber(Number number) {
+        set(number.byteValue());
+    }
 }

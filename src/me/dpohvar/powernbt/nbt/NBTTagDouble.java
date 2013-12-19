@@ -1,9 +1,8 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.utils.StaticValues;
+import me.dpohvar.powernbt.utils.Reflections;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 
 /**
@@ -11,14 +10,14 @@ import java.lang.reflect.Method;
  *
  * @author DPOH-VAR
  */
-public class NBTTagDouble extends NBTTagNumeric {
-    private static Class clazz = StaticValues.getClass("NBTTagDouble");
-    private static Field fieldData;
+public class NBTTagDouble extends NBTTagNumeric<Double> {
+    private static Class clazz = Reflections.getClass("{nms}.NBTTagDouble", "net.minecraft.nbt.NBTTagDouble");
+    private static Field field_Data;
 
     static {
         try {
-            fieldData = StaticValues.getFieldByType(clazz, double.class);
-            fieldData.setAccessible(true);
+            field_Data = Reflections.getField(clazz, double.class);
+            field_Data.setAccessible(true);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -42,7 +41,7 @@ public class NBTTagDouble extends NBTTagNumeric {
 
     private static Object getNew(String s, double b) {
         try{
-            return clazz.getConstructor(String.class,double.class).newInstance(s,b);
+            return clazz.getConstructor(double.class).newInstance(b);
         } catch (Exception e){
             e.printStackTrace();
             return null;
@@ -65,19 +64,16 @@ public class NBTTagDouble extends NBTTagNumeric {
 
     public Double get() {
         try {
-            return (Double) fieldData.get(handle);
+            return (Double) field_Data.get(handle);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public void set(Number value) {
-        try {
-            fieldData.set(handle, value.doubleValue());
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void set(Double value) {
+        Reflections.setFieldValue(field_Data,handle,(double)value);
     }
 
     @Override
@@ -85,4 +81,8 @@ public class NBTTagDouble extends NBTTagNumeric {
         return 6;
     }
 
+    @Override
+    public void setNumber(Number number) {
+        set(number.doubleValue());
+    }
 }

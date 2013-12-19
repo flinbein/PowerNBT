@@ -1,29 +1,19 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.utils.StaticValues;
+import me.dpohvar.powernbt.utils.Reflections;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 /**
  * 14.01.13 17:54
  *
  * @author DPOH-VAR
  */
-public class NBTTagFloat extends NBTTagNumeric {
-    private static Class clazz = StaticValues.getClass("NBTTagFloat");
-    private static Field fieldData;
-
-    static {
-        try {
-            methodClone = StaticValues.getMethodByTypeTypes(class_NBTBase, NBTBase.class_NBTBase);
-            fieldData = StaticValues.getFieldByType(clazz, float.class);
-            methodClone.setAccessible(true);
-            fieldData.setAccessible(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+public class NBTTagFloat extends NBTTagNumeric<Float> {
+    private static Class clazz = Reflections.getClass("{nms}.NBTTagFloat","net.minecraft.nbt.NBTTagFloat");
+    private static Field field_Data = Reflections.getField(clazz, float.class);
+    private static Constructor con = Reflections.getConstructorByTypes(clazz, float.class);
 
     public NBTTagFloat() {
         this("", (float) 0);
@@ -38,19 +28,10 @@ public class NBTTagFloat extends NBTTagNumeric {
     }
 
     public NBTTagFloat(String s, float b) {
-        super(getNew(s, b));
+        super(Reflections.create(con,b));
     }
 
-    private static Object getNew(String s, float b) {
-        try{
-            return clazz.getConstructor(String.class,float.class).newInstance(s,b);
-        } catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public NBTTagFloat(boolean ignored, Object tag) {
+    NBTTagFloat(boolean ignored, Object tag) {
         super(tag);
         if (!clazz.isInstance(tag)) throw new IllegalArgumentException();
     }
@@ -66,24 +47,25 @@ public class NBTTagFloat extends NBTTagNumeric {
 
     public Float get() {
         try {
-            return (Float) fieldData.get(handle);
+            return (Float) field_Data.get(handle);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public void set(Number value) {
-        try {
-            fieldData.set(handle, value.floatValue());
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void set(Float value) {
+        Reflections.setFieldValue(field_Data,handle,(float)value);
+    }
+
+    @Override
+    public void setNumber(Number value) {
+        set(value.floatValue());
     }
 
     @Override
     public byte getTypeId() {
         return 5;
     }
-
 }

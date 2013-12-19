@@ -5,7 +5,7 @@ import me.dpohvar.powernbt.utils.Caller;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NBTContainerVariable extends NBTContainer {
+public class NBTContainerVariable extends NBTContainer<Caller> {
 
     Caller caller;
     String name;
@@ -44,26 +44,31 @@ public class NBTContainerVariable extends NBTContainer {
     }
 
     @Override
-    public NBTBase getTag() {
+    public NBTBase readTag() {
         NBTContainer t = getContainer();
-        if (t != null) return t.getTag();
+        if (t != null) return t.readTag();
         return null;
     }
 
     @Override
-    public void setTag(NBTBase base) {
+    public void writeTag(NBTBase base) {
         NBTContainer t = getContainer();
-        if (t != null) t.setTag(base);
+        if (t != null) t.writeTag(base);
     }
 
     @Override
-    public String getName() {
-        return caller.getName() + " %" + name;
+    public void eraseTag() {
+        NBTContainer t = getContainer();
+        if (t != null) t.eraseTag();
     }
 
     @Override
-    public void removeTag() {
-        NBTContainer t = getContainer();
-        if (t != null) t.removeTag();
+    protected Class<Caller> getContainerClass() {
+        return Caller.class;
+    }
+
+    @Override
+    public String toString(){
+        return "%"+name;
     }
 }

@@ -1,300 +1,164 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.utils.StaticValues;
+import me.dpohvar.powernbt.exception.NBTTagNotFound;
+import me.dpohvar.powernbt.exception.NBTTagUnexpectedType;
+import me.dpohvar.powernbt.utils.NBTQuery;
+import me.dpohvar.powernbt.utils.Reflections;
 
 import java.util.List;
-import java.util.Queue;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
-public abstract class NBTContainer {
+public abstract class NBTContainer<T> {
 
-    static final Class class_NBTBase = StaticValues.getClass("NBTBase");
-    static final Class class_NBTTagCompound = StaticValues.getClass("NBTTagCompound");
+    static final Class class_NBTBase = Reflections.getClass("{nms}.NBTBase","net.minecraft.nbt.NBTBase");
+    static final Class class_NBTTagCompound = Reflections.getClass("{nms}.NBTTagCompound","net.minecraft.nbt.NBTTagCompound");
 
-    abstract public NBTBase getTag();
+    abstract public T getObject();
 
-    public NBTBase getCustomTag(){
-        return getTag();
+    protected NBTBase readCustomTag(){
+        return readTag();
     }
 
-    abstract public void setTag(NBTBase base);
+    abstract protected NBTBase readTag();
 
-    public void setCustomTag(NBTBase base){
-        setTag(base.clone());
+    abstract protected void writeTag(NBTBase base);
+
+    protected void writeCustomTag(NBTBase base){
+        writeTag(base.clone());
     }
 
-    abstract public String getName();
-
-    public void removeTag() {
-        setTag(new NBTTagCompound());
+    protected void eraseTag() {
+        writeTag(new NBTTagCompound());
+    }
+    protected void eraseCustomTag() {
+        eraseTag();
     }
 
-    public boolean removeTag(Object... values) {
-        NBTQuery q = new NBTQuery(values);
-        return removeTag(q);
-    }
+    abstract protected Class<T> getContainerClass();
 
-    public boolean setTag(NBTBase base, Object... values) {
-        NBTQuery q = new NBTQuery(values);
-        return setTag(q,base);
+    final public String getName(){
+        return getContainerClass().getSimpleName();
     }
 
     public abstract List<String> getTypes();
 
-    private NBTBase getQueryTag(NBTQuery query, NBTBase tag) {
-        if (query == null) return tag;
-        Queue<Object> queue = query.getQueue();
-        NBTBase current = tag;
-        while (true) {
-            Object t = queue.poll();
-            if (t == null || current == null) return current;
-            if (current instanceof NBTTagCompound && t instanceof String) {
-                NBTTagCompound compound = (NBTTagCompound) current;
-                String key = (String) t;
-                if (!compound.has(key)) return null;
-                current = compound.get(key);
-            } else if (current instanceof NBTTagList && t instanceof Integer) {
-                NBTTagList list = (NBTTagList) current;
-                int index = (Integer) t;
-                if (index == -1) index = list.size() - 1;
-                current = list.get(index);
-            } else if (current instanceof NBTTagNumericArray && t instanceof Integer) {
-                NBTTagNumericArray array = (NBTTagNumericArray) current;
-                int index = (Integer) t;
-                if (index == -1) index = array.size() - 1;
-                current = NBTBase.getByValue(array.get(index));
-            } else throw new RuntimeException(plugin.translate("error_nochildren", current.getName()));
+    // ########################## PowerNBT API ##########################
+
+    /**
+     * Set value of container root tag
+     * @see #removeTag() remove tag if value is null
+     * @param value root tag
+     */
+    final public void setTag(NBTBase value){
+        if(value==null) {
+            eraseTag();
+            return;
         }
-    }
-    public NBTBase getTag(Object... values) {
-        NBTQuery q = new NBTQuery(values);
-        return getTag(q);
-    }
-    public NBTBase getTag(NBTQuery query){
-        return getQueryTag(query, getTag());
-    }
-    public NBTBase getCustomTag(NBTQuery query){
-        return getQueryTag(query, getCustomTag());
-    }
-    public NBTBase getCustomTag(Object... values) {
-        NBTQuery q = new NBTQuery(values);
-        return getCustomTag(q);
+        writeTag(value.clone());
     }
 
-    public boolean setTag(NBTQuery query, NBTBase base) {
-        if (query == null || query.isEmpty()) {
-            setTag(base);
-            return true;
-        }
-        Queue<Object> queue = query.getQueue();
-        NBTBase root = getTag();
-        if (root == null) {
-            Object z = queue.peek();
-            if (z instanceof String) root = new NBTTagCompound();
-            else if (z instanceof Integer) root = new NBTTagList();
-        } else {
-            root = root.clone();
-        }
-        NBTBase current = root;
-        while (true) {
-            if (queue.size() == 1) {
-                Object t = queue.poll();
-                if (current instanceof NBTTagCompound && t instanceof String) {
-                    NBTTagCompound compound = (NBTTagCompound) current;
-                    String key = (String) t;
-                    compound.set(key, base.clone());
-                    setTag(root);
-                    return true;
-                } else if (current instanceof NBTTagList && t instanceof Integer) {
-                    NBTTagList list = (NBTTagList) current;
-                    int index = (Integer) t;
-                    if (index == -1) list.add(base.clone());
-                    else list.set(index, base.clone());
-                    setTag(root);
-                    return true;
-                } else if (current instanceof NBTTagNumericArray && t instanceof Integer) {
-                    NBTTagNumericArray array = (NBTTagNumericArray) current;
-                    int index = (Integer) t;
-                    if (index == -1) index = array.size();
-                    if (!(base instanceof NBTTagNumeric))
-                        throw new RuntimeException(plugin.translate("error_notnumber", base.getName()));
-                    Number value = ((NBTTagNumeric) base).get();
-                    array.set(index, value);
-                    setTag(root);
-                    return true;
-                } else {
-                    throw new RuntimeException(plugin.translate("error_nochildren", current.getName()));
-                }
-            }
-            Object t = queue.poll();
-            if (current instanceof NBTTagCompound && t instanceof String) {
-                NBTTagCompound compound = (NBTTagCompound) current;
-                String key = (String) t;
-                if (!compound.has(key)) {
-                    Object z = queue.peek();
-                    if (z instanceof String) current = compound.nextCompound(key);
-                    else if (z instanceof Integer) current = compound.nextList(key);
-                } else {
-                    current = compound.get(key);
-                }
-            } else if (current instanceof NBTTagList && t instanceof Integer) {
-                NBTTagList list = (NBTTagList) current;
-                int index = (Integer) t;
-                if (index == -1) index = list.size()-1;
-                NBTBase b = null;
-                if (!list.isEmpty()) {
-                    b = NBTBase.getDefault(list.getSubTypeId());
-                } else {
-                    Object z = queue.peek();
-                    if (z instanceof String) b = new NBTTagCompound();
-                    else if (z instanceof Integer) b = new NBTTagList();
-                }
-                while (list.size() <= index) {
-                    list.add(b.clone());
-                }
-                current = list.get(index);
-            } else throw new RuntimeException(plugin.translate("error_nochildren", current.getName()));
-        }
+    @Deprecated
+    final public void setTag(NBTQuery query,NBTBase value) throws NBTTagNotFound, NBTTagUnexpectedType {
+        setTag(query.set(getTag(),value));
     }
 
-    public boolean setCustomTag(NBTQuery query, NBTBase base) {
-        if (query == null || query.isEmpty()) {
-            setCustomTag(base);
-            return true;
+    /**
+     * Set value of container root tag using PowerNBT options
+     * @see #removeCustomTag() remove tag if value is null
+     * @param value root tag
+     */
+    final public void setCustomTag(NBTBase value){
+        if(value==null) {
+            eraseCustomTag();
+            return;
         }
-        Queue<Object> queue = query.getQueue();
-        NBTBase root = getCustomTag();
-        if (root == null) {
-            Object z = queue.peek();
-            if (z instanceof String) root = new NBTTagCompound();
-            else if (z instanceof Integer) root = new NBTTagList();
-        } else {
-            root = root.clone();
+        value = value.clone();
+        if(value instanceof NBTTagCompound){
+            NBTTagCompound tag = (NBTTagCompound) value;
+            List<String> ignoreList = plugin.getConfig().getStringList("ignore_set."+getName());
+            if(ignoreList!=null) for(String ignore:ignoreList) tag.remove(ignore);
         }
-        NBTBase current = root;
-        while (true) {
-            if (queue.size() == 1) {
-                Object t = queue.poll();
-                if (current instanceof NBTTagCompound && t instanceof String) {
-                    NBTTagCompound compound = (NBTTagCompound) current;
-                    String key = (String) t;
-                    compound.set(key, base.clone());
-                    setCustomTag(root);
-                    return true;
-                } else if (current instanceof NBTTagList && t instanceof Integer) {
-                    NBTTagList list = (NBTTagList) current;
-                    int index = (Integer) t;
-                    if (index == -1) list.add(base.clone());
-                    else list.set(index, base.clone());
-                    setCustomTag(root);
-                    return true;
-                } else if (current instanceof NBTTagNumericArray && t instanceof Integer) {
-                    NBTTagNumericArray array = (NBTTagNumericArray) current;
-                    int index = (Integer) t;
-                    if (index == -1) index = array.size();
-                    if (!(base instanceof NBTTagNumeric))
-                        throw new RuntimeException(plugin.translate("error_notnumber", base.getName()));
-                    Number value = ((NBTTagNumeric) base).get();
-                    array.set(index, value);
-                    setCustomTag(root);
-                    return true;
-                } else {
-                    throw new RuntimeException(plugin.translate("error_nochildren", current.getName()));
-                }
-            }
-            Object t = queue.poll();
-            if (current instanceof NBTTagCompound && t instanceof String) {
-                NBTTagCompound compound = (NBTTagCompound) current;
-                String key = (String) t;
-                if (!compound.has(key)) {
-                    Object z = queue.peek();
-                    if (z instanceof String) current = compound.nextCompound(key);
-                    else if (z instanceof Integer) current = compound.nextList(key);
-                } else {
-                    current = compound.get(key);
-                }
-            } else if (current instanceof NBTTagList && t instanceof Integer) {
-                NBTTagList list = (NBTTagList) current;
-                int index = (Integer) t;
-                if (index == -1) index = list.size()-1;
-                NBTBase b = null;
-                if (!list.isEmpty()) {
-                    b = NBTBase.getDefault(list.getSubTypeId());
-                } else {
-                    Object z = queue.peek();
-                    if (z instanceof String) b = new NBTTagCompound();
-                    else if (z instanceof Integer) b = new NBTTagList();
-                }
-                while (list.size() <= index) {
-                    list.add(b.clone());
-                }
-                current = list.get(index);
-            } else throw new RuntimeException(plugin.translate("error_nochildren", current.getName()));
-        }
+        writeCustomTag(value);
     }
 
-    public boolean removeTag(NBTQuery query) {
-        if (query == null || query.isEmpty()) {
-            removeTag();
-            return true;
+    @Deprecated
+    final public void setCustomTag(NBTQuery query,NBTBase value) throws NBTTagNotFound, NBTTagUnexpectedType {
+        if (query.isEmpty())  setCustomTag(value);
+        else  setCustomTag(query.set(getCustomTag(),value));
+    }
+
+
+    /**
+     * Get root tag of container
+     * @return NBT tag
+     */
+    final public NBTBase getTag(){
+        return readTag();
+    }
+
+    @Deprecated
+    final public NBTBase getTag(NBTQuery query) throws NBTTagNotFound {
+        return query.get(this.getTag());
+    }
+
+    /**
+     * Get root tag of container using PowerNBT options
+     * @return NBT tag
+     */
+    final public NBTBase getCustomTag(){
+        NBTBase value = readTag();
+        if(value instanceof NBTTagCompound){
+            NBTTagCompound tag = (NBTTagCompound) value;
+            List<String> ignoreList = plugin.getConfig().getStringList("ignore_set."+getName());
+            if(ignoreList!=null) for(String ignore:ignoreList) tag.remove(ignore);
         }
-        NBTBase root = getTag();
-        if (root == null) {
-            return false;
-        } else {
-            root = root.clone();
-        }
-        NBTBase current = root;
-        Queue<Object> queue = query.getQueue();
-        while (true) {
-            if (queue.size() == 1) {
-                Object t = queue.poll();
-                if (current instanceof NBTTagCompound && t instanceof String) {
-                    NBTTagCompound compound = (NBTTagCompound) current;
-                    String key = (String) t;
-                    boolean b = compound.remove(key);
-                    setTag(root);
-                    return b;
-                } else if (current instanceof NBTTagList && t instanceof Integer) {
-                    NBTTagList list = (NBTTagList) current;
-                    int index = (Integer) t;
-                    if (index == -1) index = list.size() - 1;
-                    boolean b = list.remove(index)!=null;
-                    setTag(root);
-                    return b;
-                } else if (current instanceof NBTTagNumericArray && t instanceof Integer) {
-                    NBTTagNumericArray array = (NBTTagNumericArray) current;
-                    int index = (Integer) t;
-                    if (index == -1) index = array.size() - 1;
-                    boolean b = array.remove(index);
-                    setTag(root);
-                    return b;
-                } else throw new RuntimeException(plugin.translate("error_nochildren", current.getName()));
-            }
-            Object t = queue.poll();
-            if (current == null) return false;
-            if (current instanceof NBTTagCompound && t instanceof String) {
-                NBTTagCompound compound = (NBTTagCompound) current;
-                String key = (String) t;
-                if (!compound.has(key)) return false;
-                current = compound.get(key);
-            } else if (current instanceof NBTTagList && t instanceof Integer) {
-                NBTTagList list = (NBTTagList) current;
-                int index = (Integer) t;
-                if (index == -1) index = list.size() - 1;
-                current = list.get(index);
-            } else throw new RuntimeException(plugin.translate("error_nochildren", current.getName()));
-        }
+        return value;
     }
-    public void removeCustomTag(NBTQuery query) {
-        removeTag(query);
+
+    @Deprecated
+    final public NBTBase getCustomTag(NBTQuery query) throws NBTTagNotFound {
+        return query.get(this.getCustomTag());
     }
-    public void removeCustomTag() {
-        removeTag();
+
+    /**
+     * remove all NBT tags from container or remove contained object
+     */
+    public final void removeTag(){
+        eraseTag();
     }
-    public void removeCustomTag(Object... values) {
-        removeTag(values);
+
+    @Deprecated
+    final public void removeTag(NBTQuery query) throws NBTTagNotFound {
+        setTag(query.remove(this.getTag()));
     }
+
+    /**
+     * remove all NBT tags from container or remove contained object using PowerNBT options
+     */
+    public final void removeCustomTag(){
+        eraseCustomTag();
+    }
+
+    @Deprecated
+    final public void removeCustomTag(NBTQuery query) throws NBTTagNotFound {
+        if (query==null || query.isEmpty()) removeCustomTag();
+        else setCustomTag(query.remove(this.getCustomTag()));
+    }
+
+
+
+    private NBTBase get(){
+        return readTag();
+    }
+
+    private void set(Object value){
+       writeTag(NBTBase.getByValue(value));
+    }
+
+    public String toString(){
+        return getName();
+    }
+
 
 }

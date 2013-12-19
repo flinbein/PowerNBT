@@ -1,5 +1,6 @@
 package me.dpohvar.powernbt.command.action;
 
+import me.dpohvar.powernbt.exception.NBTTagNotFound;
 import me.dpohvar.powernbt.nbt.*;
 import org.bukkit.ChatColor;
 
@@ -12,6 +13,6 @@ import static me.dpohvar.powernbt.PowerNBT.plugin;
 
 public abstract class Action {
 
-    abstract public void execute();
+    abstract public void execute() throws Exception;
 
 }

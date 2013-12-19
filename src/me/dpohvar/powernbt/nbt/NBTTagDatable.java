@@ -5,11 +5,12 @@ package me.dpohvar.powernbt.nbt;
  *
  * @author DPOH-VAR
  */
-public abstract class NBTTagDatable extends NBTBase {
+public abstract class NBTTagDatable<T> extends NBTBase {
 
     NBTTagDatable(Object handle) {
         super(handle);
     }
 
-    abstract public Object get();
+    abstract public T get();
+    abstract public void set(T value);
 }

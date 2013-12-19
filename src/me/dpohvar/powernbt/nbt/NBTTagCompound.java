@@ -1,8 +1,10 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.utils.StaticValues;
+import me.dpohvar.powernbt.utils.Reflections;
+import me.dpohvar.powernbt.utils.StringParser;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -13,42 +15,23 @@ import java.util.*;
  *
  * @author DPOH-VAR
  */
-public class NBTTagCompound extends NBTBase implements Iterable<NBTBase> {
-    private static final Class clazz = StaticValues.getClass("NBTTagCompound");
-    private static final Class class_NBTCompressedStreamTools = StaticValues.getClass("NBTCompressedStreamTools");
-    private static Method method_read;
-    private static Method method_write;
-    private static Field fieldMap;
-    private static Method methodSet;
-    static {
-        try {
-            methodSet = StaticValues.getMethodByTypeTypes(clazz, void.class, String.class, class_NBTBase);
-            fieldMap = StaticValues.getFieldByType(clazz,java.util.Map.class);
-            method_read = StaticValues.getMethodByTypeTypes(class_NBTCompressedStreamTools,clazz,InputStream.class);
-            method_write = StaticValues.getMethodByTypeTypes(class_NBTCompressedStreamTools,void.class,class_NBTCompressedStreamTools,OutputStream.class);
-            methodSet.setAccessible(true);
-            fieldMap.setAccessible(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+public class NBTTagCompound extends NBTBase implements Map<String,NBTBase> {
+
+    private static final Class clazz = Reflections.getClass("{nms}.NBTTagCompound","net.minectaft.nbt.NBTTagCompound");
+    private static final Class class_NBTCompressedStreamTools = Reflections.getClass("{nms}.NBTCompressedStreamTools","net.minectaft.nbt.NBTCompressedStreamTools");
+    private static Method method_read = Reflections.getMethodByTypes(class_NBTCompressedStreamTools, clazz, InputStream.class);
+    private static Method method_write = Reflections.getMethodByTypes(class_NBTCompressedStreamTools,void.class, clazz,OutputStream.class);
+    private static Method method_set = Reflections.getMethodByTypes(clazz, void.class, String.class, class_NBTBase);
+    private static Field fieldMap = Reflections.getField(clazz, java.util.Map.class);
+    private static Constructor con = Reflections.getConstructorByTypes(clazz);
+
 
     public NBTTagCompound() {
         this("");
     }
 
     public NBTTagCompound(String b) {
-        super(getNew(b));
-    }
-
-    private static Object getNew(String b) {
-        try{
-            if (b==null) return clazz.getConstructor().newInstance();
-            return clazz.getConstructor(String.class).newInstance(b);
-        } catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
+        super(Reflections.create(con));
     }
 
     static public NBTTagCompound readGZip(java.io.DataInput input) {
@@ -196,12 +179,7 @@ public class NBTTagCompound extends NBTBase implements Iterable<NBTBase> {
         NBTBase t = get(key);
         if (t instanceof NBTTagCompound) return ((NBTTagCompound) t);
         NBTTagCompound c = new NBTTagCompound();
-        try {
-            methodSet.invoke(handle, key, c.getHandle());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        Reflections.invoke(method_set,handle, key, c.getHandle());
         return c;
     }
 
@@ -216,12 +194,7 @@ public class NBTTagCompound extends NBTBase implements Iterable<NBTBase> {
         NBTBase t = get(key);
         if (t instanceof NBTTagList) return ((NBTTagList) t);
         NBTTagList c = new NBTTagList();
-        try {
-            methodSet.invoke(handle, key, c.getHandle());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        Reflections.invoke(method_set,handle, key, c.getHandle());
         return c;
     }
 
@@ -234,97 +207,115 @@ public class NBTTagCompound extends NBTBase implements Iterable<NBTBase> {
         map.put(newKey, map.remove(oldKey));
     }
 
+    @Override
     public void clear() {
         getHandleMap().clear();
+        update();
+    }
+
+    @Override
+    public Set<String> keySet() {
+        return new WrapMapKeySet(getHandleMap().keySet());
+    }
+
+    @Override
+    public Collection<NBTBase> values() {
+        return new WrapMapValues(getHandleMap().values());
+    }
+
+    @Override
+    public Set<Entry<String, NBTBase>> entrySet() {
+        return new WrapEntrySet(getHandleMap().entrySet());
     }
 
     public int size() {
         return getHandleMap().size();
     }
 
-    public Map<String, NBTBase> asMap() {
-        Map<String, NBTBase> map = new HashMap<String, NBTBase>();
-        for (Map.Entry<String, Object> e : getHandleMap().entrySet()) {
-            map.put(e.getKey(), NBTBase.wrap(e.getValue()));
-        }
-        return map;
+    @Override
+    public boolean isEmpty() {
+        return getHandleMap().isEmpty();
     }
 
-    public List<NBTBase> asList() {
-        List<NBTBase> list = new LinkedList<NBTBase>();
-        for (Object o : getHandleMap().values()) {
-            list.add(NBTBase.wrap(o));
-        }
-        return list;
+    @Override
+    public boolean containsKey(Object key) {
+        return getHandleMap().containsKey(key);
     }
 
-    /**
-     * set("key1",(long)15);
-     * set("key2","string");
-     * set("key3",elementNBTBase);
-     *
-     * @param key key
-     * @param value NBTBase or some primitive value
-     */
-
-    public void set(String key, Object value) {
-        Object base = null;
-        if (value instanceof NBTBase) {
-            base = ((NBTBase) value).getHandle();
-        } else if (class_NBTBase.isInstance(value)) {
-            //do nothing//
-        } else if (value instanceof Byte) {
-            base = new NBTTagByte((Byte) value).getHandle();
-        } else if (value instanceof Short) {
-            base = new NBTTagShort((Short) value).getHandle();
-        } else if (value instanceof Integer) {
-            base = new NBTTagInt((Integer) value).getHandle();
-        } else if (value instanceof Long) {
-            base = new NBTTagLong((Long) value).getHandle();
-        } else if (value instanceof Float) {
-            base = new NBTTagFloat((Float) value).getHandle();
-        } else if (value instanceof Double) {
-            base = new NBTTagDouble((Double) value).getHandle();
-        } else if (value instanceof byte[]) {
-            base = new NBTTagByteArray((byte[]) value).getHandle();
-        } else if (value instanceof String) {
-            base = new NBTTagString((String) value).getHandle();
-        } else if (value instanceof int[]) {
-            base = new NBTTagIntArray((int[]) value).getHandle();
-        } else {
-            throw new IllegalArgumentException();
-        }
-        try {
-            methodSet.invoke(handle, key, base);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    public void set(String key,NBTBase value){
-        try {
-            methodSet.invoke(handle, key, value.getHandle());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @Override
+    public boolean containsValue(Object value) {
+        return getHandleMap().containsValue(NBTBase.getByValue(value).handle);
     }
 
-    public void add(Map<String,?> values){
-        for(Map.Entry<String,?> e:values.entrySet()){
-            set(e.getKey(),e.getValue());
-        }
+    @Override
+    public NBTBase get(Object key) {
+        return NBTBase.wrap(getHandleMap().get(key));
     }
 
-    public void fill(Map<String,?> values){
-        for(Map.Entry<String,?> e:values.entrySet()){
-            if (!has(e.getKey())){
-                set(e.getKey(),e.getValue());
-            }
+    @Override
+    public NBTBase put(String key, NBTBase value) {
+        NBTBase r = put_a(key,value);
+        update();
+        return r;
+    }
+
+    public NBTBase put(String key, Object value) {
+        return put(key,NBTBase.getByValue(value));
+    }
+
+    NBTBase put_a(String key, NBTBase value) {
+        NBTBase r = NBTBase.wrap(getHandleMap().get(key));
+        Reflections.invoke(method_set,handle,key,value.clone().handle);
+        return r;
+    }
+
+    public void putToHandle(String key, NBTBase value) {
+        Reflections.invoke(method_set,handle,key,value.clone().handle);
+    }
+
+    @Override
+    public NBTBase remove(Object key) {
+        NBTBase r = NBTBase.wrap(getHandleMap().get(key));
+        getHandleMap().remove(key);
+        update();
+        return r;
+    }
+
+    @Override
+    public void putAll(Map<? extends String, ? extends NBTBase> m) {
+        for(Entry<? extends String, ? extends NBTBase> entry:m.entrySet()){
+            put_a(entry.getKey(),entry.getValue());
         }
+        update();
     }
 
     @Override
     public String toString() {
-        return asMap().toString();
+        Iterator<Entry<String,NBTBase>> i = entrySet().iterator();
+        if (! i.hasNext())
+            return "{}";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append('{');
+        for (;;) {
+            Entry<String,NBTBase> e = i.next();
+            String key = e.getKey();
+            NBTBase value = e.getValue();
+            sb.append(key);
+            sb.append('=');
+            if(value==this) {
+                sb.append("(this Compound)");
+            } else if (value instanceof NBTTagString) {
+                sb.append("\"")
+                        .append(StringParser.wrap(((NBTTagString) value).get()))
+                        .append("\"");
+            } else {
+                sb.append(value);
+            }
+            if (! i.hasNext())
+                return sb.append('}').toString();
+            sb.append(",");
+        }
     }
 
     @Override
@@ -332,30 +323,368 @@ public class NBTTagCompound extends NBTBase implements Iterable<NBTBase> {
         return 10;
     }
 
-    @Override
-    public NBTTagCompoundIterator iterator() {
-        return new NBTTagCompoundIterator(getHandleMap().values().iterator());
+    private class WrapMapKeySet implements Set<String>{
+
+        Set<String> handle;
+
+        public WrapMapKeySet(Set<String> handle){
+            this.handle = handle;
+        }
+
+        @Override
+        public int size() {
+            return handle.size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return handle.isEmpty();
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            return handle.contains(o);
+        }
+
+        @Override
+        public Iterator<String> iterator() {
+            return handle.iterator();
+        }
+
+        @Override
+        public Object[] toArray() {
+            return handle.toArray();
+        }
+
+        @Override
+        public <T> T[] toArray(T[] a) {
+            return handle.toArray(a);
+        }
+
+        @Override
+        public boolean add(String s) {
+            boolean r = handle.add(s);
+            NBTTagCompound.this.update();
+            return r;
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            boolean r = handle.remove(o);
+            NBTTagCompound.this.update();
+            return r;
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> c) {
+            return handle.containsAll(c);
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends String> c) {
+            boolean r = handle.addAll(c);
+            NBTTagCompound.this.update();
+            return r;
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> c) {
+            boolean r = handle.retainAll(c);
+            NBTTagCompound.this.update();
+            return r;
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> c) {
+            boolean r = handle.removeAll(c);
+            NBTTagCompound.this.update();
+            return r;
+        }
+
+        @Override
+        public void clear() {
+            handle.clear();
+        }
     }
 
-    public class NBTTagCompoundIterator implements Iterator<NBTBase>{
-        Iterator<Object> iterator;
-        NBTTagCompoundIterator(Iterator<Object> iterator){
-            this.iterator=iterator;
+    private class WrapMapValues implements Collection<NBTBase>{
+
+        private Collection<Object> handle;
+
+        public WrapMapValues(Collection<Object> handle){
+            this.handle = handle;
         }
 
         @Override
-        public boolean hasNext() {
-            return iterator.hasNext();
+        public int size() {
+            return handle.size();
         }
 
         @Override
-        public NBTBase next() {
-            return NBTBase.getByValue(iterator.next());
+        public boolean isEmpty() {
+            return handle.isEmpty();
         }
 
         @Override
-        public void remove() {
-            iterator.remove();
+        public boolean contains(Object o) {
+            NBTBase base = NBTBase.getByValue(o);
+            return handle.contains(base.handle);
+        }
+
+        @Override
+        public Iterator<NBTBase> iterator() {
+            return new WrapIterator(handle.iterator());
+        }
+
+        @Override
+        public NBTBase[] toArray() {
+            NBTBase[] base = new NBTBase[handle.size()];
+            int i=0; for(Object t:handle) base[i++] = NBTBase.wrap(t);
+            return base;
+        }
+
+        @Override
+        public <T> T[] toArray(T[] a) {
+            Object[] h = handle.toArray(a);
+            int limit = h.length; if (a.length < limit) limit = a.length;
+            for(int i=0;i<limit;i++) h[i]=NBTBase.wrap(h[i]);
+            return a;
+        }
+
+        @Override
+        public boolean add(NBTBase nbtBase) {
+            boolean r = handle.add(nbtBase.handle);
+            // todo: needed ?
+            NBTTagCompound.this.update();
+            return r;
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            NBTBase base = NBTBase.getByValue(o);
+            boolean r = handle.remove(base.handle);
+            // todo: needed?
+            NBTTagCompound.this.update();
+            return r;
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> c) {
+            for(Object o:c){
+                if(!contains(o)) return false;
+            }
+            return true;
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends NBTBase> c) {
+            boolean r = false;
+            for(NBTBase base:c){
+                if(handle.add(base.handle)) r = true;
+            }
+            NBTTagCompound.this.update();
+            return r;
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> c) {
+            boolean r = false;
+            for(Object o:c){
+                NBTBase base = NBTBase.getByValue(o);
+                if(handle.remove(base.handle)) r = true;
+            }
+            NBTTagCompound.this.update();
+            return r;
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> c) {
+            ArrayList<Object> bases = new ArrayList<Object>();
+            for(Object o:c){
+                NBTBase base = NBTBase.getByValue(o);
+                bases.add(base.handle);
+            }
+            boolean r = handle.retainAll(bases);
+            NBTTagCompound.this.update();
+            return r;
+        }
+
+        @Override
+        public void clear() {
+            handle.clear();
+            NBTTagCompound.this.update();
+        }
+
+        private class WrapIterator implements Iterator<NBTBase>{
+            Iterator<Object> handle;
+            public WrapIterator(Iterator<Object> handle){
+                this.handle = handle;
+            }
+
+            @Override
+            public boolean hasNext() {
+                return handle.hasNext();
+            }
+
+            @Override
+            public NBTBase next() {
+                return NBTBase.wrap(handle.next());
+            }
+
+            @Override
+            public void remove() {
+                handle.remove();
+                NBTTagCompound.this.update();
+            }
         }
     }
+
+    private class WrapEntrySet extends AbstractSet<Entry<String, NBTBase>>{
+
+        private final Set<Entry<String, Object>> handle;
+
+        public WrapEntrySet(Set<Entry<String, Object>> handle){
+            this.handle = handle;
+        }
+
+        @Override
+        public int size() {
+            return handle.size();
+        }
+
+        @Override
+        public Iterator<Entry<String, NBTBase>> iterator() {
+            return new WrapIterator(handle.iterator());
+        }
+
+        @Override
+        public Entry<String,NBTBase>[] toArray() {
+            Entry<String,NBTBase>[] r = new Entry[size()];
+            Iterator<Entry<String,NBTBase>> it = iterator();
+            for (int i = 0; i < r.length; i++) {
+                if (! it.hasNext())	// fewer elements than expected
+                    return Arrays.copyOf(r, i);
+                r[i] = it.next();
+            }
+            return it.hasNext() ? finishToArray(r, it) : r;
+        }
+
+        @Override
+        public <T> T[] toArray(T[] a) {
+            Entry<String,NBTBase>[] r = new Entry[size()];
+            Iterator<Entry<String,NBTBase>> it = iterator();
+            for (int i = 0; i < r.length; i++) {
+                if (! it.hasNext())	// fewer elements than expected
+                    return (T[]) Arrays.copyOf(r, i);
+                r[i] = it.next();
+            }
+            return it.hasNext() ? (T[]) finishToArray(r, it) : (T[]) r;
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            return handle.remove(NBTBase.getByValue(o).handle);
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> c) {
+            Collection<Object> bases = new ArrayList<Object>();
+            for(Object t:c) bases.add(NBTBase.getByValue(t).handle);
+            return handle.containsAll(bases);
+        }
+
+        @Override
+        @Deprecated
+        public boolean addAll(Collection<? extends Entry<String, NBTBase>> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        @Deprecated
+        public boolean retainAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Deprecated
+        @Override
+        public boolean removeAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void clear() {
+            handle.clear();
+        }
+
+        private class WrapIterator implements Iterator<Entry<String, NBTBase>>{
+
+            Iterator<Entry<String, Object>> handle;
+
+            public WrapIterator(Iterator<Entry<String, Object>> handle){
+                this.handle = handle;
+            }
+
+            @Override
+            public boolean hasNext() {
+                return handle.hasNext();
+            }
+
+            @Override
+            public Entry<String, NBTBase> next() {
+                return new WrapEntry(handle.next());
+            }
+
+            @Override
+            public void remove() {
+                handle.remove();
+                NBTTagCompound.this.update();
+            }
+
+            class WrapEntry implements Entry<String, NBTBase>{
+                Entry<String, Object> handle;
+                public WrapEntry(Entry<String, Object> handle){
+                    this.handle = handle;
+                }
+
+                @Override
+                public String getKey() {
+                    return handle.getKey();
+                }
+
+                @Override
+                public NBTBase getValue() {
+                    return NBTBase.wrap(handle.getValue());
+                }
+
+                @Override
+                public NBTBase setValue(NBTBase value) {
+                    NBTBase r = NBTBase.wrap(handle.getValue());
+                    handle.setValue(value.clone().handle);
+                    NBTTagCompound.this.update();
+                    return r;
+                }
+            }
+        }
+    }
+
+    private static <T> T[] finishToArray(T[] r, Iterator<?> it) {
+        int i = r.length;
+        while (it.hasNext()) {
+            int cap = r.length;
+            if (i == cap) {
+                int newCap = ((cap / 2) + 1) * 3;
+                if (newCap <= cap) { // integer overflow
+                    if (cap == Integer.MAX_VALUE)
+                        throw new OutOfMemoryError
+                                ("Required array size too large");
+                    newCap = Integer.MAX_VALUE;
+                }
+                r = Arrays.copyOf(r, newCap);
+            }
+            r[i++] = (T)it.next();
+        }
+        // trim if overallocated
+        return (i == r.length) ? r : Arrays.copyOf(r, i);
+    }
+
 }

@@ -2,6 +2,7 @@ package me.dpohvar.powernbt.nbt;
 
 import me.dpohvar.powernbt.utils.Reflections;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
 
@@ -13,6 +14,7 @@ import java.lang.reflect.Field;
 public class NBTTagDouble extends NBTTagNumeric<Double> {
     private static Class clazz = Reflections.getClass("{nms}.NBTTagDouble", "net.minecraft.nbt.NBTTagDouble");
     private static Field field_Data;
+    private static Constructor con = Reflections.getConstructorWithNoOrStringParam(clazz);
 
     static {
         try {
@@ -36,16 +38,8 @@ public class NBTTagDouble extends NBTTagNumeric<Double> {
     }
 
     public NBTTagDouble(String s, double b) {
-        super(getNew(s, b));
-    }
-
-    private static Object getNew(String s, double b) {
-        try{
-            return clazz.getConstructor(double.class).newInstance(b);
-        } catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
+        super(createHandle(con));
+        set(b);
     }
 
     public NBTTagDouble(boolean ignored, Object tag) {

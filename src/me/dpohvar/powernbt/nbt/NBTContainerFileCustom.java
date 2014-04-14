@@ -15,7 +15,7 @@ public class NBTContainerFileCustom extends NBTContainer<File> {
     File file;
 
     private static final Class class_NBTTagCompound = Reflections.getClass("{nms}.NBTTagCompound","net.minecraft.nbt.NBTTagCompound");
-    private static final Class class_NBTCompressedStreamTools = Reflections.getClass("{nms}.CompressedStreamTools","net.minecraft.nbt.CompressedStreamTools");
+    private static final Class class_NBTCompressedStreamTools = getCompressedStreamToolsClass();
     private static Method method_read = Reflections.getMethodByTypes(class_NBTCompressedStreamTools,class_NBTTagCompound,InputStream.class);
     private static Method method_write = Reflections.getMethodByTypes(class_NBTCompressedStreamTools,void.class,class_NBTTagCompound,OutputStream.class);
 
@@ -24,6 +24,14 @@ public class NBTContainerFileCustom extends NBTContainer<File> {
         if (name.contains(".") || name.contains(File.separator))
             throw new RuntimeException(plugin.translate("error_customfile", name));
         file = new File(plugin.getNBTFilesFolder(), name + ".nbtz");
+    }
+
+    private static Class getCompressedStreamToolsClass() {
+        try {
+            return Reflections.getClass("{nms}.CompressedStreamTools","net.minecraft.nbt.CompressedStreamTools");
+        } catch (Exception ex) {
+            return Reflections.getClass("{nms}.NBTCompressedStreamTools","net.minecraft.nbt.NBTCompressedStreamTools");
+        }
     }
 
     @Override

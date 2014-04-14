@@ -13,7 +13,7 @@ import java.util.*;
  */
 public class NBTTagIntArray extends NBTTagNumericArray<Integer> {
     private static Class clazz = Reflections.getClass("{nms}.NBTTagIntArray", "net.minecraft.nbt.NBTTagIntArray");
-    private static Constructor con = Reflections.getConstructorByTypes(clazz, int[].class);
+    private static Constructor con = Reflections.getConstructorWithNoOrStringParam(clazz);
     private static Field fieldData = Reflections.getField(clazz,int[].class);
 
     public NBTTagIntArray() {
@@ -29,7 +29,8 @@ public class NBTTagIntArray extends NBTTagNumericArray<Integer> {
     }
 
     public NBTTagIntArray(String s, int[] b) {
-        super(Reflections.create(con,b));
+        super(createHandle(con));
+        set(b);
     }
 
     public NBTTagIntArray(boolean ignored, Object tag) {

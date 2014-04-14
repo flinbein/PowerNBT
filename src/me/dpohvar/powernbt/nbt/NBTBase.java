@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -96,6 +97,18 @@ public abstract class NBTBase {
 
     NBTBase getDefault() {
         return getDefault(getTypeId());
+    }
+
+    protected static Object createHandle(Constructor<?> constructor) {
+        try {
+            if (constructor.getParameterTypes().length == 0)
+                return constructor.newInstance();
+            else
+                return constructor.newInstance("");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static NBTBase wrap(Object handle) {

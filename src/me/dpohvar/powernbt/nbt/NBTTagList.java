@@ -15,7 +15,7 @@ public class NBTTagList extends NBTBase implements List<NBTBase> {
     private static Class clazz = Reflections.getClass("{nms}.NBTTagList","net.minecraft.nbt.NBTTagList");
     private static Field field_list = Reflections.getField(clazz,List.class);
     private static Field fieldType = Reflections.getField(clazz,byte.class);
-    private static Constructor con = Reflections.getConstructorByTypes(clazz);
+    private static Constructor con = Reflections.getConstructorWithNoOrStringParam(clazz);
     private static Random random;
 
 
@@ -38,7 +38,7 @@ public class NBTTagList extends NBTBase implements List<NBTBase> {
     }
 
     public NBTTagList(String b) {
-        super(Reflections.create(con));
+        super(createHandle(con));
     }
 
     public NBTTagList(boolean fromHandle, Object tag) {

@@ -13,7 +13,7 @@ import java.lang.reflect.Field;
 public class NBTTagFloat extends NBTTagNumeric<Float> {
     private static Class clazz = Reflections.getClass("{nms}.NBTTagFloat","net.minecraft.nbt.NBTTagFloat");
     private static Field field_Data = Reflections.getField(clazz, float.class);
-    private static Constructor con = Reflections.getConstructorByTypes(clazz, float.class);
+    private static Constructor con = Reflections.getConstructorWithNoOrStringParam(clazz);
 
     public NBTTagFloat() {
         this("", (float) 0);
@@ -28,7 +28,8 @@ public class NBTTagFloat extends NBTTagNumeric<Float> {
     }
 
     public NBTTagFloat(String s, float b) {
-        super(Reflections.create(con,b));
+        super(createHandle(con));
+        set(b);
     }
 
     NBTTagFloat(boolean ignored, Object tag) {

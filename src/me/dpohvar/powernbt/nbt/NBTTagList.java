@@ -215,7 +215,7 @@ public class NBTTagList extends NBTBase implements List<NBTBase> {
 
     @Override
     public NBTBase set(int i, NBTBase value) {
-        return set(i,(Object)value);
+        return setValue(i, value);
     }
 
     public void set_b(int i, NBTBase value) {
@@ -235,7 +235,7 @@ public class NBTTagList extends NBTBase implements List<NBTBase> {
         add(index, NBTBase.getByValue(element));
     }
 
-    public NBTBase set(int i, Object value) {
+    private NBTBase setValue(int i, Object value) {
         NBTBase base = NBTBase.getByValue(value);
         byte type = base.getTypeId();
         if (type == 0) {

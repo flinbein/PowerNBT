@@ -4,7 +4,7 @@ import me.dpohvar.powernbt.command.CommandNBT;
 import me.dpohvar.powernbt.completer.CompleterNBT;
 import me.dpohvar.powernbt.completer.TypeCompleter;
 import me.dpohvar.powernbt.listener.SelectListener;
-import me.dpohvar.powernbt.nbt.NBTTagCompound;
+import me.dpohvar.powernbt.test.Test;
 import me.dpohvar.powernbt.utils.Caller;
 import me.dpohvar.powernbt.utils.Tokenizer;
 import me.dpohvar.powernbt.utils.Translator;
@@ -15,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 public class PowerNBT extends JavaPlugin {
 
@@ -98,10 +99,22 @@ public class PowerNBT extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new SelectListener(), this);
         getCommand("powernbt").setExecutor(new CommandNBT());
         getCommand("powernbt").setTabCompleter(new CompleterNBT());
+
+        runTests();
     }
 
     public TypeCompleter getTypeCompleter() {
         return typeCompleter;
+    }
+
+    private void runTests() {
+        try {
+            Test test = new Test();
+            test.run();
+            getLogger().info("Tests OK");
+        } catch (Throwable ex) {
+            getLogger().log(Level.SEVERE, "TESTS FAILED", ex);
+        }
     }
 }
 

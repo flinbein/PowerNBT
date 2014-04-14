@@ -13,7 +13,7 @@ import java.lang.reflect.Field;
 public class NBTTagShort extends NBTTagNumeric<Short> {
     private static Class clazz = Reflections.getClass("{nms}.NBTTagShort", "net.minecraft.nbt.NBTTagShort");
     private static Field field_Data = Reflections.getField(clazz, short.class);
-    private static Constructor con = Reflections.getConstructorByTypes(clazz, short.class);
+    private static Constructor con = Reflections.getConstructorWithNoOrStringParam(clazz);
 
     public NBTTagShort() {
         this("", (short) 0);
@@ -28,7 +28,8 @@ public class NBTTagShort extends NBTTagNumeric<Short> {
     }
 
     public NBTTagShort(String s, short b) {
-        super(Reflections.create(con,b));
+        super(createHandle(con));
+        set(b);
     }
 
     NBTTagShort(boolean ignored, Object tag) {

@@ -4,7 +4,6 @@ import me.dpohvar.powernbt.utils.Reflections;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 
 /**
@@ -15,7 +14,7 @@ import java.lang.reflect.Method;
 public class NBTTagByte extends NBTTagNumeric<Byte> {
     private static Class clazz = Reflections.getClass("{nms}.NBTTagByte","net.minecraft.nbt.NBTTagByte");
     private static Field fieldData = Reflections.getField(clazz,byte.class);
-    private static Constructor con = Reflections.getConstructorByTypes(clazz, byte.class);
+    private static Constructor con = Reflections.getConstructorWithNoOrStringParam(clazz);
 
     public NBTTagByte() {
         this("", (byte) 0);
@@ -30,7 +29,8 @@ public class NBTTagByte extends NBTTagNumeric<Byte> {
     }
 
     public NBTTagByte(String s, byte b) {
-        super(Reflections.create(con,b));
+        super(createHandle(con));
+        set(b);
     }
 
     public NBTTagByte(boolean ignored, Object tag) {

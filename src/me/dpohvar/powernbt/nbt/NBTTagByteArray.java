@@ -14,7 +14,7 @@ import java.util.*;
  */
 public class NBTTagByteArray extends NBTTagNumericArray<Byte> {
     private static Class clazz = Reflections.getClass("{nms}.NBTTagByteArray","net.minecraft.nbt.NBTTagByteArray");
-    private static Constructor con = Reflections.getConstructorByTypes(clazz,byte[].class);
+    private static Constructor con = Reflections.getConstructorWithNoOrStringParam(clazz);
     private static Field fieldData = Reflections.getField(clazz,byte[].class);
 
     public NBTTagByteArray() {
@@ -30,7 +30,8 @@ public class NBTTagByteArray extends NBTTagNumericArray<Byte> {
     }
 
     public NBTTagByteArray(String s, byte[] b) {
-        super(Reflections.create(con, b));
+        super(createHandle(con));
+        set(b);
     }
 
     public NBTTagByteArray(boolean ignored, Object tag) {

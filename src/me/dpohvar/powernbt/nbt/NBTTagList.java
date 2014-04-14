@@ -15,7 +15,7 @@ public class NBTTagList extends NBTBase implements List<NBTBase> {
     private static Class clazz = Reflections.getClass("{nms}.NBTTagList","net.minecraft.nbt.NBTTagList");
     private static Field field_list = Reflections.getField(clazz,List.class);
     private static Field fieldType = Reflections.getField(clazz,byte.class);
-    private static Constructor con = Reflections.getConstructorByTypes(clazz);
+    private static Constructor con = Reflections.getConstructorWithNoOrStringParam(clazz);
     private static Random random;
 
 
@@ -38,7 +38,7 @@ public class NBTTagList extends NBTBase implements List<NBTBase> {
     }
 
     public NBTTagList(String b) {
-        super(Reflections.create(con));
+        super(createHandle(con));
     }
 
     public NBTTagList(boolean fromHandle, Object tag) {
@@ -155,7 +155,7 @@ public class NBTTagList extends NBTBase implements List<NBTBase> {
 
     @Override
     public NBTTagList clone(){
-        return new NBTTagList(false,Reflections.clone(handle));
+        return new NBTTagList(false, cloneHandle());
     }
 
     @Override
@@ -191,7 +191,7 @@ public class NBTTagList extends NBTBase implements List<NBTBase> {
     public NBTTagList subList(int fromIndex, int toIndex) {
         NBTTagList sub = new NBTTagList();
         for(Object tag: this.getHandleList().subList(fromIndex,toIndex)){
-            sub.add(NBTBase.wrap(Reflections.clone(tag)));
+            sub.add(NBTBase.wrap(NBTBase.cloneHandle(tag)));
         }
         return sub;
     }
@@ -215,7 +215,7 @@ public class NBTTagList extends NBTBase implements List<NBTBase> {
 
     @Override
     public NBTBase set(int i, NBTBase value) {
-        return set(i,(Object)value);
+        return setValue(i, value);
     }
 
     public void set_b(int i, NBTBase value) {
@@ -235,7 +235,7 @@ public class NBTTagList extends NBTBase implements List<NBTBase> {
         add(index, NBTBase.getByValue(element));
     }
 
-    public NBTBase set(int i, Object value) {
+    private NBTBase setValue(int i, Object value) {
         NBTBase base = NBTBase.getByValue(value);
         byte type = base.getTypeId();
         if (type == 0) {
@@ -323,7 +323,7 @@ public class NBTTagList extends NBTBase implements List<NBTBase> {
 
     public boolean addAll$$$(Collection<? extends NBTBase> c) {
         List<Object> list = getHandleList();
-        for(NBTBase base:c) list.add(Reflections.clone(base.handle));
+        for(NBTBase base:c) list.add(NBTBase.cloneHandle(base.handle));
         update();
         return !c.isEmpty();
     }
@@ -331,7 +331,7 @@ public class NBTTagList extends NBTBase implements List<NBTBase> {
     @Override
     public boolean addAll(int index, Collection<? extends NBTBase> c) {
         List<Object> list = getHandleList();
-        for(NBTBase base:c) list.add(index++,Reflections.clone(base.handle));
+        for(NBTBase base:c) list.add(index++,NBTBase.cloneHandle(base.handle));
         return !c.isEmpty();
     }
 
@@ -363,7 +363,7 @@ public class NBTTagList extends NBTBase implements List<NBTBase> {
             byte listType = getSubTypeId();
             if (listType != 0 && listType != base.getTypeId()) throw new IllegalArgumentException();
             if (listType == 0) setSubTypeId(base.getTypeId());
-            list.add(Reflections.clone(base.handle));
+            list.add(NBTBase.cloneHandle(base.handle));
         }
         update();
         return !values.isEmpty();
@@ -430,7 +430,7 @@ public class NBTTagList extends NBTBase implements List<NBTBase> {
     public NBTBase[] toArray() {
         List<Object> list = getHandleList();
         NBTBase[] bases = new NBTBase[list.size()];
-        int i=0; for(Object tag:list) bases[i++] = NBTBase.wrap(Reflections.clone(tag));
+        int i=0; for(Object tag:list) bases[i++] = NBTBase.wrap(NBTBase.cloneHandle(tag));
         return bases;
     }
 
@@ -439,7 +439,7 @@ public class NBTTagList extends NBTBase implements List<NBTBase> {
         List<Object> list = getHandleList();
         int limit = list.size(); if(a.length < limit) limit = a.length;
         for(int i=0;i<limit;i++){
-            a[i] = (T) NBTBase.wrap(Reflections.clone(list.get(i)));
+            a[i] = (T) NBTBase.wrap(NBTBase.cloneHandle(list.get(i)));
         }
         return a;
     }
@@ -496,13 +496,13 @@ public class NBTTagList extends NBTBase implements List<NBTBase> {
 
         @Override
         public void set(NBTBase nbtBase) {
-            handle.set(Reflections.clone(nbtBase.handle));
+            handle.set(NBTBase.cloneHandle(nbtBase.handle));
             NBTTagList.this.update();
         }
 
         @Override
         public void add(NBTBase nbtBase) {
-            handle.add(Reflections.clone(nbtBase.handle));
+            handle.add(NBTBase.cloneHandle(nbtBase.handle));
             NBTTagList.this.update();
         }
     }

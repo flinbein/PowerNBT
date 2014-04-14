@@ -12,11 +12,18 @@ import static me.dpohvar.powernbt.PowerNBT.plugin;
 public class NBTContainerFileGZip extends NBTContainer<File> {
 
     File file;
-    private static final Class class_NBTTagCompound = Reflections.getClass("{nms}.NBTTagCompound", "net.minectaft.nbt.NBTTagCompound");
-    private static final Class class_NBTCompressedStreamTools = Reflections.getClass("{nms}.NBTCompressedStreamTools","net.minectaft.nbt.NBTCompressedStreamTools");
+    private static final Class class_NBTTagCompound = Reflections.getClass("{nms}.NBTTagCompound", "net.minecraft.nbt.NBTTagCompound");
+    private static final Class class_NBTCompressedStreamTools = getCompressedStreamToolsClass();
     private static Method method_read = Reflections.getMethodByTypes(class_NBTCompressedStreamTools,class_NBTTagCompound,InputStream.class);
     private static Method method_write = Reflections.getMethodByTypes(class_NBTCompressedStreamTools,void.class,class_NBTTagCompound,OutputStream.class);
 
+    private static Class getCompressedStreamToolsClass() {
+        try {
+            return Reflections.getClass("{nms}.CompressedStreamTools","net.minecraft.nbt.CompressedStreamTools");
+        } catch (Exception ex) {
+            return Reflections.getClass("{nms}.NBTCompressedStreamTools","net.minecraft.nbt.NBTCompressedStreamTools");
+        }
+    }
 
     public NBTContainerFileGZip(File file) {
         this.file = file;

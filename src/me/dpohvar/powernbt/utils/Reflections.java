@@ -1,12 +1,10 @@
 package me.dpohvar.powernbt.utils;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Server;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -202,7 +200,7 @@ public class Reflections {
      */
     public static void setFieldValue(Object o,Class fieldClass,Object val){
         try {
-            getField(o.getClass(),fieldClass).set(o,val);
+            getField(o.getClass(),fieldClass).set(o, val);
         } catch (Throwable e) {
             throw new RuntimeException("field not found",e);
         }
@@ -317,7 +315,7 @@ public class Reflections {
      * @return constructor
      * @throws RuntimeException if constructor not found
      */
-    public static Constructor getConstructorByTypes(Class sourceClass, Class... argumentsTypes){
+    public static Constructor getConstructorWithNoOrStringParam(Class sourceClass){
         Constructor constructor = null;
         List<Constructor> constructors = new ArrayList<Constructor>();
         constructors.addAll(Arrays.asList(sourceClass.getConstructors()));
@@ -326,13 +324,10 @@ public class Reflections {
         check: for(Constructor con:constructors){
             if(con==null) continue;
             Class[] params = con.getParameterTypes();
-            if(params.length != argumentsTypes.length) continue;
-            int i=0;
-            for(Class c:argumentsTypes) {
-                if (!c.equals(params[i++])) continue check;
+            if (params.length == 0 || (params.length == 1 && params[0] == String.class)) {
+                constructor = con;
+                break;
             }
-            constructor = con;
-            break;
         }
         if(constructor == null) throw new RuntimeException(
                 "no special constructor in class" +sourceClass.getName()
@@ -369,17 +364,4 @@ public class Reflections {
             throw new RuntimeException("invoke error",e);
         }
     }
-
-    public static <T> T clone(T object){
-        Class c = object.getClass();
-        try {
-            Method clone = c.getDeclaredMethod("clone");
-            return (T) clone.invoke(object);
-        } catch (Exception e) {
-            throw new RuntimeException("clone error",e);
-        }
-    }
-
-
-
 }

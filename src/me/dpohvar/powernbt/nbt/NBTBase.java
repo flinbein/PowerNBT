@@ -6,7 +6,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +21,6 @@ public abstract class NBTBase {
 
     public static final Class class_NBTBase = Reflections.getClass("{nms}.NBTBase","net.minecraft.nbt.NBTBase");
     protected static Method methodRead;
-//    private static Field fieldName = Reflections.getField(class_NBTBase,String.class);
     private static Method methodGetTypeId = Reflections.getMethodByTypes(class_NBTBase,byte.class);
     private static Method methodWrite = Reflections.getMethodByTypes(class_NBTBase, void.class, java.io.DataOutput.class);
     private static Method methodClone = Reflections.getMethodByTypes(class_NBTBase, NBTBase.class_NBTBase);
@@ -86,13 +84,14 @@ public abstract class NBTBase {
         return handle;
     }
 
+    @Deprecated
     public String getName() {
-//        return (String) Reflections.getFieldValue(fieldName,handle);
         return "";
     }
 
+    @Deprecated
     public void setName(String name) {
-//        Reflections.setFieldValue(fieldName,handle,name);
+       throw new UnsupportedOperationException("NBTBase has no name!");
     }
 
     NBTBase getDefault() {
@@ -180,6 +179,19 @@ public abstract class NBTBase {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static Object cloneHandle(Object handle) {
+        try {
+            return methodClone.invoke(handle);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Object cloneHandle() {
+        return cloneHandle(handle);
     }
 
     public static NBTBase getByValue(Object o) {

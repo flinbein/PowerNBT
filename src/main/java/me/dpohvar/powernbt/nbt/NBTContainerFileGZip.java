@@ -28,7 +28,7 @@ public class NBTContainerFileGZip extends NBTContainer<File> {
         FileInputStream input = null;
         try {
             input = new FileInputStream(file);
-            return NBTTagCompound.readGZip(new DataInputStream(input));
+            return NBTTagCompound.readGZip(input);
         } catch (FileNotFoundException e) {
             return null;
         } catch (Exception e) {
@@ -51,7 +51,7 @@ public class NBTContainerFileGZip extends NBTContainer<File> {
                 file.createNewFile();
             }
             output = new FileOutputStream(file);
-            ((NBTTagCompound)base).writeGZip(new DataOutputStream(output));
+            ((NBTTagCompound)base).writeGZip(output);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(plugin.translate("error_nofile", file.getName()), e);
         } catch (Exception e) {

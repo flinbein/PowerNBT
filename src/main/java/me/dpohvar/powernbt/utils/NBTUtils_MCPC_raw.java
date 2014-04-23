@@ -15,18 +15,18 @@ import static me.dpohvar.powernbt.utils.ReflectionUtils.*;
 
 final class NBTUtils_MCPC_raw extends NBTUtils {
 
-    RefClass class_NBTBase = getRefClass("{NBTBase}, {nm}.nbt.NBTBase");
-    RefClass class_NBTTagByte = getRefClass("{NBTTagByte}, {nm}.nbt.NBTTagByte");
-    RefClass class_NBTTagShort = getRefClass("{NBTTagShort}, {nm}.nbt.NBTTagShort");
-    RefClass class_NBTTagInt = getRefClass("{NBTTagInt}, {nm}.nbt.NBTTagInt");
-    RefClass class_NBTTagLong = getRefClass("{NBTTagLong}, {nm}.nbt.NBTTagLong");
-    RefClass class_NBTTagFloat = getRefClass("{NBTTagFloat}, {nm}.nbt.NBTTagFloat");
-    RefClass class_NBTTagDouble = getRefClass("{NBTTagDouble}, {nm}.nbt.NBTTagDouble");
-    RefClass class_NBTTagString = getRefClass("{NBTTagString}, {nm}.nbt.NBTTagString");
-    RefClass class_NBTTagByteArray = getRefClass("{NBTTagByteArray}, {nm}.nbt.NBTTagByteArray");
-    RefClass class_NBTTagIntArray = getRefClass("{NBTTagIntArray}, {nm}.nbt.NBTTagIntArray");
-    RefClass class_NBTTagList = getRefClass("{NBTTagList}, {nm}.nbt.NBTTagList");
-    RefClass class_NBTTagCompound = getRefClass("{NBTTagCompound}, {nm}.nbt.NBTTagCompound");
+    RefClass class_NBTBase = getRefClass("{nm}.nbt.NBTBase, {NBTBase}");
+    RefClass class_NBTTagByte = getRefClass("{nm}.nbt.NBTTagByte, {NBTTagByte}");
+    RefClass class_NBTTagShort = getRefClass("{nm}.nbt.NBTTagShort, {NBTTagShort}");
+    RefClass class_NBTTagInt = getRefClass("{nm}.nbt.NBTTagInt, {NBTTagInt}");
+    RefClass class_NBTTagLong = getRefClass("{nm}.nbt.NBTTagLong, {NBTTagLong}");
+    RefClass class_NBTTagFloat = getRefClass("{nm}.nbt.NBTTagFloat, {NBTTagFloat}");
+    RefClass class_NBTTagDouble = getRefClass("{nm}.nbt.NBTTagDouble, {NBTTagDouble}");
+    RefClass class_NBTTagString = getRefClass("{nm}.nbt.NBTTagString, {NBTTagString}");
+    RefClass class_NBTTagByteArray = getRefClass("{nm}.nbt.NBTTagByteArray, {NBTTagByteArray}");
+    RefClass class_NBTTagIntArray = getRefClass("{nm}.nbt.NBTTagIntArray, {NBTTagIntArray}");
+    RefClass class_NBTTagList = getRefClass("{nm}.nbt.NBTTagList, {NBTTagList}");
+    RefClass class_NBTTagCompound = getRefClass("{nm}.nbt.NBTTagCompound, {NBTTagCompound}");
 
     RefConstructor con_NBTagByte = class_NBTTagByte.getConstructor(byte.class);
     RefConstructor con_NBTagShort = class_NBTTagShort.getConstructor(short.class);
@@ -60,20 +60,26 @@ final class NBTUtils_MCPC_raw extends NBTUtils {
 
     RefClass class_NBTReadLimiter;
     RefConstructor con_NBTReadLimiter;
-    RefMethod met_NBTBase_load;
-    boolean useLimiter;
     long readLimit = Long.MAX_VALUE/2;
+    RefMethod met_NBTBase_load;
+    int met_NBTBase_load_args = 0;
 
     NBTUtils_MCPC_raw(){
-        try{
-            class_NBTReadLimiter = getRefClass("{NBTReadLimiter}, {nm}.nbt.NBTReadLimiter");
+        if (met_NBTBase_load_args==0) try{
+            class_NBTReadLimiter = getRefClass("{nms}.NBTReadLimiter, {nm}.nbt.NBTReadLimiter, {NBTReadLimiter}");
             con_NBTReadLimiter = class_NBTReadLimiter.getConstructor(long.class);
             met_NBTBase_load = class_NBTBase.findMethodByParams(DataInput.class, int.class, class_NBTReadLimiter);
-            useLimiter = true;
-        } catch (Exception e){
-
+            met_NBTBase_load_args = 3;
+        } catch (Exception ignored){}
+        if (met_NBTBase_load_args==0) try{
             met_NBTBase_load = class_NBTBase.findMethodByParams(DataInput.class, int.class);
-            useLimiter = false;
+            met_NBTBase_load_args = 2;
+        } catch (Exception ignored){}
+        if (met_NBTBase_load_args==0) {
+            met_NBTBase_load = class_NBTBase.findMethod(
+                    new MethodCondition().withTypes(DataInput.class).withAbstract(true)
+            );
+            met_NBTBase_load_args = 1;
         }
     }
 
@@ -224,8 +230,17 @@ final class NBTUtils_MCPC_raw extends NBTUtils {
 
     @Override
     public void readInputToTag(DataInput input, Object tag) throws IOException {
-        if (useLimiter) met_NBTBase_load.of(tag).call(input, 0, con_NBTReadLimiter.create(readLimit));
-        else met_NBTBase_load.of(tag).call(input, 0);
+        switch (met_NBTBase_load_args) {
+            case 1:
+                met_NBTBase_load.of(tag).call(input);
+                break;
+            case 2:
+                met_NBTBase_load.of(tag).call(input, 0);
+                break;
+            case 3:
+                met_NBTBase_load.of(tag).call(input, 0, con_NBTReadLimiter.create(readLimit));
+                break;
+        }
     }
 
     @Override

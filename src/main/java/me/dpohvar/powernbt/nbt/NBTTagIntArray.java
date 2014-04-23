@@ -66,7 +66,7 @@ public class NBTTagIntArray extends NBTTagNumericArray<Integer> {
     }
 
     public Integer set(int i, Number value) {
-        int res = get(i);
+        Integer res = get(i);
         int[] array = get();
         List<Integer> list = new LinkedList<Integer>();
         for (int b : array) list.add(b);
@@ -82,7 +82,7 @@ public class NBTTagIntArray extends NBTTagNumericArray<Integer> {
     }
 
     public Integer remove(int i) {
-        int res = get(i);
+        Integer res = get(i);
         int[] array = get();
         if (i < 0 || i >= array.length) return res;
         List<Integer> list = new LinkedList<Integer>();

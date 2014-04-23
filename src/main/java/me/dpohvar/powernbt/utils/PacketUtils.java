@@ -10,15 +10,29 @@ public final class PacketUtils {
 
     private PacketUtils(){}
 
-    RefClass classCraftPlayer = getRefClass("{CraftPlayer}, {cb}.entity.CraftPlayer");
-    RefClass classEntityPlayer = getRefClass("{EntityPlayer}, {nms}.EntityPlayer, {nm}.entity.player.EntityPlayer");
-    RefClass classEntityPlayerMP = getRefClass("{EntityPlayerMP}, {nm}.entity.player.EntityPlayerMP, null");
+    RefClass classCraftPlayer = getRefClass("{cb}.entity.CraftPlayer, {CraftPlayer}");
+    RefClass classEntityPlayer = getRefClass("{nms}.EntityPlayer, {nm}.entity.player.EntityPlayer, {EntityPlayer}");
+    RefClass classEntityPlayerMP = getRefClass("{nm}.entity.player.EntityPlayerMP, {EntityPlayerMP}, null");
     RefClass classNetworkElement = getRefClass(
-            "{NetworkElement} {nms}.PlayerConnection, {nm}.network.NetServerHandler, {nm}.network.NetHandlerPlayServer"
+            "{nms}.NetServerHandler," +
+                    "{nms}.PlayerConnection," +
+                    "{nm}.network.NetServerHandler," +
+                    "{nm}.network.NetHandlerPlayServer," +
+                    "{NetworkElement}"
     );
 
-    RefField fieldNetworkElement = ( isForge()?classEntityPlayerMP:classEntityPlayer ).findField(classNetworkElement);
-    RefMethod sendPacket = classNetworkElement.findMethodByParams("{Packet}, {nms}.Packet, {nm}.network.Packet");
+
+
+
+
+
+    RefField fieldNetworkElement = classEntityPlayerMP != null ?
+            classEntityPlayerMP.findField(classNetworkElement) :
+            classEntityPlayer.findField(classNetworkElement);
+
+
+
+    RefMethod sendPacket = classNetworkElement.findMethodByParams("{nms}.Packet, {nm}.network.Packet, {Packet}");
     RefMethod getHandle = classCraftPlayer.findMethodByReturnType(classEntityPlayer);
 
     public void sendPacket(Player player, Object packet){

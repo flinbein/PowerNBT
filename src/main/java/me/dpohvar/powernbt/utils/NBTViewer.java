@@ -22,6 +22,7 @@ public class NBTViewer {
     static int h_limit = 10;
 
     public static String getShortValueWithPrefix(NBTBase base, boolean hex){
+        if (base==null) return ChatColor.RESET + PowerNBT.plugin.translate("error_null");
         NBTType type = base.getType();
         return String.valueOf(type.color) + type.name + ':' + ' ' + ChatColor.RESET + getShortValue(base, hex);
     }

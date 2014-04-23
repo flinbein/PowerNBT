@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static me.dpohvar.powernbt.utils.NBTUtils.nbtUtils;
 
 public class NBTContainerFile extends NBTContainer<File> {
 
@@ -22,11 +23,8 @@ public class NBTContainerFile extends NBTContainer<File> {
         DataInputStream input = null;
         try {
             input = new DataInputStream(new FileInputStream(file));
-            byte type = (byte)input.read();
-            input.readUTF();
-            NBTBase tag = NBTBase.getDefault(type);
-            tag.read(input);
-            return tag;
+            Object tag = nbtUtils.readTag(input);
+            return NBTBase.wrap(tag);
         } catch (FileNotFoundException e) {
             return null;
         } catch (IOException e) {
@@ -43,20 +41,25 @@ public class NBTContainerFile extends NBTContainer<File> {
 
     @Override
     public void writeTag(NBTBase base) {
+        FileOutputStream outputStream = null;
         try {
             if (!file.exists()) {
                 new File(file.getParent()).mkdirs();
                 file.createNewFile();
             }
-            DataOutputStream output = new DataOutputStream(new FileOutputStream(file));
-            output.write(base.getTypeId());
-            output.writeUTF(base.getName());
-            base.write(output);
-            output.close();
+            outputStream = new FileOutputStream(file);
+            DataOutputStream output = new DataOutputStream(outputStream);
+            nbtUtils.writeTagToOutput(output,base.getHandle());
         } catch (FileNotFoundException e) {
             throw new RuntimeException("file "+file+" not found", e);
         } catch (Exception e) {
             throw new RuntimeException("can't write to file", e);
+        } finally {
+            if (outputStream!=null) try {
+                outputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

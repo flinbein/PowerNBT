@@ -15,18 +15,18 @@ import static me.dpohvar.powernbt.utils.ReflectionUtils.*;
 
 final class NBTUtils_Bukkit_named extends NBTUtils {
 
-    RefClass class_NBTBase = getRefClass("{NBTBase}, {nms}.NBTBase");
-    RefClass class_NBTTagByte = getRefClass("{NBTTagByte}, {nms}.NBTTagByte");
-    RefClass class_NBTTagShort = getRefClass("{NBTTagShort}, {nms}.NBTTagShort");
-    RefClass class_NBTTagInt = getRefClass("{NBTTagInt}, {nms}.NBTTagInt");
-    RefClass class_NBTTagLong = getRefClass("{NBTTagLong}, {nms}.NBTTagLong");
-    RefClass class_NBTTagFloat = getRefClass("{NBTTagFloat}, {nms}.NBTTagFloat");
-    RefClass class_NBTTagDouble = getRefClass("{NBTTagDouble}, {nms}.NBTTagDouble");
-    RefClass class_NBTTagString = getRefClass("{NBTTagString}, {nms}.NBTTagString");
-    RefClass class_NBTTagByteArray = getRefClass("{NBTTagByteArray}, {nms}.NBTTagByteArray");
-    RefClass class_NBTTagIntArray = getRefClass("{NBTTagIntArray}, {nms}.NBTTagIntArray");
-    RefClass class_NBTTagList = getRefClass("{NBTTagList}, {nms}.NBTTagList");
-    RefClass class_NBTTagCompound = getRefClass("{NBTTagCompound}, {nms}.NBTTagCompound");
+    RefClass class_NBTBase = getRefClass("{nms}.NBTBase, {NBTBase}");
+    RefClass class_NBTTagByte = getRefClass("{nms}.NBTTagByte, {NBTTagByte}");
+    RefClass class_NBTTagShort = getRefClass("{nms}.NBTTagShort, {NBTTagShort}");
+    RefClass class_NBTTagInt = getRefClass("{nms}.NBTTagInt, {NBTTagInt}");
+    RefClass class_NBTTagLong = getRefClass("{nms}.NBTTagLong, {NBTTagLong}");
+    RefClass class_NBTTagFloat = getRefClass("{nms}.NBTTagFloat, {NBTTagFloat}");
+    RefClass class_NBTTagDouble = getRefClass("{nms}.NBTTagDouble, {NBTTagDouble}");
+    RefClass class_NBTTagString = getRefClass("{nms}.NBTTagString, {NBTTagString}");
+    RefClass class_NBTTagByteArray = getRefClass("{nms}.NBTTagByteArray, {NBTTagByteArray}");
+    RefClass class_NBTTagIntArray = getRefClass("{nms}.NBTTagIntArray, {NBTTagIntArray}");
+    RefClass class_NBTTagList = getRefClass("{nms}.NBTTagList, {NBTTagList}");
+    RefClass class_NBTTagCompound = getRefClass("{nms}.NBTTagCompound, {NBTTagCompound}");
 
     RefConstructor con_NBTagByte = class_NBTTagByte.getConstructor(String.class, byte.class);
     RefConstructor con_NBTagShort = class_NBTTagShort.getConstructor(String.class, short.class);
@@ -58,18 +58,30 @@ final class NBTUtils_Bukkit_named extends NBTUtils {
     RefMethod met_NBTBase_clone = class_NBTBase.findMethodByReturnType(class_NBTBase);
     RefMethod met_NBTBase_createTag = class_NBTBase.findMethodByParams(byte.class, String.class);
     RefMethod met_NBTBase_write = class_NBTBase.findMethodByParams(DataOutput.class);
-    RefMethod met_NBTBase_load = null;
 
-    boolean loadWithRestrict;
-    {
-        try{
+    RefClass class_NBTReadLimiter;
+    RefConstructor con_NBTReadLimiter;
+    long readLimit = Long.MAX_VALUE/2;
+    RefMethod met_NBTBase_load;
+    int met_NBTBase_load_args = 0;
+
+    NBTUtils_Bukkit_named(){
+        if (met_NBTBase_load_args==0) try{
+            class_NBTReadLimiter = getRefClass("{nms}.NBTReadLimiter, {nm}.nbt.NBTReadLimiter, {NBTReadLimiter}");
+            con_NBTReadLimiter = class_NBTReadLimiter.getConstructor(long.class);
+            met_NBTBase_load = class_NBTBase.findMethodByParams(DataInput.class, int.class, class_NBTReadLimiter);
+            met_NBTBase_load_args = 3;
+        } catch (Exception ignored){}
+        if (met_NBTBase_load_args==0) try{
             met_NBTBase_load = class_NBTBase.findMethodByParams(DataInput.class, int.class);
-            loadWithRestrict = true; // minecraft 1.6+
-        } catch (Exception e){
-            met_NBTBase_load = class_NBTBase.findMethodByParams(DataInput.class);
-            loadWithRestrict = false; // minecraft 1.5-
+            met_NBTBase_load_args = 2;
+        } catch (Exception ignored){}
+        if (met_NBTBase_load_args==0) {
+            met_NBTBase_load = class_NBTBase.findMethod(
+                    new MethodCondition().withTypes(DataInput.class).withAbstract(true)
+            );
+            met_NBTBase_load_args = 1;
         }
-
     }
 
     @Override
@@ -219,15 +231,22 @@ final class NBTUtils_Bukkit_named extends NBTUtils {
 
     @Override
     public void readInputToTag(DataInput input, Object tag) throws IOException {
+        switch (met_NBTBase_load_args) {
+            case 1:
+                met_NBTBase_load.of(tag).call(input);
+                break;
+            case 2:
+                met_NBTBase_load.of(tag).call(input, 0);
+                break;
+            case 3:
+                met_NBTBase_load.of(tag).call(input, 0, con_NBTReadLimiter.create(readLimit));
+                break;
+        }
     }
 
     @Override
     public void writeTagDataToOutput(DataOutput output, Object tag) throws IOException {
-        if (loadWithRestrict) {
-            met_NBTBase_write.of(tag).call(output,0);
-        } else {
-            met_NBTBase_write.of(tag).call(output);
-        }
+        met_NBTBase_write.of(tag).call(output);
     }
 
     @SuppressWarnings("unchecked")

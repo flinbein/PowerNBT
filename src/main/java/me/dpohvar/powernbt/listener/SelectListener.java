@@ -6,6 +6,7 @@ import me.dpohvar.powernbt.command.action.Argument;
 import me.dpohvar.powernbt.nbt.*;
 import me.dpohvar.powernbt.utils.Caller;
 import me.dpohvar.powernbt.utils.NBTQuery;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -71,8 +72,8 @@ public class SelectListener implements Listener {
 
     @EventHandler
     public void inventory(InventoryClickEvent event) {
-        ClickType clickType = event.getClick();
-        if (!clickType.isRightClick() && !clickType.isCreativeAction()) return;
+        GameMode gm = event.getWhoClicked().getGameMode();
+        if (event.isRightClick() && gm == GameMode.CREATIVE) return;
         ItemStack cursor = event.getCursor();
         if (cursor!=null && !cursor.getType().equals(Material.AIR)) return;
         ItemStack item = event.getCurrentItem();

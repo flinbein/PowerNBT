@@ -128,6 +128,11 @@ public class NBTCompound implements Map<String,Object> {
         return new NBTEntrySet(handleMap.entrySet());
     }
 
+    /**
+     * Merge this compound with map.
+     * merging occurs recursively for inner maps
+     * @param map map to merge
+     */
     public void merge(Map map) {
         for(Object key: map.keySet()) {
             if (!containsKey(key)) {
@@ -275,10 +280,6 @@ public class NBTCompound implements Map<String,Object> {
             sb.append(", ");
         }
     }
-
-
-
-
 
     public byte getByte(String key) {
         Object val = get(key);

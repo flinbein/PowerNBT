@@ -290,7 +290,6 @@ public class CompleterNBT extends Completer {
 
 
     private void completeTag(NBTContainer<?> container, TabFormer former) throws Exception {
-        //todo: all tags for "*"
         String query = former.getQuery();
         String[] els = query.split("\\.|(?=\\[)");
         if (query.endsWith("..")) {

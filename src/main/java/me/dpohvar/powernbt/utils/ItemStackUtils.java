@@ -14,10 +14,10 @@ public final class ItemStackUtils {
 
 
 
-    RefClass classCraftItemStack = getRefClass("{CraftItemStack}, {cb}.inventory.CraftItemStack");
-    RefClass classItemStack = getRefClass("{ItemStack}, {nms}.ItemStack, net.minecraft.item.ItemStack");
+    RefClass classCraftItemStack = getRefClass("{cb}.inventory.CraftItemStack, {CraftItemStack}");
+    RefClass classItemStack = getRefClass("{nms}.ItemStack, {nm}.item.ItemStack, {ItemStack}");
     RefField itemHandle = classCraftItemStack.findField(classItemStack);
-    RefField tag = classItemStack.findField("{NBTTagCompound} {nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound");
+    RefField tag = classItemStack.findField("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}");
 
     RefMethod asNMSCopy;
     RefMethod asCraftMirror;

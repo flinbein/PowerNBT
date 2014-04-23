@@ -157,6 +157,7 @@ public abstract class NBTBase {
     }
 
     public static NBTBase getByValue(Object o) {
+        if (o == null) return null;
         if (o instanceof NBTBase) return (NBTBase) o;
         if (nbtUtils.isNBTTag(o)) return wrap(o);
         if (o instanceof Byte) return new NBTTagByte((Byte) o);

@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
@@ -186,9 +187,16 @@ public class Argument {
             return new NBTContainerBlock(w.getBlockAt(x, y, z));
         } else if (object.startsWith("@") && !object.contains(File.separator)) {
             File baseDir = (Bukkit.getWorlds().get(0)).getWorldFolder();
-            File playerDir = new File(baseDir, "players");
-            File file = new File(playerDir, object.substring(1) + ".dat");
-            return new NBTContainerFileGZip(file);
+            File playerFile;
+            try {
+                UUID uuid = Bukkit.getOfflinePlayer(object.substring(1)).getUniqueId();
+                File playerDir = new File(baseDir, "playerdata");
+                playerFile = new File(playerDir, uuid+".dat");
+            } catch (NoSuchMethodError ignored) { // no getUniqueId()
+                File playerDir = new File(baseDir, "players");
+                playerFile = new File(playerDir, object.substring(1) + ".dat");
+            }
+            return new NBTContainerFileGZip(playerFile);
         } else if (object.startsWith("\"") && object.endsWith("\"")) {
             String s = StringParser.parse(object.substring(1, object.length() - 1));
             NBTType type = NBTType.STRING;

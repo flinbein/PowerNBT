@@ -38,13 +38,15 @@ public abstract class NBTTagNumericArray<T extends Number> extends NBTTagDatable
 
     @Override
     public boolean addAll(Collection<? extends T> c) {
-        for(Number n:c) add(n);
+        List<Number> copy = new ArrayList<Number>(c);
+        for(Number n:copy) add(n);
         return !c.isEmpty();
     }
 
     @Override
     public boolean addAll(int index, Collection<? extends T> c) {
-        for(Number n:c) add(index,n);
+        List<Number> copy = new ArrayList<Number>(c);
+        for(Number n:copy) add(index++,n);
         return true;
     }
 

@@ -4,7 +4,6 @@ import me.dpohvar.powernbt.command.CommandNBT;
 import me.dpohvar.powernbt.completer.CompleterNBT;
 import me.dpohvar.powernbt.completer.TypeCompleter;
 import me.dpohvar.powernbt.listener.SelectListener;
-import me.dpohvar.powernbt.test.Test;
 import me.dpohvar.powernbt.utils.*;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -14,7 +13,6 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.logging.Level;
 
 public class PowerNBT extends JavaPlugin {
 
@@ -111,24 +109,16 @@ public class PowerNBT extends JavaPlugin {
     }
 
     private void initializeUtils() {
-        if (isDebug())
-            printDebug(EntityUtils.entityUtils);
-            printDebug(ItemStackUtils.itemStackUtils);
-            printDebug(NBTBlockUtils.nbtBlockUtils);
-            printDebug(NBTCompressedUtils.nbtCompressedUtils);
-            printDebug(NBTUtils.nbtUtils);
-            printDebug(PacketUtils.packetUtils);
-        try {
-            Test test = new Test();
-            test.run();
-            getLogger().info("Tests OK");
-        } catch (Throwable ex) {
-            getLogger().log(Level.SEVERE, "TESTS FAILED", ex);
-        }
+        printDebug(EntityUtils.entityUtils);
+        printDebug(ItemStackUtils.itemStackUtils);
+        printDebug(NBTBlockUtils.nbtBlockUtils);
+        printDebug(NBTCompressedUtils.nbtCompressedUtils);
+        printDebug(NBTUtils.nbtUtils);
+        printDebug(PacketUtils.packetUtils);
     }
 
     private void printDebug(Object t){
-        getLogger().fine("" + t);
+        if (isDebug()) getLogger().info("" + t);
     }
 }
 

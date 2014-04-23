@@ -8,6 +8,7 @@ import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -100,11 +101,18 @@ public class ReflectionUtils {
      */
     @SuppressWarnings("unchecked")
     public static RefClass getRefClass(String pattern){
+        String[] vars;
         if (pattern.contains(" ")||pattern.contains(",")) {
-            for(String name: pattern.split(" |,")) if (!name.isEmpty()) try{
-                return new RefClass(classByName(name));
-            } catch (ClassNotFoundException ignored) {
-            }
+            vars = pattern.split(" |,");
+        } else {
+            vars = new String[1];
+            vars[0] = pattern;
+        }
+        for(String name: vars) if (!name.isEmpty()) try{
+            Class clazz = classByName(name);
+            if (clazz==null) return null;
+            else return new RefClass(clazz);
+        } catch (ClassNotFoundException ignored) {
         }
         throw new RuntimeException("no class found: "+pattern);
     }
@@ -414,6 +422,12 @@ public class ReflectionUtils {
         private Class returnType;
         private List<Class> types;
         private int index = -1;
+        private boolean checkAbstract = false;
+        private boolean modAbstract;
+        private boolean checkFinal = false;
+        private boolean modFinal;
+        private boolean checkStatic = false;
+        private boolean modStatic;
 
         public MethodCondition withForge(boolean forge){
             this.checkForge = true;
@@ -461,24 +475,27 @@ public class ReflectionUtils {
             return this;
         }
 
-        public MethodCondition withIndex(int index){
-            this.index = index;
+        public MethodCondition withAbstract(boolean modAbstract){
+            this.checkAbstract = true;
+            this.modAbstract = modAbstract;
             return this;
         }
 
-        @SuppressWarnings({"CloneDoesntDeclareCloneNotSupportedException", "CloneDoesntCallSuperClone"})
-        public MethodCondition clone() {
-            MethodCondition clone = new MethodCondition();
-            clone.checkForge = checkForge;
-            clone.forge = forge;
-            clone.name = name;
-            clone.prefix = prefix;
-            clone.returnType = returnType;
-            clone.suffix = suffix;
-            clone.types = types;
-            clone.index = index;
-            return clone;
+        public MethodCondition withFinal(boolean modFinal){
+            this.checkFinal = true;
+            this.modFinal = modFinal;
+            return this;
+        }
 
+        public MethodCondition withStatic(boolean modStatic){
+            this.checkStatic = true;
+            this.modStatic = modStatic;
+            return this;
+        }
+
+        public MethodCondition withIndex(int index){
+            this.index = index;
+            return this;
         }
 
         private RefMethod find(RefClass clazz) {
@@ -508,6 +525,18 @@ public class ReflectionUtils {
             if(returnType != null) {
                 Iterator<Method> itr = methods.iterator();
                 while(itr.hasNext()) if (!itr.next().getReturnType().equals(returnType)) itr.remove();
+            }
+            if (checkAbstract) {
+                Iterator<Method> itr = methods.iterator();
+                while(itr.hasNext()) if (Modifier.isAbstract(itr.next().getModifiers())!=modAbstract) itr.remove();
+            }
+            if (checkFinal) {
+                Iterator<Method> itr = methods.iterator();
+                while(itr.hasNext()) if (Modifier.isAbstract(itr.next().getModifiers())!=modFinal) itr.remove();
+            }
+            if (checkStatic) {
+                Iterator<Method> itr = methods.iterator();
+                while(itr.hasNext()) if (Modifier.isAbstract(itr.next().getModifiers())!=modStatic) itr.remove();
             }
             if(types != null) {
                 Iterator<Method> itr = methods.iterator();

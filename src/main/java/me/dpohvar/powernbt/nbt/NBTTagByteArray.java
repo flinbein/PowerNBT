@@ -72,7 +72,7 @@ public class NBTTagByteArray extends NBTTagNumericArray<Byte> {
     }
 
     public Byte set(int i, Number value) {
-        byte res = get(i);
+        Byte res = get(i);
         byte[] array = get();
         List<Byte> list = new LinkedList<Byte>();
         for (byte b : array) list.add(b);
@@ -88,7 +88,7 @@ public class NBTTagByteArray extends NBTTagNumericArray<Byte> {
     }
 
     public Byte remove(int i) {
-        byte res = get(i);
+        Byte res = get(i);
         byte[] array = get();
         if (i < 0 || i >= array.length) return res;
         List<Byte> list = new LinkedList<Byte>();

@@ -25,13 +25,13 @@ public class NBTTagCompound extends NBTBase implements Map<String,NBTBase> {
         this();
     }
 
-    static public NBTTagCompound readGZip(java.io.DataInput input) {
+    static public NBTTagCompound readGZip(InputStream input) {
         Object tag = nbtCompressedUtils.readCompound(input);
         if (tag==null) return null;
         return new NBTTagCompound(true, tag);
     }
 
-    final public void writeGZip(java.io.DataOutput output) {
+    final public void writeGZip(OutputStream output) {
         nbtCompressedUtils.writeCompound(handle,output);
     }
 

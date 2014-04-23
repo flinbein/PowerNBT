@@ -28,13 +28,13 @@ public abstract class NBTUtils {
         boolean raw = false;
         if (isForge()) { // Forge classpath
             try{ // to get raw constructor
-                getRefClass("{NBTTagByte}, {nm}.nbt.NBTTagByte").getConstructor(byte.class);
+                getRefClass("{nm}.nbt.NBTTagByte, {NBTTagByte}").getConstructor(byte.class);
                 raw = true; // on success
             } catch (Exception ignored) {}
             nbtUtils = raw ? new NBTUtils_MCPC_raw() : new NBTUtils_MCPC_named();
         } else { // NMS classpath
             try{ // to get raw constructor
-                getRefClass("{NBTTagByte}, {nms}.NBTTagByte").getConstructor(byte.class);
+                getRefClass("{nms}.NBTTagByte, {NBTTagByte}").getConstructor(byte.class);
                 raw = true; // on success
             } catch (Exception ignored) {}
             nbtUtils = raw ? new NBTUtils_Bukkit_raw() : new NBTUtils_Bukkit_named();

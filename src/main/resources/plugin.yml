@@ -3,7 +3,7 @@ description: Powerful nbt editor for bukkit and MCPC+
 author: DPOH-VAR
 main: me.dpohvar.powernbt.PowerNBT
 website: http://dev.bukkit.org/bukkit-plugins/varscript/
-version: 0.7.1
+version: 0.7.2
 commands:
     powernbt:
         description: use nbt commands

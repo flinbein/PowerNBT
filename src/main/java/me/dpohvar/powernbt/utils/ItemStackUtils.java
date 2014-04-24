@@ -107,6 +107,10 @@ public final class ItemStackUtils {
     }
 
     private void setTagOrigin(ItemStack itemStack, Object nbtTagCompound){
+        if (nbtTagCompound == null) {
+            itemStack.setItemMeta(null);
+            return;
+        }
         ItemStack copyNMSItemStack = createCraftItemStack(itemStack);
         try {
             setTagCB(copyNMSItemStack, nbtTagCompound);

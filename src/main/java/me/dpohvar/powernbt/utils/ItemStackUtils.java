@@ -32,7 +32,7 @@ public final class ItemStackUtils {
                             .withReturnType(classItemStack)
             );
             asCraftMirror = classCraftItemStack.findMethod(new MethodCondition()
-                            .withTypes(ItemStack.class)
+                            .withTypes(classItemStack)
                             .withReturnType(classCraftItemStack)
             );
         } catch (Exception e) {

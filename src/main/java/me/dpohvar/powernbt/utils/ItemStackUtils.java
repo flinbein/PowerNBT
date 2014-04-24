@@ -98,12 +98,12 @@ public final class ItemStackUtils {
     @SuppressWarnings("unchecked")
     private void setTagCB(ItemStack itemStack, Object nbtTagCompound){
         Object nmsItemStack = getHandle(itemStack);
-        tag.of(nmsItemStack).set(nbtTagCompound);
+        setTag(nmsItemStack,nbtTagCompound);
     }
 
     private Object getTagCB(ItemStack itemStack){
         Object nmsItemStack = getHandle(itemStack);
-        return tag.of(nmsItemStack).get();
+        return getTag(nmsItemStack);
     }
 
     private void setTagOrigin(ItemStack itemStack, Object nbtTagCompound){

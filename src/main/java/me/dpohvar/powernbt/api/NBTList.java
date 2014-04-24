@@ -1,24 +1,45 @@
 package me.dpohvar.powernbt.api;
 
-import me.dpohvar.powernbt.utils.NBTUtils;
-
 import java.util.*;
 
 import static me.dpohvar.powernbt.utils.NBTUtils.nbtUtils;
 
 /**
- * Created by DPOH-VAR on 15.01.14
+ * Represent net.minecraft.server.NBTTagList.
+ * Allows you to work with NBTTagList as with List.
+ * values on get() will be converted to java primitive types if it possible.
+ * net.minecraft.server.NBTTagList converted to NBTList
+ * net.minecraft.server.NBTTagCompound converted to NBTCompound
+ * types allowed to set to empty NBTList:
+ * - all primitive types (boolean -> NBTTagByte 0 or 1)
+ * - Object[] -> NBTTagList
+ * - java.util.Collection -> NBTTagList
+ * - java.util.Map -> NBTTagCompound
+ * arrays, collections and maps must contains only the allowed values.
+ * if NBTList is not empty you can set only values, that can be converted to NBTList type.
+ * In other case, you'll get NBTConvertException
  */
+@SuppressWarnings("UnusedDeclaration")
 public class NBTList implements List<Object> {
 
     private final List<Object> handleList;
     private final Object handle;
 
+    /**
+     * create NBTList by NBTTagList
+     * @param tag instance of net.minecraft.server.NBTTagCompound
+     * @return NBTList
+     */
     public static NBTList forNBT(Object tag){
         if (tag==null) return null;
         return new NBTList(tag);
     }
 
+    /**
+     * create NBTList by copy of NBTTagList
+     * @param tag instance of net.minecraft.server.NBTTagCompound
+     * @return NBTList
+     */
     public static NBTList forNBTCopy(Object tag){
         if (tag==null) return null;
         return new NBTList(nbtUtils.cloneTag(tag));
@@ -30,11 +51,25 @@ public class NBTList implements List<Object> {
         this.handleList = nbtUtils.getHandleList(tag);
     }
 
+    /**
+     * convert Collection to NBTList
+     * @param a collection
+     */
     public NBTList(Collection a) {
-        this(nbtUtils.createTagList());
-        this.addAll(a);
+        this(nbtUtils.createTag(a,(byte)9));
     }
 
+    /**
+     * convert array to NBTList
+     * @param a array
+     */
+    public NBTList(Object[] a) {
+        this(nbtUtils.createTag(a,(byte)9));
+    }
+
+    /**
+     * create new empty NBTList
+     */
     public NBTList() {
         this(nbtUtils.createTagList());
     }
@@ -49,14 +84,27 @@ public class NBTList implements List<Object> {
         return handleList;
     }
 
+    /**
+     * get original NBTTagList
+     * Be careful!
+     * @return NBTTagList
+     */
     public Object getHandle(){
         return handle;
     }
 
+    /**
+     * get copy of original NBTTagList
+     * @return NBTTagList
+     */
     public Object getHandleCopy(){
         return nbtUtils.cloneTag(handle);
     }
 
+    /**
+     * get byte type of original NBTTagList.
+     * @return type of list or 0 if list is empty
+     */
     public byte getType(){
         if (size()==0) return 0;
         else return nbtUtils.getNBTTagListType(handle);
@@ -200,8 +248,9 @@ public class NBTList implements List<Object> {
 
     @Override
     public Object set(int index, Object element) {
+        if (element == null) return remove(index);
         Object tag = convertToCurrentType(element);
-        Object oldTag = handleList.set(index, nbtUtils.createTag(element));
+        Object oldTag = handleList.set(index, tag);
         return nbtUtils.getValue(oldTag);
     }
 
@@ -290,8 +339,12 @@ public class NBTList implements List<Object> {
 
         @Override
         public void set(Object o) {
-            Object tag = convertToCurrentType(o);
-            iterator.set(tag);
+            if (o==null) {
+                remove();
+            } else {
+                Object tag = convertToCurrentType(o);
+                iterator.set(tag);
+            }
         }
 
         @Override
@@ -388,7 +441,7 @@ public class NBTList implements List<Object> {
                 @Override
                 public Object next() {
                     if (hasNext())
-                        return iterator.next();
+                        return super.next();
                     else
                         throw new NoSuchElementException();
                 }
@@ -401,35 +454,35 @@ public class NBTList implements List<Object> {
                 @Override
                 public Object previous() {
                     if (hasPrevious())
-                        return iterator.previous();
+                        return super.previous();
                     else
                         throw new NoSuchElementException();
                 }
 
                 @Override
                 public int nextIndex() {
-                    return iterator.nextIndex() - offset;
+                    return super.nextIndex() - offset;
                 }
 
                 @Override
                 public int previousIndex() {
-                    return iterator.previousIndex() - offset;
+                    return super.previousIndex() - offset;
                 }
 
                 @Override
                 public void remove() {
-                    iterator.remove();
+                    super.remove();
                     size--;
                 }
 
                 @Override
                 public void set(Object e) {
-                    iterator.set(e);
+                    super.set(e);
                 }
 
                 @Override
                 public void add(Object e) {
-                    iterator.add(e);
+                    super.add(e);
                     size++;
                 }
             };

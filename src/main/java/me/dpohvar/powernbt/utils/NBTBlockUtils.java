@@ -4,8 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
-import java.lang.reflect.Method;
-
 import static me.dpohvar.powernbt.utils.ReflectionUtils.*;
 
 /**
@@ -41,7 +39,6 @@ public final class NBTBlockUtils {
     public void readTag(Block block, Object compound){
         Object tile = getTileEntity(block);
         if (tile!=null) read.of(tile).call(compound);
-
     }
 
     /**

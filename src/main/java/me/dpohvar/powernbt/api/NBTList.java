@@ -16,10 +16,17 @@ import static me.dpohvar.powernbt.utils.NBTUtils.nbtUtils;
  * - java.util.Collection -> NBTTagList
  * - java.util.Map -> NBTTagCompound
  * arrays, collections and maps must contains only the allowed values.
- * if NBTList is not empty you can set only values, that can be converted to NBTList type.
- * In other case, you'll get NBTConvertException
+ *
+ * You can add any allowed value to empty NBTList
+ * if NBTList is not empty, you can add only values that can be converted to type of NBTList
+ * Example:
+ *   NBTList list = new NBTList(); // ok
+ *   list.getType(); // type is 0 - list is empty
+ *   list.add( (int) 15 ); // ok
+ *   list.getType(); // type is 3 - contains integers
+ *   list.add( (float) 3.14 ); // 3.14 converted to 3
+ *   list.add("some text"); // NBTConvertException, can not convert "some text" to int
  */
-@SuppressWarnings("UnusedDeclaration")
 public class NBTList implements List<Object> {
 
     private final List<Object> handleList;
@@ -53,18 +60,20 @@ public class NBTList implements List<Object> {
 
     /**
      * convert Collection to NBTList
-     * @param a collection
+     * @param collection collection
      */
-    public NBTList(Collection a) {
-        this(nbtUtils.createTag(a,(byte)9));
+    public NBTList(Collection collection) {
+        this(nbtUtils.createTagList());
+        for (Object t: collection) add(t);
     }
 
     /**
      * convert array to NBTList
-     * @param a array
+     * @param array array
      */
-    public NBTList(Object[] a) {
-        this(nbtUtils.createTag(a,(byte)9));
+    public NBTList(Object[] array) {
+        this(nbtUtils.createTagList());
+        for (Object t: array) add(t);
     }
 
     /**
@@ -79,7 +88,6 @@ public class NBTList implements List<Object> {
         return t instanceof NBTList && handle.equals(((NBTList) t).handle);
     }
 
-    @SuppressWarnings("unused")
     public List<Object> getHandleList(){
         return handleList;
     }
@@ -120,9 +128,28 @@ public class NBTList implements List<Object> {
             Object tag = nbtUtils.createTag(javaObject);
             type = nbtUtils.getTagType(tag);
             setType(type);
-            return javaObject;
+            return tag;
         }
         else return nbtUtils.createTag(javaObject, type);
+    }
+
+    public <T extends List<Object>> T toList(T list) {
+        list.clear();
+        for (Object nbtTag: handleList) {
+            byte type = nbtUtils.getTagType(nbtTag);
+            if (type==9) {
+                list.add(forNBT(nbtTag).toList(new ArrayList<Object>()));
+            } else if (type==10) {
+                list.add(NBTCompound.forNBT(nbtTag).toMap(new HashMap<String, Object>()));
+            } else {
+                list.add(nbtUtils.getValue(nbtTag));
+            }
+        }
+        return list;
+    }
+
+    public ArrayList<Object> toArrayList() {
+        return toList(new ArrayList<Object>());
     }
 
     @Override

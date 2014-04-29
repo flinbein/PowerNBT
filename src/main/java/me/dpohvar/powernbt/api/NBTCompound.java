@@ -45,6 +45,27 @@ public class NBTCompound implements Map<String,Object> {
         return forNBT(nbtUtils.cloneTag(tag));
     }
 
+    public <T extends Map<String, Object>> T toMap(T map){
+        map.clear();
+        for (Map.Entry<String,Object> e: handleMap.entrySet()) {
+            String key = e.getKey();
+            Object nbtTag = e.getValue();
+            byte type = nbtUtils.getTagType(nbtTag);
+            if (type==9) {
+                map.put(key, NBTList.forNBT(nbtTag).toList(new ArrayList<Object>()));
+            } else if (type==10) {
+                map.put(key, forNBT(nbtTag).toMap(new HashMap<String, Object>()));
+            } else {
+                map.put(key, nbtUtils.getValue(nbtTag));
+            }
+        }
+        return map;
+    }
+
+    public HashMap<String,Object> toHashMap(){
+        return toMap(new HashMap<String, Object>());
+    }
+
     NBTCompound(Object tag){
         assert nbtUtils.getTagType(tag) == 10;
         this.handle = tag;
@@ -92,10 +113,13 @@ public class NBTCompound implements Map<String,Object> {
 
     /**
      * Convert Map to NBTCompound
-     * @param values map to convert
+     * @param map map to convert
      */
-    public NBTCompound(Map values){
-        this(nbtUtils.createTag(values, (byte) 10));
+    public NBTCompound(Map map){
+        this(nbtUtils.createTagCompound());
+        for (Object key: map.keySet()) {
+            put(key.toString(), map.get(key));
+        }
     }
 
     @Override
@@ -133,8 +157,13 @@ public class NBTCompound implements Map<String,Object> {
     public Object put(String key, Object value) {
         if (value==null) return remove(key);
         Object tag = nbtUtils.createTag(value);
-        Object oldTag = handleMap.put(key,tag);
+        Object oldTag = put_handle(key,tag);
         return nbtUtils.getValue(oldTag);
+    }
+
+    private Object put_handle(String key, Object tag){
+        nbtUtils.seTagName(tag, key);
+        return handleMap.put(key,tag);
     }
 
     @Override
@@ -318,9 +347,9 @@ public class NBTCompound implements Map<String,Object> {
             Object val = e.getValue();
             sb.append(e.getKey()).append('=');
             if (val instanceof byte[]) {
-                sb.append( "int[" + ((byte[])val).length + ']');
+                sb.append("int[").append(((byte[]) val).length).append(']');
             } else if (val instanceof int[]) {
-                sb.append( "byte[" + ((int[])val).length + ']');
+                sb.append("byte[").append(((int[]) val).length).append(']');
             } else {
                 sb.append(val);
             }
@@ -465,6 +494,62 @@ public class NBTCompound implements Map<String,Object> {
     }
 
     /**
+     * try to get int[]
+     * @param key key
+     * @return array, empty array by default
+     */
+    public int[] getIntAttay(String key) {
+        Object val = get(key);
+        if (val instanceof int[]) return (int[]) val;
+        if (val instanceof byte[]) {
+            byte[] bytes = (byte[]) val;
+            int[] result = new int[bytes.length];
+            for(int i=0; i<bytes.length; i++) result[i]=bytes[i];
+            return result;
+        }
+        return new int[0];
+    }
+
+    /**
+     * try to get byte[]
+     * @param key key
+     * @return array, empty array by default
+     */
+    public byte[] getByteAttay(String key) {
+        Object val = get(key);
+        if (val instanceof byte[]) return (byte[]) val;
+        if (val instanceof int[]) {
+            int[] ints = (int[]) val;
+            byte[] result = new byte[ints.length];
+            for(int i=0; i<ints.length; i++) result[i]=(byte)ints[i];
+            return result;
+        }
+        return new byte[0];
+    }
+
+    /**
+     * try to get NBTCompound
+     * @param key key
+     * @return NBTCompound value, or null if there is no compound
+     */
+    public NBTCompound getCompound(String key) {
+        Object val = get(key);
+        if (val instanceof NBTCompound) return (NBTCompound) val;
+        return null;
+    }
+
+    /**
+     * try to get NBTList
+     * @param key key
+     * @return NBTList value, or null if there is no compound
+     */
+    public NBTList getList(String key) {
+        Object val = get(key);
+        if (val instanceof NBTList) return (NBTList) val;
+        return null;
+    }
+
+    /**
      * get NBTCompound or create new one
      * Example: new NBTCompound().compound("display").list("Lore").add("lore1")
      * @param key key
@@ -474,7 +559,7 @@ public class NBTCompound implements Map<String,Object> {
         Object val = get(key);
         if (val instanceof NBTCompound) return (NBTCompound) val;
         NBTCompound compound = new NBTCompound();
-        put(key,compound);
+        put_handle(key,compound.getHandle());
         return compound;
     }
 
@@ -488,7 +573,7 @@ public class NBTCompound implements Map<String,Object> {
         Object val = get(key);
         if (val instanceof NBTList) return (NBTList) val;
         NBTList list = new NBTList();
-        put(key,list);
+        put_handle(key,list.getHandle());
         return list;
     }
 
@@ -500,7 +585,7 @@ public class NBTCompound implements Map<String,Object> {
      */
     public boolean containsKey(String key, Class type){
         Object t = get(key);
-        return type.isInstance(key);
+        return t!=null && type.isInstance(t);
     }
 
     /**
@@ -511,7 +596,7 @@ public class NBTCompound implements Map<String,Object> {
      */
     public boolean containsKey(String key, byte type){
         Object tag = handleMap.get(key);
-        return tag != null && nbtUtils.getTagType(tag) == type;
+        return tag!=null && nbtUtils.getTagType(tag) == type;
     }
 
 }

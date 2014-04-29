@@ -9,16 +9,26 @@
     <version>0.7.2</version>
     <packaging>jar</packaging>
 
-    <repositories>
+    <distributionManagement>
+        <downloadUrl>http://dev.bukkit.org/bukkit-plugins/powernbt/</downloadUrl>
+        <snapshotRepository>
+            <id>dpohvar.ru</id>
+            <name>dpohvar.ru-snapshots</name>
+            <url>http://dpohvar.ru/artifactory/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>dpohvar.ru</id>
+            <name>dpohvar.ru-releases</name>
+            <url>http://dpohvar.ru/artifactory/release</url>
+        </repository>
 
+    </distributionManagement>
+
+    <repositories>
         <repository>
             <id>bukkit-repo</id>
             <url>http://repo.bukkit.org/content/groups/public/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
         </repository>
-
     </repositories>
 
     <dependencies>

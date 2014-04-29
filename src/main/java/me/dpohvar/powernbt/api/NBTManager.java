@@ -9,10 +9,13 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.*;
 import java.util.UUID;
+import java.util.logging.Level;
 
 /**
  * NBTManager has methods to read and write NBT tags
  */
+
+@SuppressWarnings("UnusedDeclaration")
 public class NBTManager {
 
     public static final NBTManager nbtManager = new NBTManager();
@@ -121,6 +124,7 @@ public class NBTManager {
      */
     public void write(Block block, NBTCompound compound){
         nbtBlockUtils.setTag(block, compound.getHandle());
+        nbtBlockUtils.update(block);
     }
 
     /**
@@ -200,7 +204,7 @@ public class NBTManager {
             if (inputStream != null) try {
                 inputStream.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                Bukkit.getLogger().log(Level.ALL, "can not close NBT file " + file, e);
             }
         }
     }
@@ -220,7 +224,7 @@ public class NBTManager {
             if (outputStream != null) try {
                 outputStream.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                Bukkit.getLogger().log(Level.ALL, "can not close NBT file "+file, e);
             }
         }
     }
@@ -240,7 +244,7 @@ public class NBTManager {
             if (inputStream != null) try {
                 inputStream.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                Bukkit.getLogger().log(Level.ALL, "can not close NBT file "+file, e);
             }
         }
     }
@@ -260,7 +264,7 @@ public class NBTManager {
             if (outputStream != null) try {
                 outputStream.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                Bukkit.getLogger().log(Level.ALL, "can not close NBT file " + file, e);
             }
         }
     }

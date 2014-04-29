@@ -1,7 +1,10 @@
 package me.dpohvar.powernbt.utils;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+
+import java.util.logging.Level;
 
 import static me.dpohvar.powernbt.utils.ReflectionUtils.*;
 
@@ -35,9 +38,9 @@ public class EntityUtils {
                 readPlayer = classEntity.findMethod(
                         new MethodCondition().withTypes(classNBTTagCompound).withSuffix("d")
                 );
-            } catch (Exception ignored) { // old forge
-                //todo: check for old forge
-                ignored.printStackTrace();
+            } catch (Exception e) {
+                Bukkit.getLogger().log(Level.WARNING, "Unknown version of forge", e);
+                throw new RuntimeException(e);
             }
         } else {
             try { // bukkit 1.6+

@@ -3,6 +3,7 @@ package me.dpohvar.powernbt.utils;
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.nbt.*;
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 import java.io.UnsupportedEncodingException;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * User: DPOH-VAR
@@ -89,7 +91,7 @@ public class NBTViewer {
                         for(byte b:value.getBytes("UTF8")) h.add(Integer.toHexString(b&0xFF));
                         value = StringUtils.join(h,' ');
                     } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
+                        Bukkit.getLogger().log(Level.WARNING, "UTF-8 unsupported. Rly? O_o", e);
                     }
                 }
                 break;
@@ -236,7 +238,7 @@ public class NBTViewer {
                         for(byte b:value.getBytes("UTF8")) h.add(Integer.toHexString(b&0xFF));
                         value = StringUtils.join(h,' ');
                     } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
+                        Bukkit.getLogger().log(Level.WARNING, "UTF-8 unsupported. Rly? O_o", e);
                     }
                 }
                 if (postfix) value += '\u2026';

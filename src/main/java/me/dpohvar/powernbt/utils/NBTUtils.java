@@ -50,11 +50,12 @@ public abstract class NBTUtils {
      */
     public Object createTag(Object javaObject) throws NBTConvertException {
         if (javaObject == null) return null;
+        if (javaObject instanceof NBTCompound) return cloneTag(((NBTCompound)javaObject).getHandle());
+        if (javaObject instanceof NBTList) return cloneTag(((NBTList)javaObject).getHandle());
         if (javaObject instanceof Boolean) {
             if ((Boolean)javaObject) return createTagByte((byte) 1);
             else return (byte)0;
         }
-        if (javaObject instanceof Map) return new NBTCompound((Map) javaObject).getHandle();
         if (javaObject instanceof Collection) return new NBTList((List) javaObject).getHandle();
         if (javaObject instanceof Short) return createTagShort((Short) javaObject);
         if (javaObject instanceof String) return createTagString((String) javaObject);
@@ -65,6 +66,7 @@ public abstract class NBTUtils {
         if (javaObject instanceof Long) return createTagLong((Long) javaObject);
         if (javaObject instanceof byte[]) return createTagByteArray((byte[]) javaObject);
         if (javaObject instanceof int[]) return createTagIntArray((int[]) javaObject);
+        if (javaObject instanceof Map) return new NBTCompound((Map) javaObject).getHandle();
         if (javaObject instanceof Object[]) return new NBTList((Arrays.asList((Object[]) javaObject))).getHandle();
         throw new NBTConvertException(javaObject);
     }

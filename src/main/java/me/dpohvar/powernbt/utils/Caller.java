@@ -4,12 +4,14 @@ import me.dpohvar.powernbt.command.action.Action;
 import me.dpohvar.powernbt.command.action.Argument;
 import me.dpohvar.powernbt.nbt.NBTBase;
 import me.dpohvar.powernbt.nbt.NBTContainer;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
@@ -75,7 +77,9 @@ public class Caller extends NBTContainer<Caller> {
         }
         if (message.length()>32743) message = message.substring(0,32743);
         owner.sendMessage(message);
-        if (plugin.isDebug()) o.printStackTrace();
+        if (plugin.isDebug()) {
+            Bukkit.getLogger().log(Level.ALL, message, o);
+        }
     }
 
     public Caller(CommandSender owner) {

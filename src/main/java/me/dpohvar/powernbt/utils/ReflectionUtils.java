@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * @author DPOH-VAR
@@ -79,7 +80,7 @@ public class ReflectionUtils {
             FileReader reader = new FileReader(file);
             addReplacementsYaml(reader);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Bukkit.getLogger().log(Level.WARNING, "file "+file+" not found", e);
         }
     }
 

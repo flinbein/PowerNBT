@@ -1,6 +1,7 @@
 package me.dpohvar.powernbt.utils;
 
 import me.dpohvar.powernbt.PowerNBT;
+import org.bukkit.Bukkit;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
@@ -9,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 public class Translator {
 
@@ -36,7 +38,7 @@ public class Translator {
                 tran.put(e.getKey(), e.getValue().toString());
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Bukkit.getLogger().log(Level.WARNING, "Can not translate to "+locale, e);
         }
     }
 

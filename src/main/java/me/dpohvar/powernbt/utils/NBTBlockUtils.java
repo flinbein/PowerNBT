@@ -56,8 +56,11 @@ public final class NBTBlockUtils {
      * @param block bukkit block
      */
     public void update(Block block){
+        if (block == null) return;
         Object tile = getTileEntity(block);
+        if (tile == null) return;
         Object packet = getUpdatePacket.of(tile).call();
+        if (packet == null) return;
         int maxDist = Bukkit.getServer().getViewDistance() * 32;
         for (Player p : block.getWorld().getPlayers()) {
             if (p.getLocation().distance(block.getLocation()) < maxDist) {

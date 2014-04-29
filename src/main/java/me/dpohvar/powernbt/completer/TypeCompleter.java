@@ -2,11 +2,13 @@ package me.dpohvar.powernbt.completer;
 
 import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.nbt.NBTType;
+import org.bukkit.Bukkit;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.io.FileReader;
 import java.util.*;
+import java.util.logging.Level;
 
 public class TypeCompleter {
 
@@ -28,7 +30,7 @@ public class TypeCompleter {
                 addToTemplates(name, file);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Bukkit.getLogger().log(Level.ALL, "can not autocomplete tml "+ymlFolder, e);
         }
     }
 

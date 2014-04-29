@@ -1,9 +1,12 @@
 package me.dpohvar.powernbt.nbt;
 
+import org.bukkit.Bukkit;
+
 import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import static me.dpohvar.powernbt.utils.NBTUtils.nbtUtils;
 
@@ -42,7 +45,7 @@ public abstract class NBTBase {
         try {
             read(in);
         } catch (IOException e) {
-            e.printStackTrace();
+            Bukkit.getLogger().log(Level.ALL, "can not read NBT from bytes", e);
         }
     }
 
@@ -144,12 +147,7 @@ public abstract class NBTBase {
     }
 
     public static Object cloneHandle(Object handle) {
-        try {
-            return nbtUtils.cloneTag(handle);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+        return nbtUtils.cloneTag(handle);
     }
 
     public Object cloneHandle() {

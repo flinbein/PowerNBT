@@ -1,7 +1,10 @@
 package me.dpohvar.powernbt.utils;
 
+import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.logging.Level;
 
 import static me.dpohvar.powernbt.utils.ReflectionUtils.*;
 
@@ -128,7 +131,7 @@ public final class ItemStackUtils {
             copyNMSItemStack.setItemMeta(meta);
             return getTagCB(copyNMSItemStack);
         } catch (Exception e) {
-            e.printStackTrace();
+            Bukkit.getLogger().log(Level.WARNING, "copy item meta", e);
         }
         return null;
     }

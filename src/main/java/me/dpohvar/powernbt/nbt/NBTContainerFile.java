@@ -1,8 +1,11 @@
 package me.dpohvar.powernbt.nbt;
 
+import org.bukkit.Bukkit;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import static me.dpohvar.powernbt.utils.NBTUtils.nbtUtils;
 
@@ -58,7 +61,7 @@ public class NBTContainerFile extends NBTContainer<File> {
             if (outputStream!=null) try {
                 outputStream.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                Bukkit.getLogger().log(Level.ALL, "can not close NBT file " + file, e);
             }
         }
     }

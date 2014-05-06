@@ -1,7 +1,5 @@
 package me.dpohvar.powernbt.api;
 
-import org.bukkit.World;
-
 import java.util.*;
 
 import static me.dpohvar.powernbt.utils.NBTUtils.nbtUtils;
@@ -113,6 +111,7 @@ public class NBTCompound implements Map<String,Object> {
 
     /**
      * Convert Map to NBTCompound
+     * map should not contain cross-references!
      * @param map map to convert
      */
     public NBTCompound(Map map){
@@ -123,6 +122,7 @@ public class NBTCompound implements Map<String,Object> {
     }
 
     @Override
+    @SuppressWarnings({"CloneDoesntDeclareCloneNotSupportedException, CloneDoesntCallSuperClone"})
     public NBTCompound clone(){
         return new NBTCompound(nbtUtils.cloneTag(handle));
     }
@@ -153,6 +153,12 @@ public class NBTCompound implements Map<String,Object> {
         return nbtUtils.getValue(handleMap.get(key));
     }
 
+    /**
+     * put the copy of value to NBTTagCompound
+     * @param key key with which the value is to be associated
+     * @param value value to be associated with the specified key
+     * @return the copy of previous value associated with key
+     */
     @Override
     public Object put(String key, Object value) {
         if (value==null) return remove(key);
@@ -163,7 +169,7 @@ public class NBTCompound implements Map<String,Object> {
 
     private Object put_handle(String key, Object tag){
         nbtUtils.seTagName(tag, key);
-        return handleMap.put(key,tag);
+        return handleMap.put(key, tag);
     }
 
     @Override
@@ -172,9 +178,14 @@ public class NBTCompound implements Map<String,Object> {
         return nbtUtils.getValue(oldTag);
     }
 
+    /**
+     * copies all of the mappings from the map to this NBTTagCompound
+     * @param map mappings to be stored in this map
+     */
     @Override
-    public void putAll(Map<? extends String, ?> m) {
-        for (Entry<? extends String, ?> e: m.entrySet()) {
+    public void putAll(@SuppressWarnings("NullableProblems") Map<? extends String, ?> map) {
+        if (map==null) return;
+        for (Entry<? extends String, ?> e: map.entrySet()) {
             put(e.getKey(),e.getValue());
         }
     }
@@ -185,16 +196,19 @@ public class NBTCompound implements Map<String,Object> {
     }
 
     @Override
+    @SuppressWarnings("NullableProblems")
     public Set<String> keySet() {
         return handleMap.keySet();
     }
 
     @Override
+    @SuppressWarnings("NullableProblems")
     public Collection<Object> values() {
         return new NBTValues(handleMap.values());
     }
 
     @Override
+    @SuppressWarnings("NullableProblems")
     public NBTEntrySet entrySet() {
         return new NBTEntrySet(handleMap.entrySet());
     }
@@ -229,6 +243,7 @@ public class NBTCompound implements Map<String,Object> {
         }
 
         @Override
+        @SuppressWarnings("NullableProblems")
         public Iterator<Object> iterator() {
             return new NBTValuesIterator(handle.iterator());
         }
@@ -272,6 +287,7 @@ public class NBTCompound implements Map<String,Object> {
         }
 
         @Override
+        @SuppressWarnings("NullableProblems")
         public NBTIterator iterator() {
             return new NBTIterator(entries.iterator());
         }
@@ -575,6 +591,34 @@ public class NBTCompound implements Map<String,Object> {
         NBTList list = new NBTList();
         put_handle(key,list.getHandle());
         return list;
+    }
+
+    /**
+     * put NBTCompound to handle without using cloning.
+     * Be sure that you do not have cross-reference.
+     * Do not bind NBTCompound to itself
+     * @param key key with which the NBTCompound is to be associated
+     * @param value NBTCompound to be associated with key
+     * @return the previous value associated with key
+     */
+    public Object bind(String key, NBTCompound value) {
+        Object val = get(key);
+        put_handle(key, value.getHandle());
+        return val;
+    }
+
+    /**
+     * put NBTList to handle without using cloning.
+     * Be sure that you do not have cross-reference.
+     * Do not bind NBTList to itself
+     * @param key key with which the NBTList is to be associated
+     * @param value NBTList to be associated with key
+     * @return the previous value associated with key
+     */
+    public Object bind(String key, NBTList value) {
+        Object val = get(key);
+        put_handle(key, value.getHandle());
+        return val;
     }
 
     /**

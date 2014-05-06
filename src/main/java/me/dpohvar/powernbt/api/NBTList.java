@@ -200,6 +200,11 @@ public class NBTList implements List<Object> {
 
     }
 
+    /**
+     * Appends clone of the value to the end of NBTList
+     * @param o value to be appended to NBTList
+     * @return true if NBTList is changed
+     */
     @Override
     public boolean add(Object o) {
         Object tag = convertToCurrentType(o);

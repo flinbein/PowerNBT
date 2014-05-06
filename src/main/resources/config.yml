@@ -1,11 +1,5 @@
-debug: false
+debug: ${plugin-debug}
 lang: system
-ignore_get:
-  entity:
-  - UUIDMost
-  - UUIDLeast
-  - WorldUUIDLeast
-  - WorldUUIDMost
 ignore_set:
   block:
   - id

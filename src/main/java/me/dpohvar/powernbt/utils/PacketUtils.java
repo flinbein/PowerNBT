@@ -32,7 +32,7 @@ public final class PacketUtils {
 
 
 
-    RefMethod sendPacket = classNetworkElement.findMethodByParams("{nms}.Packet, {nm}.network.Packet, {Packet}");
+    RefMethod sendPacket = classNetworkElement.findMethodByParams("{nms}.Packet, {nm}.network.Packet, {nm}.network.packet.Packet, {Packet}");
     RefMethod getHandle = classCraftPlayer.findMethodByReturnType(classEntityPlayer);
 
     public void sendPacket(Player player, Object packet){

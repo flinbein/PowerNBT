@@ -32,7 +32,9 @@ public class ReflectionUtils {
         replacements.put("nm","net.minecraft");
         replacements.put("nms","net.minecraft.server");
         if(Bukkit.getServer()!=null) {
-            if(Bukkit.getVersion().contains("MCPC")||Bukkit.getVersion().contains("Forge")) forge = true;
+            if (Bukkit.getVersion().contains("MCPC")) forge = true;
+            else if (Bukkit.getVersion().contains("Forge")) forge = true;
+            else if (Bukkit.getVersion().contains("Cauldron")) forge = true;
             Server server = Bukkit.getServer();
             Class<?> bukkitServerClass = server.getClass();
             String[] pas = bukkitServerClass.getName().split("\\.");

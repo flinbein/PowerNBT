@@ -106,6 +106,10 @@ public class Argument {
             if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
             //noinspection deprecation
             return new NBTContainerBlock(((Player) caller.getOwner()).getTargetBlock(null, 20));
+        } else if (object.equals("chunk")) {
+            if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
+            //noinspection deprecation
+            return new NBTContainerChunk(((Player) caller.getOwner()).getLocation().getChunk());
         } else if (object.equals("buffer") || object.equals("clipboard") || object.equals("c")) {
             return caller;
         } else if (object.startsWith("*") && object.length() > 1) {
@@ -168,7 +172,7 @@ public class Argument {
             return new NBTContainerBase(new NBTTagIntArray());
         } else if (object.equals("byte[]")) {
             return new NBTContainerBase(new NBTTagByteArray());
-        } else if (object.matches("(-?[0-9]+):(-?[0-9]+):(-?[0-9]+):.*")) {
+        } else if (object.matches("(-?[0-9]+):(-?[0-9]+):(-?[0-9]+)(:.*)?")) {
             String[] t = object.split(":");
             int x = Integer.parseInt(t[0]);
             int y = Integer.parseInt(t[1]);
@@ -185,6 +189,22 @@ public class Argument {
                 throw new RuntimeException(PowerNBT.plugin.translate("error_noworld", ww));
             }
             return new NBTContainerBlock(w.getBlockAt(x, y, z));
+        } else if (object.matches("chunk:(-?[0-9]+):(-?[0-9]+)(:.*)?")) {
+            String[] t = object.substring(6).split(":");
+            int x = Integer.parseInt(t[0]);
+            int z = Integer.parseInt(t[1]);
+            World w;
+            String ww = "";
+            if (t.length >= 4) ww = t[2];
+            if (ww.isEmpty() && caller.getOwner() instanceof Player) {
+                w = ((Player) caller.getOwner()).getWorld();
+            } else {
+                w = Bukkit.getWorld(t[2]);
+            }
+            if (w == null) {
+                throw new RuntimeException(PowerNBT.plugin.translate("error_noworld", ww));
+            }
+            return new NBTContainerChunk(w.getChunkAt(x, z));
         } else if (object.startsWith("@") && !object.contains(File.separator)) {
             File baseDir = (Bukkit.getWorlds().get(0)).getWorldFolder();
             File playerFile;

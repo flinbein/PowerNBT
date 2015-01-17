@@ -2,6 +2,7 @@ package me.dpohvar.powernbt.api;
 
 import me.dpohvar.powernbt.utils.*;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -33,6 +34,7 @@ public class NBTManager {
     NBTBlockUtils nbtBlockUtils = NBTBlockUtils.nbtBlockUtils;
     NBTCompressedUtils nbtCompressedUtils = NBTCompressedUtils.nbtCompressedUtils;
     NBTUtils nbtUtils = NBTUtils.nbtUtils;
+    ChunkUtils chunkUtils = ChunkUtils.chunkUtils;
     ReflectionUtils.RefMethod getUUID;
 
     private NBTManager(){
@@ -93,6 +95,25 @@ public class NBTManager {
     public NBTCompound read(ItemStack item){
         Object tag = ItemStackUtils.itemStackUtils.getTag(item);
         return NBTCompound.forNBTCopy(tag);
+    }
+    /**
+     * read nbt tag of Chunk
+     * @param chunk bukkit chunk
+     * @return nbt data of chunk
+     */
+    public NBTCompound read(Chunk chunk){
+        NBTCompound compound = new NBTCompound();
+        chunkUtils.readChunk(chunk, compound.getHandle());
+        return compound;
+    }
+
+    /**
+     * change selected chunk with nbt data
+     * @param chunk chunk to be changed
+     * @param compound nbt data
+     */
+    public void write(Chunk chunk, NBTCompound compound){
+        chunkUtils.writeChunk(chunk, compound.getHandle());
     }
 
     /**

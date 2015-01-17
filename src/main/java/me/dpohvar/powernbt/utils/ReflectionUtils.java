@@ -215,7 +215,7 @@ public class ReflectionUtils {
 
         /**
          * get existing constructor by types
-         * @param types parameters. can be Class or RefClass
+         * @param types parameters. can be Class, RefClass or String
          * @return RefMethod object
          * @throws RuntimeException if constructor not found
          */
@@ -282,16 +282,23 @@ public class ReflectionUtils {
 
         /**
          * find method by name
-         * @param names possible names of method
+         * @param pattern possible names of method, split by ","
          * @return RefMethod object
          * @throws RuntimeException if method not found
          */
-        public RefMethod findMethodByName(String... names) {
+        public RefMethod findMethodByName(String pattern) {
+            String[] vars;
+            if (pattern.contains(" ")||pattern.contains(",")) {
+                vars = pattern.split(" |,");
+            } else {
+                vars = new String[1];
+                vars[0] = pattern;
+            }
             List<Method> methods = new ArrayList<Method>();
             Collections.addAll(methods, clazz.getMethods());
             Collections.addAll(methods, clazz.getDeclaredMethods());
             for (Method m: methods) {
-                for (String name: names) {
+                for (String name: vars) {
                     if (m.getName().equals(name)) {
                         return new RefMethod(m);
                     }
@@ -605,7 +612,7 @@ public class ReflectionUtils {
         /**
          * apply method to object
          * @param e object to which the method is applied
-         * @return RefExecutor with method call(...)
+         * @return RefExecutor with method call(params[])
          */
         public RefExecutor of(Object e) {
             return new RefExecutor(e);

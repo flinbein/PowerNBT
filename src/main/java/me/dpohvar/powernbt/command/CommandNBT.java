@@ -13,12 +13,26 @@ import static me.dpohvar.powernbt.PowerNBT.plugin;
 
 
 public class CommandNBT extends Command {
+
+    public CommandNBT(){
+        super(false);
+    }
+
+    public CommandNBT(boolean silent){
+        super(silent);
+    }
+
     public static final HashSet<String> specialTokens = new HashSet<String>(
             Arrays.asList(
                     "=", "<",
-                    "rem", "remove",
+                    "rm", "rem", "remove",
                     "ren", "rename",
                     "copy",
+                    "&=", // a = a & b
+                    "|=", // a = a | b
+                    "^=", // a = a ^ b
+                    "*=", // a = a * b
+                    "inverse", "inv",
                     "paste",
                     "add","+=",
                     "cut",
@@ -31,7 +45,8 @@ public class CommandNBT extends Command {
                     ">",
                     ">>",
                     "<<",
-                    "insert","ins"
+                    "insert","ins",
+                    "spawn"
             )
     );
 
@@ -104,7 +119,7 @@ public class CommandNBT extends Command {
             if (argsAfter.size() > 0) throw exceptionArgs;
             Action a = new ActionCut(caller, argsBefore.poll(), argsBefore.poll());
             a.execute();
-        } else if (action.equals("rem") || action.equals("remove")) {
+        } else if (action.equals("rm") || action.equals("rem") || action.equals("remove")) {
             if (argsBefore.size() > 2) throw exceptionArgs;
             if (argsAfter.size() > 0) throw exceptionArgs;
             Action a = new ActionRemove(caller, argsBefore.poll(), argsBefore.poll());
@@ -143,6 +158,36 @@ public class CommandNBT extends Command {
             if (argsBefore.size() > 2) throw exceptionArgs;
             if (argsAfter.size() > 3) throw exceptionArgs;
             Action a = new ActionInsert(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll(), argsAfter.poll());
+            a.execute();
+        } else if (action.equals("&=") || action.equals("&=")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() > 2) throw exceptionArgs;
+            Action a = new ActionBitAnd(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
+            a.execute();
+        } else if (action.equals("|=") || action.equals("|=")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() > 2) throw exceptionArgs;
+            Action a = new ActionBitOr(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
+            a.execute();
+        } else if (action.equals("^=") || action.equals("^=")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() > 2) throw exceptionArgs;
+            Action a = new ActionBitXor(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
+            a.execute();
+        } else if (action.equals("*=") || action.equals("*=")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() > 2) throw exceptionArgs;
+            Action a = new ActionMultiply(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
+            a.execute();
+        } else if (action.equals("inv") || action.equals("inverse")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() > 0) throw exceptionArgs;
+            Action a = new ActionBitInverse(caller, argsBefore.poll(), argsBefore.poll());
+            a.execute();
+        } else if (action.equals("spawn")) {
+            if (argsBefore.size() > 2) throw exceptionArgs;
+            if (argsAfter.size() > 1) throw exceptionArgs;
+            Action a = new ActionSpawn(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll());
             a.execute();
         }
         return true;

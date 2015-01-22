@@ -108,6 +108,7 @@ public class CompleterNBT extends Completer {
                 completeTag(container, former);
                 former.addIfStarts("rem", "ren");
                 former.addIfStarts("copy", "=", "as", "view", "swap","+=");
+                if (caller.readTag() != null) former.addIfStarts("paste");
             }
             if (container instanceof NBTContainerVariable) former.addIfStarts("set");
             return;
@@ -126,11 +127,13 @@ public class CompleterNBT extends Completer {
         }
         if (word.isEmpty()) {
             if (container == null) {
-                former.addIfStarts("=", "rem", "ren", "copy", "paste","+=", "cut", "set", "as", "view", "swap", ">", ">>", "<<");
+                former.addIfStarts("=", "rem", "ren", "paste","+=", "cut", "set", "as", "view", "swap", ">", ">>", "<<");
+                if (caller.readTag() != null) former.addIfStarts("paste");
             } else {
                 if (container instanceof NBTContainerVariable) former.addIfStarts("set");
                 if (base != null) {
                     former.addIfStarts("rem","+=", "copy", "cut", "ren", "view", ">", ">>");
+                    if (caller.readTag() != null) former.addIfStarts("paste");
                     if ((base instanceof NBTTagNumericArray)||(base instanceof NBTTagList)) former.addIfStarts("ins");
                 }
                 former.addIfStarts("=", "as", "swap", "paste", "swap", "<<");

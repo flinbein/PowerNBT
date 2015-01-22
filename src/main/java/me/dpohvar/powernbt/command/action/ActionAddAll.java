@@ -36,6 +36,16 @@ public class ActionAddAll extends Action {
         NBTContainer container2 = arg2.getContainer();
         NBTQuery query2 = arg2.getQuery();
         NBTBase base2 = container2.getCustomTag(query2);
+        if (base1 == null) {
+            if (base2 instanceof NBTTagCompound) base1 = new NBTTagCompound();
+            if (base2 instanceof NBTTagList) base1 = new NBTTagList();
+            if (base2 instanceof NBTTagByteArray) base1 = new NBTTagByteArray();
+            if (base2 instanceof NBTTagIntArray) base1 = new NBTTagIntArray();
+            if (base2 instanceof NBTTagNumeric) {
+                base1 = base2.clone();
+                ((NBTTagNumeric)base1).setNumber(0);
+            }
+        }
         if (base1 instanceof NBTTagCompound && base2 instanceof NBTTagCompound){
             NBTTagCompound tag1 = (NBTTagCompound) base1;
             NBTTagCompound tag2 = (NBTTagCompound) base2;

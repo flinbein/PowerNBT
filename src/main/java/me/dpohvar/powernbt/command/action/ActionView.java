@@ -31,10 +31,12 @@ public class ActionView extends Action {
         NBTQuery query = arg.getQuery();
         int start=-1, end=-1;
         boolean hex = false;
+        boolean bin = false;
         if(args!=null) {
             for(String s:args){
                 if (s.equalsIgnoreCase("hex")||s.equalsIgnoreCase("h")) hex=true;
-                else if (s.equalsIgnoreCase("full")||s.equalsIgnoreCase("f")) {
+                if (s.equalsIgnoreCase("bin")||s.equalsIgnoreCase("b")) bin=true;
+                else if (s.equalsIgnoreCase("full")||s.equalsIgnoreCase("f")||s.equalsIgnoreCase("all")||s.equalsIgnoreCase("a")) {
                     start=0; end=Integer.MAX_VALUE;
                 }
                 else if (s.matches("[0-9]+")){
@@ -46,7 +48,7 @@ public class ActionView extends Action {
         if(start==-1) start=0;
         if(end==-1) end=0;
         if(start>end){int t=start; start=end; end=t;}
-        String answer = NBTViewer.getFullValue(container.getCustomTag(query), start, end, hex);
+        String answer = NBTViewer.getFullValue(container.getCustomTag(query), start, end, hex, bin);
         caller.send(answer);
     }
 }

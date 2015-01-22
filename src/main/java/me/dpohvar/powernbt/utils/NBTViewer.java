@@ -23,35 +23,47 @@ public class NBTViewer {
     static int v_limit = 60;
     static int h_limit = 10;
 
+    @Deprecated
     public static String getShortValueWithPrefix(NBTBase base, boolean hex){
+        return getShortValueWithPrefix(base, hex, false);
+    }
+    public static String getShortValueWithPrefix(NBTBase base, boolean hex, boolean bin){
         if (base==null) return ChatColor.RESET + PowerNBT.plugin.translate("error_null");
         NBTType type = base.getType();
-        return String.valueOf(type.color) + type.name + ':' + ' ' + ChatColor.RESET + getShortValue(base, hex);
+        return String.valueOf(type.color) + type.name + ':' + ' ' + ChatColor.RESET + getShortValue(base, hex, bin);
     }
+    @Deprecated
     public static String getShortValue(NBTBase base, boolean hex){
+        return getShortValue(base, hex, false);
+    }
+    public static String getShortValue(NBTBase base, boolean hex, boolean bin){
         String value = "";
         switch (base.getTypeId()){
             case 1:{ // byte
                 byte v = ((NBTTagByte) base).get();
                 if (hex) value = "#"+Integer.toHexString(v&0xFF);
+                else if (bin) value = "b"+Integer.toBinaryString(v & 0xFF);
                 else value = String.valueOf(v);
                 break;
             }
             case 2:{ // short
                 short v = ((NBTTagShort) base).get();
                 if (hex) value = "#"+Integer.toHexString(v&0xFFFF);
+                else if (bin) value = "b"+Integer.toBinaryString(v&0xFFFF);
                 else value = String.valueOf(v);
                 break;
             }
             case 3:{ // int
                 int v = ((NBTTagInt) base).get();
                 if (hex) value = "#"+Long.toHexString(v&0xFFFFFFFFL);
+                else if (bin) value = "b"+Long.toBinaryString(v&0xFFFFFFFFL);
                 else value = String.valueOf(v);
                 break;
             }
             case 4:{ // long
                 long v = ((NBTTagLong) base).get();
                 if (hex) value = "#"+Long.toHexString(v);
+                else if (bin) value = "b"+Long.toBinaryString(v);
                 else value = String.valueOf(v);
                 break;
             }
@@ -76,7 +88,11 @@ public class NBTViewer {
                         ArrayList<String> h = new ArrayList<String>(v.size());
                         for(byte b:v.get()) h.add(Integer.toHexString(b&0xFF));
                         value += "#"+StringUtils.join(h,',');
-                    } else{
+                    } else if (bin) {
+                        ArrayList<String> h = new ArrayList<String>(v.size());
+                        for(byte b:v.get()) h.add(Integer.toBinaryString(b&0xFF));
+                        value += "b"+StringUtils.join(h,',');
+                    } else {
                         value += StringUtils.join(v.iterator(),',');
                     }
                     value+="]";
@@ -129,7 +145,11 @@ public class NBTViewer {
                         ArrayList<String> h = new ArrayList<String>(v.size());
                         for(int b:v.get()) h.add(Long.toHexString(b&0xFFFFFFFFL));
                         value += "#"+StringUtils.join(h,',');
-                    } else{
+                    } else if (bin) {
+                        ArrayList<String> h = new ArrayList<String>(v.size());
+                        for(int b:v.get()) h.add(Long.toBinaryString(b&0xFFFFFFFFL));
+                        value += "b"+StringUtils.join(h,',');
+                    } else {
                         value += StringUtils.join(v.iterator(),',');
                     }
                     value+="]";
@@ -148,8 +168,12 @@ public class NBTViewer {
         return value;
     }
 
+    @Deprecated
     public static String getFullValue(NBTBase base,int start, int end, boolean hex){
-        //if(start==0 && end==0) end = v_limit;
+        return getFullValue(base, start, end, false);
+    }
+
+    public static String getFullValue(NBTBase base,int start, int end, boolean hex, boolean bin){
         if(base==null) return PowerNBT.plugin.translate("error_null");
         if(start>end) { int t=start; start=end; end=t; }
         String name = base.getName();
@@ -161,24 +185,28 @@ public class NBTViewer {
             case 1:{ // byte
                 byte v = ((NBTTagByte) base).get();
                 if (hex) value = "#"+Integer.toHexString(v&0xFF);
+                else if (bin) value = "b"+Integer.toBinaryString(v & 0xFF);
                 else value = String.valueOf(v);
                 break;
             }
             case 2:{ // short
                 short v = ((NBTTagShort) base).get();
                 if (hex) value = "#"+Integer.toHexString(v&0xFFFF);
+                else if (bin) value = "b"+Integer.toBinaryString(v & 0xFFFF);
                 else value = String.valueOf(v);
                 break;
             }
             case 3:{ // int
                 int v = ((NBTTagInt) base).get();
                 if (hex) value = "#"+Long.toHexString(v&0xFFFFFFFFL);
+                else if (bin) value = "b"+Long.toBinaryString(v & 0xFFFFFFFFL);
                 else value = String.valueOf(v);
                 break;
             }
             case 4:{ // long
                 long v = ((NBTTagLong) base).get();
                 if (hex) value = "#"+Long.toHexString(v);
+                else if (bin) value = "b"+Long.toBinaryString(v);
                 else value = String.valueOf(v);
                 break;
             }
@@ -209,6 +237,7 @@ public class NBTViewer {
                         if(i>=v.size()) break;
                         buffer.append("\n").append(type.color).append("[").append(i).append("] ").append(ChatColor.RESET);
                         if (hex) buffer.append("#").append(Integer.toHexString(v.get(i)&0xFF));
+                        else if (bin) buffer.append("b").append(Integer.toBinaryString(v.get(i) & 0xFF));
                         else buffer.append(v.get(i) & 0xFF);
                     }
                     value = PowerNBT.plugin.translate("data_elements",v.size()) + buffer.toString();
@@ -263,7 +292,7 @@ public class NBTViewer {
                             .append(i)
                             .append("] ")
                             .append(ChatColor.RESET)
-                            .append(getShortValue(b,hex));
+                            .append(getShortValue(b,hex,bin));
                 }
                 value = PowerNBT.plugin.translate("data_elements",list.size())
                         + " " + listType.color + listType.name
@@ -301,7 +330,7 @@ public class NBTViewer {
                             .append(':')
                             .append(ChatColor.RESET)
                             .append(' ')
-                            .append(getShortValue(b,hex));
+                            .append(getShortValue(b,hex, bin));
                 }
                 value = PowerNBT.plugin.translate("data_elements",list.size()) + buffer.toString();
                 break;
@@ -321,6 +350,7 @@ public class NBTViewer {
                         if(i>=v.size()) break;
                         buffer.append("\n").append(type.color).append("[").append(i).append("] ").append(ChatColor.RESET);
                         if (hex) buffer.append("#").append(Long.toHexString(v.get(i)&0xFFFFFFFFL));
+                        else if (bin) buffer.append("b").append(Long.toBinaryString(v.get(i) & 0xFFFFFFFFL));
                         else buffer.append(v.get(i));
                     }
                     value = PowerNBT.plugin.translate("data_elements",v.size()) + buffer.toString();

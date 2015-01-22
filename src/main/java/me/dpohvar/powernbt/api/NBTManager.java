@@ -4,6 +4,7 @@ import me.dpohvar.powernbt.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
@@ -11,6 +12,8 @@ import org.bukkit.inventory.ItemStack;
 import java.io.*;
 import java.util.UUID;
 import java.util.logging.Level;
+
+import static me.dpohvar.powernbt.utils.MojangsonUtils.*;
 
 /**
  * NBTManager has methods to read and write NBT tags
@@ -351,6 +354,28 @@ public class NBTManager {
             File playerDir = new File(baseDir, "players");
             return new File(playerDir, player.getName() + ".dat");
         }
+    }
+
+    /**
+     * Parse mojangson string
+     * @param value string in Mojangson format
+     * @return a primitive value or {@link NBTCompound} or {@link NBTList}
+     */
+    public Object parseMojangson(String value){
+        if (value == null) return null;
+        Object tag = mojangsonUtils.parseString("",value);
+        return nbtUtils.getValue(tag);
+    }
+
+    /**
+     * Spawn entity in world by nbt compound
+     * @param compound entity data
+     * @param world world
+     * @return spawned entity
+     */
+    public Entity spawnEntity(NBTCompound compound, World world){
+        if (compound == null) return null;
+        return entityUtils.spawnEntity(compound.getHandle(), world);
     }
 
 }

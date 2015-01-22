@@ -17,6 +17,7 @@ import static me.dpohvar.powernbt.PowerNBT.plugin;
 
 public class Caller extends NBTContainer<Caller> {
     private CommandSender owner;
+    private boolean silent;
     private NBTBase base;
     private Argument argument;
     private Action action;
@@ -33,6 +34,14 @@ public class Caller extends NBTContainer<Caller> {
     public void hold(Argument argument, Action action) {
         this.argument = argument;
         this.action = action;
+    }
+
+    public boolean isSilent() {
+        return silent;
+    }
+
+    public void setSilent(boolean silent) {
+        this.silent = silent;
     }
 
     public CommandSender getOwner() {
@@ -60,6 +69,7 @@ public class Caller extends NBTContainer<Caller> {
     }
 
     public void send(Object o) {
+        if (silent) return;
         String message = plugin.getPrefix() + o;
         if (message.length()>32743) message = message.substring(0,32743);
         owner.sendMessage(message);

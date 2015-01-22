@@ -4,10 +4,14 @@ import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.completer.TypeCompleter;
 import me.dpohvar.powernbt.nbt.*;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.MojangsonUtils;
 import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.StringParser;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.World;
+import org.bukkit.command.BlockCommandSender;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -19,6 +23,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
+import static me.dpohvar.powernbt.utils.MojangsonUtils.*;
 
 public class Argument {
 
@@ -85,16 +90,19 @@ public class Argument {
         if (object.equals("me")) {
             if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
             return new NBTContainerEntity((Player) caller.getOwner());
-        } else if (object.equals("item") || object.equals("i")) {
+        }
+        if (object.equals("item") || object.equals("i")) {
             if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
             return new NBTContainerItem(((Player) caller.getOwner()).getItemInHand());
-        } else if (object.equals("inventory") || object.equals("inv")) {
+        }
+        if (object.equals("inventory") || object.equals("inv")) {
             if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
             return new NBTContainerComplex(
                     new NBTContainerEntity(((Player) caller.getOwner())),
                     new NBTQuery("Inventory")
             );
-        } else if (object.startsWith("id")) {
+        }
+        if (object.startsWith("id")) {
             int id = Integer.parseInt(object.substring(2).replaceAll("\\(.*\\)", ""));
             for (World w : Bukkit.getWorlds())
                 for (Entity e : w.getEntities())
@@ -102,30 +110,43 @@ public class Argument {
                         return new NBTContainerEntity(e);
                     }
             throw new RuntimeException(plugin.translate("error_noentity", id));
-        } else if (object.equals("block") || object.equals("b")) {
+        }
+        if (object.equals("block") || object.equals("b")) {
             if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
             //noinspection deprecation
             return new NBTContainerBlock(((Player) caller.getOwner()).getTargetBlock(null, 20));
-        } else if (object.equals("chunk")) {
-            if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
+        }
+        if (object.equals("chunk")) {
+            CommandSender owner = caller.getOwner();
+            Chunk chunk = null;
+            if (owner instanceof Entity) chunk = ((Entity) owner).getLocation().getChunk();
+            if (owner instanceof BlockCommandSender) chunk = ((BlockCommandSender) owner).getBlock().getChunk();
+            if (chunk == null) throw new RuntimeException(plugin.translate("error_noplayer"));
             //noinspection deprecation
-            return new NBTContainerChunk(((Player) caller.getOwner()).getLocation().getChunk());
-        } else if (object.equals("buffer") || object.equals("clipboard") || object.equals("c")) {
+            return new NBTContainerChunk(chunk);
+        }
+        if (object.equals("buffer") || object.equals("clipboard") || object.equals("c")) {
             return caller;
-        } else if (object.startsWith("*") && object.length() > 1) {
+        }
+        if (object.startsWith("*") && object.length() > 1) {
             return new NBTContainerEntity(Bukkit.getPlayer(object.substring(1)));
-        } else if (object.startsWith("%") && object.length() > 1) {
+        }
+        if (object.startsWith("%") && object.length() > 1) {
             return new NBTContainerVariable(caller, object.substring(1));
-        } else if (object.startsWith("$$") && object.length() > 2) {
+        }
+        if (object.startsWith("$$") && object.length() > 2) {
             return new NBTContainerFileCustom(object.substring(2));
-        } else if (object.startsWith("$") && object.length() > 1) {
+        }
+        if (object.startsWith("$") && object.length() > 1) {
             String name = object.substring(1);
             if (name.contains(".") || name.contains(File.separator))
                 throw new RuntimeException(plugin.translate("error_customfile", name));
             return new NBTContainerFile(new File(plugin.getNBTFilesFolder(), name + ".nbt"));
-        } else if (colors.containsKey(object)) {
+        }
+        if (colors.containsKey(object)) {
             return new NBTContainerBase(new NBTTagInt(colors.get(object)));
-        } else if (object.startsWith("file:") && object.length() > 5) {
+        }
+        if (object.startsWith("file:") && object.length() > 5) {
             String s = object.substring(5);
             if (s.startsWith("\"") && s.endsWith("\"") && s.length()>1 ) {
                 s = StringParser.parse(s.substring(1,s.length()-1));
@@ -141,11 +162,8 @@ public class Argument {
                 throw new RuntimeException("file " + s + " not found", e);
             }
 
-        } else if (
-                (object.startsWith("gzip:") && object.length() > 5)
-                ||
-                (object.startsWith("gz:") && object.length() > 3)
-                ) {
+        }
+        if ((object.startsWith("gzip:") && object.length() > 5)||(object.startsWith("gz:") && object.length() > 3)) {
             String s = object.substring(object.indexOf(':')+1);
             if (s.startsWith("\"") && s.endsWith("\"") && s.length()>1 ) {
                 s = StringParser.parse(s.substring(1,s.length()-1));
@@ -160,28 +178,37 @@ public class Argument {
             } catch (IOException e) {
                 throw new RuntimeException("file " + s + " not found", e);
             }
-        } else if (object.equals("compound") || object.equals("com")) {
+        }
+        if (object.equals("compound") || object.equals("com")) {
             return new NBTContainerBase(new NBTTagCompound());
-        } else if (object.equals("list")) {
+        }
+        if (object.equals("list")) {
             return new NBTContainerBase(new NBTTagList());
-        } else if (object.equals("on") || object.equals("true")) {
+        }
+        if (object.equals("on") || object.equals("true")) {
             return new NBTContainerBase(new NBTTagByte((byte) 1));
-        } else if (object.equals("off") || object.equals("false")) {
+        }
+        if (object.equals("off") || object.equals("false")) {
             return new NBTContainerBase(new NBTTagByte((byte) 0));
-        } else if (object.equals("int[]")) {
+        }
+        if (object.equals("int[]")) {
             return new NBTContainerBase(new NBTTagIntArray());
-        } else if (object.equals("byte[]")) {
+        }
+        if (object.equals("byte[]")) {
             return new NBTContainerBase(new NBTTagByteArray());
-        } else if (object.matches("(-?[0-9]+):(-?[0-9]+):(-?[0-9]+)(:.*)?")) {
+        }
+        if (object.matches("(-?[0-9]+):(-?[0-9]+):(-?[0-9]+)(:.*)?")) {
             String[] t = object.split(":");
             int x = Integer.parseInt(t[0]);
             int y = Integer.parseInt(t[1]);
             int z = Integer.parseInt(t[2]);
-            World w;
+            World w = null;
             String ww = "";
             if (t.length >= 4) ww = t[3];
-            if (ww.isEmpty() && caller.getOwner() instanceof Player) {
-                w = ((Player) caller.getOwner()).getWorld();
+            if (ww.isEmpty()) {
+                CommandSender owner = caller.getOwner();
+                if (owner instanceof BlockCommandSender) w = ((BlockCommandSender) owner).getBlock().getWorld();
+                else if (owner instanceof Player) w = ((Player) owner).getWorld();
             } else {
                 w = Bukkit.getWorld(t[3]);
             }
@@ -189,15 +216,18 @@ public class Argument {
                 throw new RuntimeException(PowerNBT.plugin.translate("error_noworld", ww));
             }
             return new NBTContainerBlock(w.getBlockAt(x, y, z));
-        } else if (object.matches("chunk:(-?[0-9]+):(-?[0-9]+)(:.*)?")) {
+        }
+        if (object.matches("chunk:(-?[0-9]+):(-?[0-9]+)(:.*)?")) {
             String[] t = object.substring(6).split(":");
             int x = Integer.parseInt(t[0]);
             int z = Integer.parseInt(t[1]);
-            World w;
+            World w = null;
             String ww = "";
             if (t.length >= 4) ww = t[2];
-            if (ww.isEmpty() && caller.getOwner() instanceof Player) {
-                w = ((Player) caller.getOwner()).getWorld();
+            if (ww.isEmpty()) {
+                CommandSender owner = caller.getOwner();
+                if (owner instanceof BlockCommandSender) w = ((BlockCommandSender) owner).getBlock().getWorld();
+                else if (owner instanceof Player) w = ((Player) owner).getWorld();
             } else {
                 w = Bukkit.getWorld(t[2]);
             }
@@ -205,7 +235,8 @@ public class Argument {
                 throw new RuntimeException(PowerNBT.plugin.translate("error_noworld", ww));
             }
             return new NBTContainerChunk(w.getChunkAt(x, z));
-        } else if (object.startsWith("@") && !object.contains(File.separator)) {
+        }
+        if (object.startsWith("@") && !object.contains(File.separator)) {
             File baseDir = (Bukkit.getWorlds().get(0)).getWorldFolder();
             File playerFile;
             try {
@@ -217,18 +248,45 @@ public class Argument {
                 playerFile = new File(playerDir, object.substring(1) + ".dat");
             }
             return new NBTContainerFileGZip(playerFile);
-        } else if (object.startsWith("\"") && object.endsWith("\"")) {
+        }
+        if (object.startsWith("\"") && object.endsWith("\"")) {
             String s = StringParser.parse(object.substring(1, object.length() - 1));
             NBTType type = NBTType.STRING;
             if (param != null) type = NBTType.fromString(param);
             return new NBTContainerBase(type.parse(s));
-        } else if (object.matches("#-?[0-9a-fA-F]+")) {
+        }
+        if (object.matches("#-?[0-9a-fA-F]+")) {
             Long l = Long.parseLong(object.substring(1), 16);
             String s = l.toString();
             NBTType type = NBTType.INT;
             if (param != null) type = NBTType.fromString(param);
             return new NBTContainerBase(type.parse(s));
-        } else if (object.matches("\\[((-?[0-9]+|#-?[0-9a-fA-F]+)(,(?!\\])|(?=\\])))*\\]")) {
+        }
+        if (object.matches("b[0-1]+")) {
+            if (param == null) return null;
+            Long l = Long.parseLong(object.substring(1), 2);
+            String s = l.toString();
+            NBTType type = NBTType.fromString(param);
+            return new NBTContainerBase(type.parse(s));
+        }
+        if (object.matches("-?[0-9]*")) {
+            if (param == null) return null;
+            NBTType type = NBTType.fromString(param);
+            if(type.equals(NBTType.BYTEARRAY)) type = NBTType.BYTE;
+            else if(type.equals(NBTType.INTARRAY)) type = NBTType.INT;
+            return new NBTContainerBase(type.parse(object));
+        }
+        if (object.matches("-?[0-9]+\\.[0-9]*")) {
+            if (param == null) return null;
+            NBTType type = NBTType.fromString(param);
+            if(type.equals(NBTType.BYTEARRAY)) type = NBTType.BYTE;
+            else if(type.equals(NBTType.INTARRAY)) type = NBTType.INT;
+            return new NBTContainerBase(type.parse(object));
+        }
+        if (object.equals("*") || object.equals("self") || object.equals("this")) {
+            return null;
+        }
+        if (object.matches("\\[((-?[0-9]+|#-?[0-9a-fA-F]+)(,(?!\\])|(?=\\])))*\\]")) {
             if (param == null) {
                 return null;
             } else {
@@ -237,17 +295,13 @@ public class Argument {
                 else if (type == NBTType.INT) type = NBTType.INTARRAY;
                 return new NBTContainerBase(type.parse(object));
             }
-        } else if (object.matches("-?[0-9]+(.[0-9]*)?")) {
-            if (param == null) {
-                return null;
-            } else {
-                NBTType type = NBTType.fromString(param);
-                if(type.equals(NBTType.BYTEARRAY)) type = NBTType.BYTE;
-                else if(type.equals(NBTType.INTARRAY)) type = NBTType.INT;
-                return new NBTContainerBase(type.parse(object));
-            }
-        } else if (object.equals("*") || object.equals("self") || object.equals("this")) {
-            return null;
+        }
+        Object mojangsonTag = null;
+        if (param == null) try {
+            mojangsonTag = mojangsonUtils.parseString("",object);
+        } catch (Exception ignored){}
+        if (mojangsonTag != null) {
+            return new NBTContainerBase(NBTBase.wrap(mojangsonTag));
         }
         throw new RuntimeException(plugin.translate("error_undefinedobject", object));
     }
@@ -284,6 +338,15 @@ public class Argument {
             NBTQuery q = new NBTQuery("Inventory",result);
             this.container = new NBTContainerComplex(player,q);
             this.query = NBTQuery.fromString(queryFuture);
+            action.execute();
+        } else if (objectFuture.matches("b[0-1]*")) {
+            if (paramContainer == null){
+                throw new RuntimeException(plugin.translate("error_undefinedtype", objectFuture));
+            }
+            Long val = Long.parseLong(objectFuture, 2);
+            NBTType type = NBTType.fromBase(paramQuery.get(paramContainer.getCustomTag()));
+            this.container = new NBTContainerBase(type.parse(val.toString()));
+            this.query = emptyQuery;
             action.execute();
         } else if (objectFuture.matches("-?[0-9]*(.[0-9]*)?")) {
             if (paramContainer == null){

@@ -16,6 +16,7 @@ import java.util.HashMap;
 
 public class PowerNBT extends JavaPlugin {
 
+    private static final boolean SILENT = true;
     public static PowerNBT plugin;
     public static final Charset charset = Charset.forName("UTF8");
     private final HashMap<String, Caller> callers = new HashMap<String, Caller>();
@@ -99,7 +100,9 @@ public class PowerNBT extends JavaPlugin {
         this.typeCompleter = new TypeCompleter(getTemplateFolder());
         getServer().getPluginManager().registerEvents(new SelectListener(), this);
         getCommand("powernbt").setExecutor(new CommandNBT());
+        getCommand("powernbt.").setExecutor(new CommandNBT(SILENT));
         getCommand("powernbt").setTabCompleter(new CompleterNBT());
+        getCommand("powernbt.").setTabCompleter(new CompleterNBT());
 
         initializeUtils();
     }

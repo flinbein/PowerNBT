@@ -12,3 +12,11 @@ commands:
         aliases:
             - pnbt
             - nbt
+    powernbt.:
+        description: use nbt commands (silent mode)
+        usage: /nbt. ... use [Tab] key for help
+        permission: powernbt.use
+        aliases:
+            - pnbt.
+            - nbt.
+

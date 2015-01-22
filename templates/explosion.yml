@@ -1,5 +1,0 @@
-Flicker: byte
-Trail: byte
-Type: byte
-Colors: int[]
-FadeColors: int[]

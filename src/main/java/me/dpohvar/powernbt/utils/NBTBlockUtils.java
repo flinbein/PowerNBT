@@ -18,15 +18,15 @@ public final class NBTBlockUtils {
 
     private NBTBlockUtils(){}
 
-    RefClass classCraftWorld = getRefClass("{cb}.CraftWorld, {CraftWorld}");
-    RefClass classTileEntity = getRefClass("{nms}.TileEntity, {nm}.tileentity.TileEntity, {TileEntity}");
-    RefMethod getTileEntityAt = classCraftWorld.findMethodByReturnType(classTileEntity); // (int x, int y, int z)
-    RefMethod getUpdatePacket = classTileEntity.findMethodByReturnType("{nms}.Packet, {nm}.network.Packet {nm}.network.packet.Packet, {Packet}");
-    RefMethod read = classTileEntity.findMethod( new MethodCondition()
+    private RefClass classCraftWorld = getRefClass("{cb}.CraftWorld, {CraftWorld}");
+    private RefClass classTileEntity = getRefClass("{nms}.TileEntity, {nm}.tileentity.TileEntity, {TileEntity}");
+    private RefMethod getTileEntityAt = classCraftWorld.findMethodByReturnType(classTileEntity); // (int x, int y, int z)
+    private RefMethod getUpdatePacket = classTileEntity.findMethodByReturnType("{nms}.Packet, {nm}.network.Packet {nm}.network.packet.Packet, {Packet}");
+    private RefMethod read = classTileEntity.findMethod( new MethodCondition()
                     .withTypes("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}")
                     .withSuffix("b")
     );
-    RefMethod write = classTileEntity.findMethod( new MethodCondition()
+    private RefMethod write = classTileEntity.findMethod( new MethodCondition()
                     .withTypes("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}")
                     .withSuffix("a")
     );

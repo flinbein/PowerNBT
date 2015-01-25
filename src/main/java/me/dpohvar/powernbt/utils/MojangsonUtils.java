@@ -6,10 +6,10 @@ public class MojangsonUtils {
 
     public static MojangsonUtils mojangsonUtils = new MojangsonUtils();
 
-    RefClass cMojangsonTypeParser = getRefClass("{nms}.MojangsonTypeParser, {MojangsonTypeParser}");
-    RefClass cMojangsonParser = getRefClass("{nms}.MojangsonParser, {MojangsonParser}");
-    RefMethod mGetParser = cMojangsonParser.findMethodByParams(String.class, String.class);
-    RefMethod mParse = cMojangsonTypeParser.findMethodByReturnType("{nms}.NBTBase, {nm}.nbt.NBTBase, {NBTBase}");
+    private RefClass cMojangsonTypeParser = getRefClass("{nms}.MojangsonTypeParser, {nm}.nbt.JsonToNBT$Any, {MojangsonTypeParser}");
+    private RefClass cMojangsonParser = getRefClass("{nms}.MojangsonParser, {nm}.nbt.JsonToNBT, {MojangsonParser}");
+    private RefMethod mGetParser = cMojangsonParser.findMethodByParams(String.class, String.class);
+    private RefMethod mParse = cMojangsonTypeParser.findMethodByReturnType("{nms}.NBTBase, {nm}.nbt.NBTBase, {NBTBase}");
 
     private MojangsonUtils(){}
 

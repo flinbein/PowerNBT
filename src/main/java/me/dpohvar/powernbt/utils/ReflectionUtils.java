@@ -133,6 +133,7 @@ public class ReflectionUtils {
         put("double",double.class);
         put("boolean[]",boolean[].class);
         put("byte[]",byte[].class);
+        put("char[]",char[].class);
         put("short[]",short[].class);
         put("int[]",int[].class);
         put("long[]",long[].class);
@@ -274,6 +275,7 @@ public class ReflectionUtils {
          */
         public RefMethod findMethod(MethodCondition... condition) {
             for(MethodCondition c: condition) try{
+                if (c == null) return null;
                 return c.find(this);
             } catch (Exception ignored){
             }
@@ -542,11 +544,11 @@ public class ReflectionUtils {
             }
             if (checkFinal) {
                 Iterator<Method> itr = methods.iterator();
-                while(itr.hasNext()) if (Modifier.isAbstract(itr.next().getModifiers())!=modFinal) itr.remove();
+                while(itr.hasNext()) if (Modifier.isFinal(itr.next().getModifiers())!=modFinal) itr.remove();
             }
             if (checkStatic) {
                 Iterator<Method> itr = methods.iterator();
-                while(itr.hasNext()) if (Modifier.isAbstract(itr.next().getModifiers())!=modStatic) itr.remove();
+                while(itr.hasNext()) if (Modifier.isStatic(itr.next().getModifiers())!=modStatic) itr.remove();
             }
             if(types != null) {
                 Iterator<Method> itr = methods.iterator();
@@ -584,6 +586,7 @@ public class ReflectionUtils {
      */
     public static class RefMethod<Z> {
         private final Method method;
+        private final int argumentsCount;
 
         /**
          * @return passed method
@@ -607,7 +610,11 @@ public class ReflectionUtils {
         }
         public RefMethod (Method method) {
             this.method = method;
+            this.argumentsCount = method.getParameterTypes().length;
             method.setAccessible(true);
+        }
+        public int getArgumentsCount(){
+            return argumentsCount;
         }
         /**
          * apply method to object

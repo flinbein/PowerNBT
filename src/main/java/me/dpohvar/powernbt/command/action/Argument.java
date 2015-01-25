@@ -179,6 +179,22 @@ public class Argument {
                 throw new RuntimeException("file " + s + " not found", e);
             }
         }
+        if ((object.startsWith("schematic:") && object.length() > 10)||(object.startsWith("sch:") && object.length() > 3)) {
+            String s = object.substring(object.indexOf(':')+1);
+            if (s.startsWith("\"") && s.endsWith("\"") && s.length()>1 ) {
+                s = StringParser.parse(s.substring(1,s.length()-1));
+            }
+            try {
+                File schematicFolder = new File("plugins/WorldEdit/schematics").getCanonicalFile();
+                File file = new File(schematicFolder, s + ".schematic").getCanonicalFile();
+                if (!file.toString().startsWith(schematicFolder.toString())) {
+                    throw new RuntimeException(plugin.translate("error_accessfile", file.getName()));
+                }
+                return new NBTContainerFileGZip(file);
+            } catch (IOException e) {
+                throw new RuntimeException("schematic file " + s + " not found", e);
+            }
+        }
         if (object.equals("compound") || object.equals("com")) {
             return new NBTContainerBase(new NBTTagCompound());
         }
@@ -295,6 +311,26 @@ public class Argument {
                 else if (type == NBTType.INT) type = NBTType.INTARRAY;
                 return new NBTContainerBase(type.parse(object));
             }
+        }
+        if (object.equals("hand") || object.equals("h")) {
+            if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
+            Player p = (Player) caller.getOwner();
+            NBTContainerEntity player = new NBTContainerEntity(p);
+            int pslot = p.getInventory().getHeldItemSlot();
+            int ind = 0;
+            int result = -1;
+            NBTTagList inventory = ((NBTTagCompound)player.getCustomTag()).getList("Inventory");
+            for(NBTBase bt: inventory){
+                NBTTagCompound ct = (NBTTagCompound) bt;
+                if( ct.getByte("Slot") == pslot ){
+                    result = ind;
+                    break;
+                }
+                ind++;
+            }
+            if (result == -1) throw new RuntimeException(plugin.translate("error_null"));
+            NBTQuery q = new NBTQuery("Inventory",result);
+            return new NBTContainerComplex(player,q);
         }
         Object mojangsonTag = null;
         if (param == null) try {

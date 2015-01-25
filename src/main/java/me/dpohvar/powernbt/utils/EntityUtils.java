@@ -1,13 +1,11 @@
 package me.dpohvar.powernbt.utils;
 
-import me.dpohvar.powernbt.nbt.NBTTagByte;
-import me.dpohvar.powernbt.nbt.NBTType;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 
 import java.util.List;
 import java.util.Map;
@@ -21,47 +19,38 @@ public class EntityUtils {
 
     public static EntityUtils entityUtils = new EntityUtils();
 
-    RefClass cEntity = getRefClass("{nms}.Entity, {nm}.entity.Entity, {Entity}");
-    RefClass cCraftWorld = getRefClass("{cb}.CraftWorld, {CraftWorld}");
-    RefClass cWorldServer = getRefClass("{nms}.WorldServer, {WorldServer}");
-    RefClass cCraftEntity = getRefClass("{cb}.entity.CraftEntity, {CraftEntity}");
-    RefClass cWorld = getRefClass("{nms}.World, {World}");
-    RefClass cEntityPlayer = getRefClass("{nms}.EntityPlayer, {nm}.entity.player.EntityPlayer, {EntityPlayer}");
-    RefClass cNBTTagCompound = getRefClass("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}");
-    RefClass cCraftChunk = getRefClass("{cb}.CraftChunk, {CraftChunk}");
-    RefClass cChunk = getRefClass("{nms}.Chunk, {Chunk}");
-    RefMethod mGetHandleEntity = cCraftEntity.findMethodByReturnType(cEntity);
-    RefMethod mReadEntity;
-    RefMethod mWriteEntity;
-    RefMethod mReadPlayer;
-    RefMethod mWritePlayer;
-    RefField fForgeData;
+    private RefClass cEntity = getRefClass("{nms}.Entity, {nm}.entity.Entity, {Entity}");
+    private RefClass cCraftEntity = getRefClass("{cb}.entity.CraftEntity, {CraftEntity}");
+    private RefClass cEntityPlayer = getRefClass("{nms}.EntityPlayer, {nm}.entity.player.EntityPlayer, {EntityPlayer}");
+    private RefMethod mGetHandleEntity = cCraftEntity.findMethodByReturnType(cEntity);
+    private RefMethod mReadEntity;
+    private RefMethod mWriteEntity;
+    private RefMethod mReadPlayer;
+    private RefMethod mWritePlayer;
+    private RefField fForgeData;
 
-    RefClass cEntityTypes;
-    RefClass cEntityInsentient;
-    RefMethod mCreateEntity;
-    RefMethod mGetWorldHandle;
-    RefMethod mGetBukkitEntity;
-    RefMethod mGetChunkHandle;
-    RefMethod mAddEntityToChunk;
-    RefMethod mAddEntityToWorld;
+    private RefMethod mCreateEntity;
+    private RefMethod mGetWorldHandle;
+    private RefMethod mGetBukkitEntity;
+    private RefMethod mAddEntityToWorld;
 
     private EntityUtils(){
+        RefClass cCraftWorld = getRefClass("{cb}.CraftWorld, {CraftWorld}");
+        RefClass cWorldServer = getRefClass("{nms}.WorldServer, {nm}.world.WorldServer, {WorldServer}");
+        RefClass cWorld = getRefClass("{nms}.World, {nm}.world.World, {World}");
+        RefClass cNBTTagCompound = getRefClass("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}");
 
         try {
-            cEntityTypes = getRefClass("{nms}.EntityTypes, {nm}.entity.EntityTypes, {EntityTypes}");
-            cEntityInsentient = getRefClass("{nms}.EntityInsentient, {EntityInsentient}");
+            RefClass cEntityTypes = getRefClass("{nms}.EntityTypes, {nm}.entity.EntityTypes, {nm}.entity.EntityList, {EntityTypes}");
             mCreateEntity = cEntityTypes.findMethodByParams(cNBTTagCompound, cWorld);
             mGetWorldHandle = cCraftWorld.findMethodByReturnType(cWorldServer);
             mGetBukkitEntity = cEntity.findMethodByReturnType(cCraftEntity);
-            mGetChunkHandle = cCraftChunk.findMethodByReturnType(cChunk);
-            mAddEntityToChunk = cChunk.findMethod(
+            mAddEntityToWorld = cWorld.findMethod(
                     new MethodCondition()
-                            .withReturnType(void.class)
-                            .withTypes(cEntity)
-                            .withPrefix("a")
+                            .withReturnType(boolean.class)
+                            .withName("addEntity")
+                            .withTypes(cEntity, CreatureSpawnEvent.SpawnReason.class)
             );
-            mAddEntityToWorld = cWorld.findMethodByName("addEntity");
         } catch (Exception e){
             if (plugin.isDebug()) {
                 plugin.getLogger().log(Level.WARNING, "entity utils error", e);
@@ -151,7 +140,7 @@ public class EntityUtils {
         Object nmsWorld = mGetWorldHandle.of(world).call();
         Object nmsEntity = mCreateEntity.call(nbtTagCompound,nmsWorld);
         if (nmsEntity == null) return null;
-        mAddEntityToWorld.of(nmsWorld).call(nmsEntity);
+        mAddEntityToWorld.of(nmsWorld).call(nmsEntity, CreatureSpawnEvent.SpawnReason.CUSTOM);
         Entity entity = (Entity) mGetBukkitEntity.of(nmsEntity).call();
 
         Location loc = entity.getLocation();

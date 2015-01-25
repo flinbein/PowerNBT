@@ -5,27 +5,38 @@ import java.util.*;
 import static me.dpohvar.powernbt.utils.NBTUtils.nbtUtils;
 
 /**
- * Represent net.minecraft.server.NBTTagList.
- * Allows you to work with NBTTagList as with List.
- * values on get() will be converted to java primitive types if it possible.
- * net.minecraft.server.NBTTagList converted to NBTList
- * net.minecraft.server.NBTTagCompound converted to NBTCompound
- * types allowed to set to empty NBTList:
- * - all primitive types (boolean -> NBTTagByte 0 or 1)
- * - Object[] -> NBTTagList
- * - java.util.Collection -> NBTTagList
- * - java.util.Map -> NBTTagCompound
- * arrays, collections and maps must contains only the allowed values.
- *
- * You can add any allowed value to empty NBTList
- * if NBTList is not empty, you can add only values that can be converted to type of NBTList
- * Example:
+ * Represent net.minecraft.server.NBTTagList.<br>
+ * Allows you to work with NBTTagList as with List.<br>
+ * values on get() will be converted to java primitive types if it possible.<br>
+ * net.minecraft.server.NBTTagList converted to NBTList<br>
+ * net.minecraft.server.NBTTagCompound converted to NBTCompound<br>
+ * types allowed to set to empty NBTList:<br>
+ * * all primitive types (boolean as NBTTagByte 0 or 1)<br>
+ * * Object[] as NBTTagList<br>
+ * * java.util.Collection as NBTTagList<br>
+ * * java.util.Map as NBTTagCompound<br>
+ * arrays, collections and maps must contains only the allowed values.<br>
+ * You can add any allowed value to empty NBTList<br>
+ * if NBTList is not empty, you can add only values that can be converted to type of NBTList<br>
+ * Example: <br><pre>
  *   NBTList list = new NBTList(); // ok
  *   list.getType(); // type is 0 - list is empty
  *   list.add( (int) 15 ); // ok
  *   list.getType(); // type is 3 - contains integers
  *   list.add( (float) 3.14 ); // 3.14 converted to 3
  *   list.add("some text"); // NBTConvertException, can not convert "some text" to int
+ * </pre><br>
+ * Difference from {@link java.util.List}:<br>
+ * {@link me.dpohvar.powernbt.api.NBTList#set(int, Object)} and {@link me.dpohvar.powernbt.api.NBTList#add(int, Object)} creates clone of NBT tag before set:<br><pre>
+ *   NBTList list = new NBTList();
+ *   NBTCompound cmp = new NBTCompound();
+ *   list.add(cmp);
+ *   cmp.put("foo", "bar");
+ *   NBTCompound innerCmp = list.get(0);
+ *   // now innerCmp is empty, because cmp was added to the list before changes.
+ * </pre><br>
+ * {@link me.dpohvar.powernbt.api.NBTList} can not contain empty values (null).<br>
+ * {@link me.dpohvar.powernbt.api.NBTList} can not contain cross-references.
  */
 public class NBTList implements List<Object> {
 
@@ -33,7 +44,9 @@ public class NBTList implements List<Object> {
     private final Object handle;
 
     /**
-     * create NBTList by NBTTagList
+     * Create a new instance of NBTList by NBTTagList.<br>
+     * all changes of created list will affect to NBTTagList.
+     *
      * @param tag instance of net.minecraft.server.NBTTagCompound
      * @return NBTList
      */
@@ -43,7 +56,8 @@ public class NBTList implements List<Object> {
     }
 
     /**
-     * create NBTList by copy of NBTTagList
+     * Create a new instance of NBTList by copy of NBTTagList.
+     *
      * @param tag instance of net.minecraft.server.NBTTagCompound
      * @return NBTList
      */
@@ -59,7 +73,9 @@ public class NBTList implements List<Object> {
     }
 
     /**
-     * convert Collection to NBTList
+     * Convert java {@link java.util.Collection} to NBTList.<br>
+     * Map should not contain cross-references!
+     *
      * @param collection collection
      */
     public NBTList(Collection collection) {
@@ -68,7 +84,8 @@ public class NBTList implements List<Object> {
     }
 
     /**
-     * convert array to NBTList
+     * Convert java array to NBTList
+     *
      * @param array array
      */
     public NBTList(Object[] array) {
@@ -77,7 +94,7 @@ public class NBTList implements List<Object> {
     }
 
     /**
-     * create new empty NBTList
+     * Create a new empty NBTList
      */
     public NBTList() {
         this(nbtUtils.createTagList());
@@ -88,13 +105,18 @@ public class NBTList implements List<Object> {
         return t instanceof NBTList && handle.equals(((NBTList) t).handle);
     }
 
+    /**
+     * Get list stored in original NBTTagList.
+     *
+     * @return handle list
+     */
     public List<Object> getHandleList(){
         return handleList;
     }
 
     /**
-     * get original NBTTagList
-     * Be careful!
+     * Get original NBTTagList.
+     *
      * @return NBTTagList
      */
     public Object getHandle(){
@@ -102,7 +124,8 @@ public class NBTList implements List<Object> {
     }
 
     /**
-     * get copy of original NBTTagList
+     * Get copy of original NBTTagList.
+     *
      * @return NBTTagList
      */
     public Object getHandleCopy(){
@@ -110,7 +133,8 @@ public class NBTList implements List<Object> {
     }
 
     /**
-     * get byte type of original NBTTagList.
+     * Get byte type of original NBTTagList.
+     *
      * @return type of list or 0 if list is empty
      */
     public byte getType(){
@@ -133,25 +157,49 @@ public class NBTList implements List<Object> {
         else return nbtUtils.createTag(javaObject, type);
     }
 
+    /**
+     * Convert NBTList to java {@link java.util.List}
+     * @param list empty list to fill
+     * @param <T> T
+     * @return list
+     */
     public <T extends List<Object>> T toList(T list) {
-        list.clear();
+        return toCollection(list);
+    }
+
+    /**
+     * Convert NBTList to java {@link java.util.Collection}
+     * @param collection empty collection to fill
+     * @param <T> T
+     * @return collection
+     */
+    public <T extends Collection<Object>> T toCollection(T collection) {
+        collection.clear();
         for (Object nbtTag: handleList) {
             byte type = nbtUtils.getTagType(nbtTag);
             if (type==9) {
-                list.add(forNBT(nbtTag).toList(new ArrayList<Object>()));
+                collection.add(forNBT(nbtTag).toList(new ArrayList<Object>()));
             } else if (type==10) {
-                list.add(NBTCompound.forNBT(nbtTag).toMap(new HashMap<String, Object>()));
+                collection.add(NBTCompound.forNBT(nbtTag).toMap(new HashMap<String, Object>()));
             } else {
-                list.add(nbtUtils.getValue(nbtTag));
+                collection.add(nbtUtils.getValue(nbtTag));
             }
         }
-        return list;
+        return collection;
     }
 
+    /**
+     * Convert nbt list to {@link java.util.ArrayList}
+     * @return ArrayList
+     */
     public ArrayList<Object> toArrayList() {
         return toList(new ArrayList<Object>());
     }
 
+    /**
+     * Create clone of this NBT list
+     * @return cloned {@link me.dpohvar.powernbt.api.NBTList}
+     */
     @Override
     @SuppressWarnings("CloneDoesntCallSuperClone, CloneDoesntDeclareCloneNotSupportedException")
     public NBTList clone(){
@@ -197,11 +245,10 @@ public class NBTList implements List<Object> {
             a[i] = (T) get(i);
         }
         return a;
-
     }
 
     /**
-     * Appends clone of the value to the end of NBTList
+     * Appends <code>clone</code> of the value to the end of NBTList<br>
      * @param o value to be appended to NBTList
      * @return true if NBTList is changed
      */
@@ -224,7 +271,6 @@ public class NBTList implements List<Object> {
         return true;
     }
 
-
     @Override
     public boolean addAll(@SuppressWarnings("NullableProblems") Collection<?> c) {
         boolean modified = false;
@@ -239,6 +285,7 @@ public class NBTList implements List<Object> {
     public boolean addAll(int index,@SuppressWarnings("NullableProblems") Collection<?> c) {
         boolean modified = false;
         for (Object t: c) {
+            if (t == null) continue;
             Object tag = convertToCurrentType(t);
             modified = true;
             handleList.add(index++, tag);
@@ -288,6 +335,7 @@ public class NBTList implements List<Object> {
 
     @Override
     public void add(int index, Object element) {
+        if (element == null) return;
         Object tag = convertToCurrentType(element);
         handleList.add(index, tag);
     }
@@ -386,9 +434,6 @@ public class NBTList implements List<Object> {
         }
     }
 
-
-
-
     public class NBTSubList extends NBTList {
         private final NBTList list;
         private final int offset;
@@ -409,6 +454,7 @@ public class NBTList implements List<Object> {
 
         @Override
         public Object set(int index, Object element) {
+            if (element == null) return remove(index);
             rangeCheck(index);
             return list.set(index+offset, element);
         }
@@ -426,6 +472,7 @@ public class NBTList implements List<Object> {
 
         @Override
         public void add(int index, Object element) {
+            if (element == null) return;
             rangeCheckForAdd(index);
             list.add(index + offset, element);
             size++;
@@ -434,6 +481,7 @@ public class NBTList implements List<Object> {
         @Override
         public Object remove(int index) {
             rangeCheck(index);
+            size--;
             return list.remove(index+offset);
         }
 
@@ -444,10 +492,14 @@ public class NBTList implements List<Object> {
 
         @Override
         public boolean addAll(int index, Collection<?> c) {
+            List<Object> objectToAdd = new ArrayList<Object>();
+            for (Object o: c) {
+                if (o != null) objectToAdd.add(o);
+            }
             rangeCheckForAdd(index);
-            int cSize = c.size();
+            int cSize = objectToAdd.size();
             if (cSize==0) return false;
-            list.addAll(offset + index, c);
+            list.addAll(offset + index, objectToAdd);
             size += cSize;
             return true;
         }
@@ -509,11 +561,13 @@ public class NBTList implements List<Object> {
 
                 @Override
                 public void set(Object e) {
-                    super.set(e);
+                    if (e == null) remove();
+                    else super.set(e);
                 }
 
                 @Override
                 public void add(Object e) {
+                    if (e == null) return;
                     super.add(e);
                     size++;
                 }

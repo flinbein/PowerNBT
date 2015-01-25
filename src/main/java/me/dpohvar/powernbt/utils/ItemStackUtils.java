@@ -17,16 +17,16 @@ public final class ItemStackUtils {
 
 
 
-    RefClass classCraftItemStack = getRefClass("{cb}.inventory.CraftItemStack, {CraftItemStack}");
-    RefClass classItemStack = getRefClass("{nms}.ItemStack, {nm}.item.ItemStack, {ItemStack}");
-    RefField itemHandle = classCraftItemStack.findField(classItemStack);
-    RefField tag = classItemStack.findField("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}");
+    private RefClass classCraftItemStack = getRefClass("{cb}.inventory.CraftItemStack, {CraftItemStack}");
+    private RefClass classItemStack = getRefClass("{nms}.ItemStack, {nm}.item.ItemStack, {ItemStack}");
+    private RefField itemHandle = classCraftItemStack.findField(classItemStack);
+    private RefField tag = classItemStack.findField("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}");
 
-    RefMethod asNMSCopy;
-    RefMethod asCraftMirror;
-    RefConstructor conNmsItemStack;
-    RefConstructor conCraftItemStack;
-    RefClass classItemMeta;
+    private RefMethod asNMSCopy;
+    private RefMethod asCraftMirror;
+    private RefConstructor conNmsItemStack;
+    private RefConstructor conCraftItemStack;
+    private RefClass classItemMeta;
 
     private ItemStackUtils(){
         try {

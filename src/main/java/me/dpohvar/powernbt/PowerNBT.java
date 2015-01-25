@@ -1,5 +1,6 @@
 package me.dpohvar.powernbt;
 
+import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.command.CommandNBT;
 import me.dpohvar.powernbt.completer.CompleterNBT;
 import me.dpohvar.powernbt.completer.TypeCompleter;
@@ -28,6 +29,12 @@ public class PowerNBT extends JavaPlugin {
     private final String errorPrefix = ChatColor.DARK_RED.toString() + ChatColor.BOLD + "[" + ChatColor.RED + "PowerNBT" + ChatColor.DARK_RED + ChatColor.BOLD + "] " + ChatColor.RESET;
     private TypeCompleter typeCompleter;
 
+    /**
+     * Get the folder where are stored saved files
+     *
+     * This files are used for command: <code>/nbt $filename</code>
+     * @return folder
+     */
     public File getNBTFilesFolder() {
         return new File(getDataFolder(), "nbt");
     }
@@ -67,10 +74,20 @@ public class PowerNBT extends JavaPlugin {
         return errorPrefix;
     }
 
+    /**
+     * Get plugin debug mode
+     *
+     * @return true if plugin in debug mode
+     */
     public boolean isDebug() {
         return getConfig().getBoolean("debug");
     }
 
+    /**
+     * Set plugin debug mode
+     *
+     * @param val true to enable debug mode
+     */
     public void setDebug(boolean val) {
         getConfig().set("debug", val);
     }
@@ -117,12 +134,22 @@ public class PowerNBT extends JavaPlugin {
         printDebug(NBTBlockUtils.nbtBlockUtils);
         printDebug(NBTCompressedUtils.nbtCompressedUtils);
         printDebug(ChunkUtils.chunkUtils);
+        printDebug(MojangsonUtils.mojangsonUtils);
         printDebug(NBTUtils.nbtUtils);
         printDebug(PacketUtils.packetUtils);
     }
 
     private void printDebug(Object t){
         if (isDebug()) getLogger().info("" + t);
+    }
+
+    /**
+     * Get PowerNBT API
+     *
+     * @return api
+     */
+    public static NBTManager getApi(){
+        return NBTManager.getInstance();
     }
 }
 

@@ -31,8 +31,9 @@ public class CompleterNBT extends Completer {
     public void fillTabs(Caller caller, TabFormer former) throws Exception {
         String word = former.poll(); // object
         if (word.isEmpty()) {
-            former.addIfStarts("me", "item", "block", "chunk", "buffer", "list", "compound", "byte[]", "int[]", "debug");
-            if (caller.getOwner() instanceof Player && former.getQuery().startsWith("id")) {
+            former.addIfStarts("me", "item", "chunk", "buffer", "list", "compound", "byte[]", "int[]", "debug", "file:", "gz:", "sch:", "chunk:");
+            if (caller.getObject() instanceof Entity) former.addIfStarts("block", "chunk", "inventory","hand");
+            if (caller.getOwner() instanceof Entity && former.getQuery().startsWith("id")) {
                 Player p = (Player) caller.getOwner();
                 List<Entity> ents = p.getNearbyEntities(20, 20, 20);
                 Location pl = p.getLocation();
@@ -65,14 +66,24 @@ public class CompleterNBT extends Completer {
                 }
             } else if (former.getQuery().startsWith("$$")) {
                 File folder = PowerNBT.plugin.getNBTFilesFolder();
-                if (folder.isDirectory()) for (File f : folder.listFiles()) {
+                File[] files = folder.listFiles();
+                if (files != null) for (File f : files) {
                     String n = f.getName();
                     if (!n.endsWith(".nbtz")) continue;
                     former.addIfStarts("$$" + n.substring(0, n.length() - 5));
                 }
+            } else if (former.getQuery().startsWith("sch:")||former.getQuery().startsWith("schematic:")) {
+                File folder = new File("plugins/WorldEdit/schematics");
+                File[] files = folder.listFiles();
+                if (files != null) for (File f : files) {
+                    String n = f.getName();
+                    if (!n.endsWith(".schematic")) continue;
+                    former.addIfStarts(former.getQuery().split(":")[0] +":"+ n.substring(0, n.length() - 10));
+                }
             } else if (former.getQuery().startsWith("$")) {
                 File folder = PowerNBT.plugin.getNBTFilesFolder();
-                if (folder.isDirectory()) for (File f : folder.listFiles()) {
+                File[] files = folder.listFiles();
+                if (files != null) for (File f : files) {
                     String n = f.getName();
                     if (!n.endsWith(".nbt")) continue;
                     former.addIfStarts("$" + n.substring(0, n.length() - 4));
@@ -220,8 +231,9 @@ public class CompleterNBT extends Completer {
                         }
                     }
                 }
-                former.addIfStarts("me", "item", "block", "chunk", "buffer", "list", "compound", "byte[]", "int[]");
-                if (caller.getOwner() instanceof Player && former.getQuery().startsWith("id")) {
+                former.addIfStarts("me", "item", "chunk", "buffer", "list", "compound", "byte[]", "int[]");
+                if (caller.getObject() instanceof Entity) former.addIfStarts("block", "inventory","hand");
+                if (caller.getOwner() instanceof Entity && former.getQuery().startsWith("id")) {
                     Player p = (Player) caller.getOwner();
                     List<Entity> ents = p.getNearbyEntities(20, 20, 20);
                     Location pl = p.getLocation();
@@ -251,6 +263,22 @@ public class CompleterNBT extends Completer {
                 } else if (former.getQuery().startsWith("*")) {
                     for (Player f : Bukkit.getOnlinePlayers()) {
                         former.addIfStarts("*" + f.getName());
+                    }
+                } else if (former.getQuery().startsWith("$$")) {
+                    File folder = PowerNBT.plugin.getNBTFilesFolder();
+                    File[] files = folder.listFiles();
+                    if (files != null) for (File f : files) {
+                        String n = f.getName();
+                        if (!n.endsWith(".nbtz")) continue;
+                        former.addIfStarts("$$" + n.substring(0, n.length() - 5));
+                    }
+                } else if (former.getQuery().startsWith("sch:")||former.getQuery().startsWith("schematic:")) {
+                    File folder = new File("plugins/WorldEdit/schematics");
+                    File[] files = folder.listFiles();
+                    if (files != null) for (File f : files) {
+                        String n = f.getName();
+                        if (!n.endsWith(".schematic")) continue;
+                        former.addIfStarts(former.getQuery().split(":")[0] +":"+ n.substring(0, n.length() - 10));
                     }
                 } else if (former.getQuery().startsWith("$")) {
                     File folder = PowerNBT.plugin.getNBTFilesFolder();

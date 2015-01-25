@@ -11,19 +11,10 @@ import java.util.*;
 
 import static me.dpohvar.powernbt.utils.ReflectionUtils.*;
 
-/**
- * Created by DPOH-VAR on 14.01.14
- */
 public abstract class NBTUtils {
 
-    /**
-     * static access to util
-     */
     public static final NBTUtils nbtUtils;
 
-    /**
-     * select the util implementation
-     */
     static {
         boolean raw = false;
         if (isForge()) { // Forge classpath
@@ -41,13 +32,6 @@ public abstract class NBTUtils {
         }
     }
 
-    /**
-     * convert java object to NBT tag\n
-     * Supports all primitive types, Map, Object[], Collection, byte[], int[]
-     * @param javaObject java object
-     * @return NBTBase tag
-     * @throws me.dpohvar.powernbt.exception.NBTConvertException if object can not be converted to NBTBase
-     */
     public Object createTag(Object javaObject) throws NBTConvertException {
         if (javaObject == null) return null;
         if (javaObject instanceof NBTCompound) return cloneTag(((NBTCompound)javaObject).getHandle());
@@ -56,7 +40,7 @@ public abstract class NBTUtils {
             if ((Boolean)javaObject) return createTagByte((byte) 1);
             else return (byte)0;
         }
-        if (javaObject instanceof Collection) return new NBTList((List) javaObject).getHandle();
+        if (javaObject instanceof Collection) return new NBTList((Collection) javaObject).getHandle();
         if (javaObject instanceof Short) return createTagShort((Short) javaObject);
         if (javaObject instanceof String) return createTagString((String) javaObject);
         if (javaObject instanceof Byte) return createTagByte((Byte) javaObject);
@@ -71,26 +55,10 @@ public abstract class NBTUtils {
         throw new NBTConvertException(javaObject);
     }
 
-    /**
-     * convert java object to NBT tag with special type\n
-     * Supports all primitive types, Map, Object[], Collection, byte[], int[]
-     * @param value java object
-     * @param type nbt type
-     * @return NBTBase tag
-     * @throws me.dpohvar.powernbt.exception.NBTConvertException if object can not be converted to NBT tag
-     */
     public Object createTag(Object value, byte type) throws NBTConvertException{
         return createTag(convertValue(value, type));
     }
 
-    /**
-     * convert java object to special type\n
-     * Supports all primitive types, Map, Object[], Collection, byte[], int[]
-     * @param value java object
-     * @param type nbt type
-     * @return NBTBase tag
-     * @throws me.dpohvar.powernbt.exception.NBTConvertException if object can not be converted to NBT tag
-     */
     public Object convertValue(Object value, byte type) throws NBTConvertException{
         switch (type) {
             case 0: {
@@ -196,157 +164,52 @@ public abstract class NBTUtils {
         }
     }
 
-    /**
-     * create NBTTagByte by value
-     * @param a value
-     * @return NBTTagByte
-     */
     public abstract Object createTagByte(Byte a);
 
-    /**
-     * create NBTTagShort by value
-     * @param a value
-     * @return NBTTagShort
-     */
     public abstract Object createTagShort(Short a);
 
-    /**
-     * create NBTTagInt by value
-     * @param a value
-     * @return NBTTagInt
-     */
     public abstract Object createTagInt(Integer a);
 
-    /**
-     * create NBTTagLong by value
-     * @param a value
-     * @return NBTTagLong
-     */
     public abstract Object createTagLong(Long a);
 
-    /**
-     * create NBTTagFloat by value
-     * @param a value
-     * @return NBTTagFloat
-     */
     public abstract Object createTagFloat(Float a);
 
-    /**
-     * create NBTTagDouble by value
-     * @param a value
-     * @return NBTTagDouble
-     */
     public abstract Object createTagDouble(Double a);
 
-    /**
-     * create NBTTagString by value
-     * @param a value
-     * @return NBTTagString
-     */
     public abstract Object createTagString(String a);
 
-    /**
-     * create NBTTagByteArray by value
-     * @param a value
-     * @return NBTTagByteArray
-     */
     public abstract Object createTagByteArray(byte[] a);
 
-    /**
-     * create NBTTagIntArray by value
-     * @param a value
-     * @return NBTTagIntArray
-     */
     public abstract Object createTagIntArray(int[] a);
 
-    /**
-     * getByteArray raw value of NBTBase tag
-     * @param tag tag
-     * @return value
-     * @throws me.dpohvar.powernbt.exception.NBTReadException if tag is not NBTBase
-     */
     public abstract Object getValue(Object tag) throws NBTReadException;
-
 
     protected abstract void setRawValue(Object tag, Object value) throws NBTReadException;
 
-    /**
-     * set raw value of NBTBase tag
-     * @param tag tag
-     * @param value value
-     * @throws me.dpohvar.powernbt.exception.NBTReadException if tag is not NBTBase
-     */
     public void setValue(Object tag, Object value) throws NBTConvertException{
         setRawValue(tag, convertValue(value, getTagType(tag)) );
     }
 
-    /**
-     * getByteArray type of tag
-     * @param tag tag
-     * @return type of tag
-     * @throws me.dpohvar.powernbt.exception.NBTReadException if tag is not NBTBase
-     */
     public abstract byte getTagType(Object tag) throws NBTReadException;
 
-    /**
-     * create new empty NBT tag by type
-     * @param type type of tag
-     * @return NBTBase
-     */
     public abstract Object createTagOfType(byte type);
 
-    /**
-     * clone NBT tag
-     * @param tag tag
-     * @return cloned tag
-     */
     public abstract Object cloneTag(Object tag);
 
-    /**
-     * create new empty NBTTagCompound
-     * @return NBTTagCompound
-     */
     public abstract Object createTagCompound();
 
-    /**
-     * create new empty NBTTagList
-     * @return NBTTagList
-     */
     public abstract Object createTagList();
 
-    /**
-     * getByteArray handle map of NBTTagCompound
-     * @return handle map
-     */
     public abstract Map<String,Object> getHandleMap(Object nbtTagCompound);
 
-    /**
-     * getByteArray handle list of NBTTagCompound
-     * @return handle list
-     */
     public abstract List<Object> getHandleList(Object nbtTagList);
 
-    /**
-     * getByteArray type of contained elements in NBTTagList
-     * @return type
-     */
     public abstract byte getNBTTagListType(Object nbtTagList);
 
-    /**
-     * Set type of contained elements in NBTTagList. Unsafe!
-     * @param nbtTagList NBTTagList
-     * @param type type
-     */
     public abstract void setNBTTagListType(Object nbtTagList, byte type);
 
-    /**
-     * check given object
-     * @param tag object
-     * @return true if object is NBT tag. False otherwise.
-     */
     public abstract boolean isNBTTag(Object tag);
 
-    //todo: documentation
     public abstract void readInputToTag(java.io.DataInput input, Object tag) throws IOException;
 
     public abstract void writeTagDataToOutput(java.io.DataOutput output, Object tag) throws IOException;

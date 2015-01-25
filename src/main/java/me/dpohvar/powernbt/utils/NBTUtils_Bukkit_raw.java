@@ -15,58 +15,56 @@ import static me.dpohvar.powernbt.utils.ReflectionUtils.*;
 
 final class NBTUtils_Bukkit_raw extends NBTUtils {
 
-    RefClass class_NBTBase = getRefClass("{nms}.NBTBase, {NBTBase}");
-    RefClass class_NBTTagByte = getRefClass("{nms}.NBTTagByte, {NBTTagByte}");
-    RefClass class_NBTTagShort = getRefClass("{nms}.NBTTagShort, {NBTTagShort}");
-    RefClass class_NBTTagInt = getRefClass("{nms}.NBTTagInt, {NBTTagInt}");
-    RefClass class_NBTTagLong = getRefClass("{nms}.NBTTagLong, {NBTTagLong}");
-    RefClass class_NBTTagFloat = getRefClass("{nms}.NBTTagFloat, {NBTTagFloat}");
-    RefClass class_NBTTagDouble = getRefClass("{nms}.NBTTagDouble, {NBTTagDouble}");
-    RefClass class_NBTTagString = getRefClass("{nms}.NBTTagString, {NBTTagString}");
-    RefClass class_NBTTagByteArray = getRefClass("{nms}.NBTTagByteArray, {NBTTagByteArray}");
-    RefClass class_NBTTagIntArray = getRefClass("{nms}.NBTTagIntArray, {NBTTagIntArray}");
-    RefClass class_NBTTagList = getRefClass("{nms}.NBTTagList, {NBTTagList}");
-    RefClass class_NBTTagCompound = getRefClass("{nms}.NBTTagCompound, {NBTTagCompound}");
+    private RefClass class_NBTBase = getRefClass("{nms}.NBTBase, {NBTBase}");
+    private RefClass class_NBTTagByte = getRefClass("{nms}.NBTTagByte, {NBTTagByte}");
+    private RefClass class_NBTTagShort = getRefClass("{nms}.NBTTagShort, {NBTTagShort}");
+    private RefClass class_NBTTagInt = getRefClass("{nms}.NBTTagInt, {NBTTagInt}");
+    private RefClass class_NBTTagLong = getRefClass("{nms}.NBTTagLong, {NBTTagLong}");
+    private RefClass class_NBTTagFloat = getRefClass("{nms}.NBTTagFloat, {NBTTagFloat}");
+    private RefClass class_NBTTagDouble = getRefClass("{nms}.NBTTagDouble, {NBTTagDouble}");
+    private RefClass class_NBTTagString = getRefClass("{nms}.NBTTagString, {NBTTagString}");
+    private RefClass class_NBTTagByteArray = getRefClass("{nms}.NBTTagByteArray, {NBTTagByteArray}");
+    private RefClass class_NBTTagIntArray = getRefClass("{nms}.NBTTagIntArray, {NBTTagIntArray}");
+    private RefClass class_NBTTagList = getRefClass("{nms}.NBTTagList, {NBTTagList}");
+    private RefClass class_NBTTagCompound = getRefClass("{nms}.NBTTagCompound, {NBTTagCompound}");
 
-    RefConstructor con_NBTagByte = class_NBTTagByte.getConstructor(byte.class);
-    RefConstructor con_NBTagShort = class_NBTTagShort.getConstructor(short.class);
-    RefConstructor con_NBTagInt =  class_NBTTagInt.getConstructor( int.class);
-    RefConstructor con_NBTagLong = class_NBTTagLong.getConstructor( long.class);
-    RefConstructor con_NBTagFloat = class_NBTTagFloat.getConstructor( float.class);
-    RefConstructor con_NBTagDouble = class_NBTTagDouble.getConstructor(double.class);
-    RefConstructor con_NBTagString = class_NBTTagString.getConstructor(String.class);
-    RefConstructor con_NBTagByteArray = class_NBTTagByteArray.getConstructor(byte[].class);
-    RefConstructor con_NBTagIntArray = class_NBTTagIntArray.getConstructor(int[].class);
-    RefConstructor con_NBTagCompound = class_NBTTagCompound.getConstructor();
-    RefConstructor con_NBTagList = class_NBTTagList.getConstructor();
+    private RefConstructor con_NBTagByte = class_NBTTagByte.getConstructor(byte.class);
+    private RefConstructor con_NBTagShort = class_NBTTagShort.getConstructor(short.class);
+    private RefConstructor con_NBTagInt =  class_NBTTagInt.getConstructor( int.class);
+    private RefConstructor con_NBTagLong = class_NBTTagLong.getConstructor( long.class);
+    private RefConstructor con_NBTagFloat = class_NBTTagFloat.getConstructor( float.class);
+    private RefConstructor con_NBTagDouble = class_NBTTagDouble.getConstructor(double.class);
+    private RefConstructor con_NBTagString = class_NBTTagString.getConstructor(String.class);
+    private RefConstructor con_NBTagByteArray = class_NBTTagByteArray.getConstructor(byte[].class);
+    private RefConstructor con_NBTagIntArray = class_NBTTagIntArray.getConstructor(int[].class);
+    private RefConstructor con_NBTagCompound = class_NBTTagCompound.getConstructor();
+    private RefConstructor con_NBTagList = class_NBTTagList.getConstructor();
 
-    RefField field_NBTagByte_data = class_NBTTagByte.findField(byte.class);
-    RefField field_NBTagShort_data = class_NBTTagShort.findField(short.class);
-    RefField field_NBTagInt_data = class_NBTTagInt.findField(int.class);
-    RefField field_NBTagLong_data = class_NBTTagLong.findField(long.class);
-    RefField field_NBTagFloat_data = class_NBTTagFloat.findField(float.class);
-    RefField field_NBTagDouble_data = class_NBTTagDouble.findField(double.class);
-    RefField field_NBTagString_data = class_NBTTagString.findField(String.class);
-    RefField field_NBTagByteArray_data = class_NBTTagByteArray.findField(byte[].class);
-    RefField field_NBTagIntArray_data = class_NBTTagIntArray.findField(int[].class);
-    RefField field_NBTagCompound_map = class_NBTTagCompound.findField(Map.class);
-    RefField field_NBTagList_list = class_NBTTagList.findField(List.class);
-    RefField field_NBTagList_byte = class_NBTTagList.findField(byte.class);
+    private RefField field_NBTagByte_data = class_NBTTagByte.findField(byte.class);
+    private RefField field_NBTagShort_data = class_NBTTagShort.findField(short.class);
+    private RefField field_NBTagInt_data = class_NBTTagInt.findField(int.class);
+    private RefField field_NBTagLong_data = class_NBTTagLong.findField(long.class);
+    private RefField field_NBTagFloat_data = class_NBTTagFloat.findField(float.class);
+    private RefField field_NBTagDouble_data = class_NBTTagDouble.findField(double.class);
+    private RefField field_NBTagString_data = class_NBTTagString.findField(String.class);
+    private RefField field_NBTagByteArray_data = class_NBTTagByteArray.findField(byte[].class);
+    private RefField field_NBTagIntArray_data = class_NBTTagIntArray.findField(int[].class);
+    private RefField field_NBTagCompound_map = class_NBTTagCompound.findField(Map.class);
+    private RefField field_NBTagList_list = class_NBTTagList.findField(List.class);
+    private RefField field_NBTagList_byte = class_NBTTagList.findField(byte.class);
 
-    RefMethod met_NBTBase_getTypeId = class_NBTBase.findMethodByReturnType(byte.class);
-    RefMethod met_NBTBase_clone = class_NBTBase.findMethodByReturnType(class_NBTBase);
-    RefMethod met_NBTBase_createTag = class_NBTBase.findMethodByParams(byte.class);
-    RefMethod met_NBTBase_write = class_NBTBase.findMethodByParams(DataOutput.class);
+    private RefMethod met_NBTBase_getTypeId = class_NBTBase.findMethodByReturnType(byte.class);
+    private RefMethod met_NBTBase_clone = class_NBTBase.findMethodByReturnType(class_NBTBase);
+    private RefMethod met_NBTBase_createTag = class_NBTBase.findMethodByParams(byte.class);
+    private RefMethod met_NBTBase_write = class_NBTBase.findMethodByParams(DataOutput.class);
 
-    RefClass class_NBTReadLimiter;
-    RefConstructor con_NBTReadLimiter;
-    long readLimit = Long.MAX_VALUE/2;
-    RefMethod met_NBTBase_load;
-    int met_NBTBase_load_args = 0;
+    private RefConstructor con_NBTReadLimiter;
+    private RefMethod met_NBTBase_load;
+    private int met_NBTBase_load_args = 0;
 
     NBTUtils_Bukkit_raw(){
         if (met_NBTBase_load_args==0) try{
-            class_NBTReadLimiter = getRefClass("{nms}.NBTReadLimiter, {nm}.nbt.NBTReadLimiter, {NBTReadLimiter}");
+            RefClass class_NBTReadLimiter = getRefClass("{nms}.NBTReadLimiter, {nm}.nbt.NBTReadLimiter, {NBTReadLimiter}");
             con_NBTReadLimiter = class_NBTReadLimiter.getConstructor(long.class);
             met_NBTBase_load = class_NBTBase.findMethodByParams(DataInput.class, int.class, class_NBTReadLimiter);
             met_NBTBase_load_args = 3;
@@ -238,6 +236,7 @@ final class NBTUtils_Bukkit_raw extends NBTUtils {
                 met_NBTBase_load.of(tag).call(input, 0);
                 break;
             case 3:
+                long readLimit = Long.MAX_VALUE / 2;
                 met_NBTBase_load.of(tag).call(input, 0, con_NBTReadLimiter.create(readLimit));
                 break;
         }

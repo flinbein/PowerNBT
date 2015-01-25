@@ -10,13 +10,19 @@ import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.*;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 import static me.dpohvar.powernbt.utils.MojangsonUtils.*;
 
 /**
- * NBTManager has methods to read and write NBT tags
+ * PowerNBT API.<br>
+ * This class has methods to read and write NBT tags.<br>
+ * {@link me.dpohvar.powernbt.api.NBTCompound} is used to work with NBTTagCompound,<br>
+ * {@link me.dpohvar.powernbt.api.NBTList} is used to work with NBTTagList,<br>
+ * {@link java.lang.String} is used to work with NBTTagString,<br>
+ * all other NBT tags represents by primitive values.<br>
+ * @since 0.7.1
  */
 
 @SuppressWarnings("UnusedDeclaration")
@@ -25,7 +31,8 @@ public class NBTManager {
     public static final NBTManager nbtManager = new NBTManager();
 
     /**
-     * get single instance of NBTManager
+     * Get single instance of {@link me.dpohvar.powernbt.api.NBTManager}.
+     *
      * @return NBTManager
      */
     public static NBTManager getInstance() {
@@ -49,9 +56,10 @@ public class NBTManager {
     }
 
     /**
-     * read NBT tag of bukkit entity
-     * @param entity entity
-     * @return nbt data of entity
+     * Read NBT tag of bukkit entity.
+     *
+     * @param entity Entity to read
+     * @return Nbt tag of bukkit entity
      */
     public NBTCompound read(Entity entity){
         NBTCompound compound = new NBTCompound();
@@ -60,19 +68,21 @@ public class NBTManager {
     }
 
     /**
-     * save nbt data to entity
-     * @param entity entity
-     * @param compound nbt data
+     * Store nbt data to entity.
+     *
+     * @param entity Entity to modify
+     * @param compound Nbt data to be stored
      */
     public void write(Entity entity, NBTCompound compound){
         entityUtils.writeEntity(entity, compound.getHandle());
     }
 
     /**
-     * read extra nbt data of entity.
-     * Works with forge only
-     * @param entity entity
-     * @return extra nbt data. null if not forge
+     * Read extra nbt data of entity.<br>
+     * Works with forge only.
+     *
+     * @param entity Entity to read
+     * @return Extra nbt data. null if no forge
      */
     public NBTCompound readForgeData(Entity entity){
         Object tag = entityUtils.getForgeData(entity);
@@ -81,7 +91,8 @@ public class NBTManager {
     }
 
     /**
-     * save extra nbt data to entity.
+     * Store extra nbt data to entity.
+     *
      * Works with forge only
      * @param entity entity
      * @param compound extra nbt data
@@ -91,18 +102,21 @@ public class NBTManager {
     }
 
     /**
-     * read nbt tag of ItemStack
-     * @param item bukkit item stack
-     * @return nbt data. null if item has no nbt and no meta
+     * Read nbt tag of {@link org.bukkit.inventory.ItemStack}.
+     *
+     * @param item Bukkit {@link org.bukkit.inventory.ItemStack}
+     * @return Nbt data. null if item has no nbt and no meta
      */
     public NBTCompound read(ItemStack item){
         Object tag = ItemStackUtils.itemStackUtils.getTag(item);
         return NBTCompound.forNBTCopy(tag);
     }
     /**
-     * read nbt tag of Chunk
-     * @param chunk bukkit chunk
-     * @return nbt data of chunk
+     * Read nbt tag of {@link org.bukkit.Chunk}.
+     *
+     * @param chunk Bukkit chunk
+     * @return Nbt data of chunk
+     * @since 0.8.1
      */
     public NBTCompound read(Chunk chunk){
         NBTCompound compound = new NBTCompound();
@@ -111,18 +125,21 @@ public class NBTManager {
     }
 
     /**
-     * change selected chunk with nbt data
-     * @param chunk chunk to be changed
-     * @param compound nbt data
+     * Store nbt tag to selected chunk.
+     *
+     * @param chunk Chunk to be changed
+     * @param compound Nbt data
+     * @since 0.8.1
      */
     public void write(Chunk chunk, NBTCompound compound){
         chunkUtils.writeChunk(chunk, compound.getHandle());
     }
 
     /**
-     * save nbt tag to item stack.
-     * On CraftItemStack you can save any data.
-     * On ItemStack you can save only data allowed by ItemMeta.
+     * Save nbt tag to item stack.<br>
+     * You can save any data to CraftItemStack.<br>
+     * You can save to ItemStack only data allowed by {@link org.bukkit.inventory.meta.ItemMeta}.<br>
+     *
      * @param item bukkit item stack
      * @param compound tag
      */
@@ -131,9 +148,10 @@ public class NBTManager {
     }
 
     /**
-     * read nbt data of tile entity at block
-     * @param block block with tile entity
-     * @return nbt data of tile entity or empty compound if no tile
+     * Read nbt data of tile entity at block.
+     *
+     * @param block Block with tile entity
+     * @return Nbt data of tile entity or empty compound if no data
      */
     public NBTCompound read(Block block){
         NBTCompound compound = new NBTCompound();
@@ -142,9 +160,10 @@ public class NBTManager {
     }
 
     /**
-     * save nbt data to tile entity at block
-     * @param block block with tile entity
-     * @param compound tag to be saved
+     * Save nbt data to tile entity at block.
+     *
+     * @param block Block with tile entity
+     * @param compound Tag to be saved
      */
     public void write(Block block, NBTCompound compound){
         nbtBlockUtils.setTag(block, compound.getHandle());
@@ -152,9 +171,10 @@ public class NBTManager {
     }
 
     /**
-     * read raw NBT data from input stream and convert to java object
-     * @param inputStream inputStream to read
-     * @return read object
+     * Read raw NBT data from input stream and convert to java object.
+     *
+     * @param inputStream InputStream to read
+     * @return Read object
      * @throws IOException it happens sometimes
      */
     public Object read(InputStream inputStream) throws IOException {
@@ -162,20 +182,22 @@ public class NBTManager {
     }
 
     /**
-     * convert java object to nbt and write to outputStream.
-     * Allowed all primitive types, collections and maps
+     * Convert java object to nbt and write to outputStream.<br>
+     * Allowed all primitive types, collections and maps.
+     *
      * @param outputStream outputStream to write
      * @param value value to be written
-     * @throws IOException
+     * @throws IOException it happens sometimes
      */
     public void write(OutputStream outputStream, Object value) throws IOException {
         write((DataOutput) new DataOutputStream(outputStream), value);
     }
 
     /**
-     * read compressed nbt compound
-     * @param inputStream inputStream to read
-     * @return nbt rag
+     * Read compressed nbt compound.
+     *
+     * @param inputStream InputStream to read
+     * @return Nbt rag
      */
     public NBTCompound readCompressed(InputStream inputStream){
         Object tag = nbtCompressedUtils.readCompound(inputStream);
@@ -183,7 +205,8 @@ public class NBTManager {
     }
 
     /**
-     * compress nbt compound and write to outputStream
+     * Compress nbt compound and write to outputStream.
+     *
      * @param outputStream outputStream to write
      * @param value value
      */
@@ -192,7 +215,8 @@ public class NBTManager {
     }
 
     /**
-     * read nbt data from dataInput and convert to java object
+     * Read nbt data from dataInput and convert to java object.
+     *
      * @param dataInput dataInput to read
      * @return nbt data converted to java object
      * @throws IOException it happens
@@ -203,7 +227,8 @@ public class NBTManager {
     }
 
     /**
-     * convert value to nbt and write to dataOutput
+     * Convert value to nbt and write to dataOutput.
+     *
      * @param dataOutput dataOutput to save
      * @param value value to be written
      * @throws IOException it happens sometimes
@@ -214,10 +239,11 @@ public class NBTManager {
     }
 
     /**
-     * read raw nbt data from file and convert to java object
+     * Read raw nbt data from file and convert to java object.
+     *
      * @param file file to read
      * @return nbt data converted to java types
-     * @throws IOException
+     * @throws IOException it happens
      */
     public Object read(File file) throws IOException {
         InputStream inputStream = null;
@@ -234,7 +260,8 @@ public class NBTManager {
     }
 
     /**
-     * convert value to nbt and write to file
+     * Write to file value converted to nbt tag.
+     *
      * @param file file to write
      * @param value value to be written
      * @throws IOException it happens
@@ -254,10 +281,11 @@ public class NBTManager {
     }
 
     /**
-     * read compressed nbt data from file and convert to java object
+     * Read compressed nbt data from file and convert to java object.
+     *
      * @param file file to read
      * @return nbt data converted to java types
-     * @throws FileNotFoundException
+     * @throws FileNotFoundException if file not found
      */
     public NBTCompound readCompressed(File file) throws FileNotFoundException {
         InputStream inputStream = null;
@@ -274,7 +302,8 @@ public class NBTManager {
     }
 
     /**
-     * convert value to nbt and write to file with compression
+     * Convert value to nbt and write to file with compression.
+     *
      * @param file file to write
      * @param value value to be written
      * @throws FileNotFoundException check your file
@@ -294,7 +323,8 @@ public class NBTManager {
     }
 
     /**
-     * read offline player's .dat file
+     * Read offline player's .dat file.
+     *
      * @param player player to read
      * @return nbt data read from a file
      */
@@ -308,7 +338,8 @@ public class NBTManager {
     }
 
     /**
-     * read offline player's .dat file
+     * Read offline player's .dat file.
+     *
      * @param player player name
      * @return nbt data read from a file
      */
@@ -318,7 +349,8 @@ public class NBTManager {
     }
 
     /**
-     * write nbt data to player's .dat file
+     * Write nbt data to player's .dat file.
+     *
      * @param player offline player
      * @param value value to be written
      * @return true on success, false otherwise
@@ -334,7 +366,8 @@ public class NBTManager {
     }
 
     /**
-     * write nbt data to player's .dat file
+     * Write nbt data to player's .dat file.
+     *
      * @param player player name
      * @param value value to be written
      * @return true on success, false otherwise
@@ -344,7 +377,13 @@ public class NBTManager {
         return writeOfflinePlayer(Bukkit.getPlayer(player), value);
     }
 
-    private File getPlayerFile(OfflinePlayer player){
+    /**
+     * Get {@link org.bukkit.OfflinePlayer} file with stored nbt data.
+     *
+     * @param player offline player
+     * @return player's file
+     */
+    public File getPlayerFile(OfflinePlayer player){
         File baseDir = (Bukkit.getWorlds().get(0)).getWorldFolder();
         if (getUUID != null) {
             UUID uuid = player.getUniqueId();
@@ -357,9 +396,18 @@ public class NBTManager {
     }
 
     /**
-     * Parse mojangson string
-     * @param value string in Mojangson format
-     * @return a primitive value or {@link NBTCompound} or {@link NBTList}
+     * Parse mojangson string.<br>
+     * This method can return:<br>
+     * byte, short, int, long, float, double, byte[], String, int[],<br>
+     * {@link me.dpohvar.powernbt.api.NBTList} or {@link me.dpohvar.powernbt.api.NBTCompound}<br>
+     * Examples:<br> <pre>
+     *     manager.parseMojangson("12s\\"); // 12 short
+     *     manager.parseMojangson("{foo:bar}"); // NBTCompound
+     * </pre>
+     *
+     * @param value String in Mojangson format
+     * @return Parse result
+     * @since 0.8.2
      */
     public Object parseMojangson(String value){
         if (value == null) return null;
@@ -368,14 +416,55 @@ public class NBTManager {
     }
 
     /**
-     * Spawn entity in world by nbt compound
-     * @param compound entity data
-     * @param world world
-     * @return spawned entity
+     * Spawn entity in world by nbt compound.<br>
+     * Entity location must be stored in "Pos" tag.
+     *
+     * @param compound Entity data
+     * @param world World where to spawn entity
+     * @return Spawned entity
+     * @since 0.8.2
      */
     public Entity spawnEntity(NBTCompound compound, World world){
         if (compound == null) return null;
         return entityUtils.spawnEntity(compound.getHandle(), world);
+    }
+
+    static boolean checkCrossReferences(LinkedList<Object> list, Collection values){
+        for (Object value : values) {
+            if (list.contains(value)) return true;
+            if (value instanceof Collection) {
+                list.push(value);
+                if (checkCrossReferences(list, (Collection)value)) return true;
+                list.pop();
+            } else if (value instanceof Map) {
+                list.push(value);
+                if (checkCrossReferences(list, ((Map)value).values())) return true;
+                list.pop();
+            } else if (value instanceof Object[]) {
+                list.push(value);
+                if (checkCrossReferences(list, Arrays.asList((Object[])value))) return true;
+                list.pop();
+            }
+        }
+        return false;
+    }
+
+    static boolean checkCrossReferences(Map map){
+        LinkedList<Object> list = new LinkedList<Object>();
+        list.push(map);
+        return checkCrossReferences(list, map.values());
+    }
+
+    static boolean checkCrossReferences(Collection collection){
+        LinkedList<Object> list = new LinkedList<Object>();
+        list.push(collection);
+        return checkCrossReferences(list, collection);
+    }
+
+    static boolean checkCrossReferences(Object[] collection){
+        LinkedList<Object> list = new LinkedList<Object>();
+        list.push(collection);
+        return checkCrossReferences(list, Arrays.asList(collection));
     }
 
 }

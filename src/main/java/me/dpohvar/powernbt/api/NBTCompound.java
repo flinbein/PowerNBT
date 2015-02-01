@@ -243,8 +243,9 @@ public class NBTCompound implements Map<String,Object> {
     }
 
     /**
-     * Merge this compound with map.
-     * merging occurs recursively for inner maps
+     * Merge this compound with map.<br>
+     * Merging occurs recursively for inner maps
+     *
      * @param map map to merge
      */
     public void merge(Map map) {

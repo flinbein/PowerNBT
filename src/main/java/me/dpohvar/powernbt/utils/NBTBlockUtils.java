@@ -4,6 +4,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
+import java.util.Map;
+
+import static me.dpohvar.powernbt.utils.NBTUtils.nbtUtils;
 import static me.dpohvar.powernbt.utils.ReflectionUtils.*;
 
 /**
@@ -42,11 +45,25 @@ public final class NBTBlockUtils {
     }
 
     /**
-     * set NBTTagCompound to block
+     * set NBTTagCompound to block. Watch for x, y, z
      * @param block bukkit block
      * @param compound NBTTagCompound
      */
     public void setTag(Block block, Object compound){
+        compound = nbtUtils.cloneTag(compound);
+        Map<String, Object> map = nbtUtils.getHandleMap(compound);
+        map.put("x", nbtUtils.createTagInt(block.getX()));
+        map.put("y", nbtUtils.createTagInt(block.getY()));
+        map.put("z", nbtUtils.createTagInt(block.getZ()));
+        setTagUnsafe(block, compound);
+    }
+
+    /**
+     * set NBTTagCompound to block
+     * @param block bukkit block
+     * @param compound NBTTagCompound
+     */
+    public void setTagUnsafe(Block block, Object compound){
         Object tile = getTileEntity(block);
         if (tile != null) write.of(tile).call(compound);
     }

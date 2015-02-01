@@ -105,6 +105,14 @@ public class ChunkUtils {
     }
 
     public void writeChunk(Chunk chunk, Object nbtTagCompound){
+        writeChunk(chunk, nbtTagCompound, false);
+    }
+
+    public void writeChunkUnsafe(Chunk chunk, Object nbtTagCompound){
+        writeChunk(chunk, nbtTagCompound, true);
+    }
+
+    private void writeChunk(Chunk chunk, Object nbtTagCompound, boolean unsafe){
         Object nmsWorld = mGetWorldHandle.of(chunk.getWorld()).call();
         Object chunkProvider = fChunkProvider.of(nmsWorld).get();
         Object chunkLoader = fChunkLoader.of(chunkProvider).get();
@@ -118,14 +126,16 @@ public class ChunkUtils {
         chunk.unload();
         // read nbt tag
         nbtTagCompound = nbtUtils.cloneTag(nbtTagCompound);
-        Map<String, Object> handleMap = nbtUtils.getHandleMap(nbtTagCompound);
-        // fix x,z coordinates
-        handleMap.put("xPos", nbtUtils.createTagInt(x) );
-        handleMap.put("zPos", nbtUtils.createTagInt(z) );
-        // fix entities coordinates
-        fixEntitiesData( handleMap.get("Entities"), x, z );
-        // fix tile entities coordinates
-        fixTileEntitiesData( handleMap.get("TileEntities"), x, z );
+        if (!unsafe) {
+            Map<String, Object> handleMap = nbtUtils.getHandleMap(nbtTagCompound);
+            // fix x,z coordinates
+            handleMap.put("xPos", nbtUtils.createTagInt(x));
+            handleMap.put("zPos", nbtUtils.createTagInt(z));
+            // fix entities coordinates
+            fixEntitiesData(handleMap.get("Entities"), x, z);
+            // fix tile entities coordinates
+            fixTileEntitiesData(handleMap.get("TileEntities"), x, z);
+        }
         // create new chunk
         Object newChunk = mLoadChunk.of(chunkLoader).call(nmsWorld, nbtTagCompound);
         // load entities
@@ -145,21 +155,6 @@ public class ChunkUtils {
         // refresh blocks
         chunk.getWorld().refreshChunk(x,z);
     }
-
-//    private void refreshChunk(Chunk chunk, Object nmsChunk, int x, int z){
-//        if (!isForge()) {
-//            Object packet = nChunkPacket.create(nmsChunk, true, 0xffff);
-//            int maxDist = Bukkit.getServer().getViewDistance() * 32 + 23;
-//            Location chunkLoc = chunk.getBlock(0, 0, 0).getLocation();
-//            for (Player p : chunk.getWorld().getPlayers()) {
-//                if (p.getLocation().distance(chunkLoc) < maxDist) {
-//                    PacketUtils.packetUtils.sendPacket(p, packet);
-//                }
-//            }
-//        } else {
-//            chunk.getWorld().refreshChunk(x,z);
-//        }
-//    }
 
     private void fixEntitiesData(Object nbtList, int x, int z){
         if (nbtList==null) return;

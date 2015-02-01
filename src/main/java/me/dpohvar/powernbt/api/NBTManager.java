@@ -429,6 +429,16 @@ public class NBTManager {
         return entityUtils.spawnEntity(compound.getHandle(), world);
     }
 
+    /**
+     * Convert bukkit ItemStack to CraftItemStack.
+     *
+     * @param itemStack Bukkit ItemStack
+     * @return CraftItemStack with nms item
+     */
+    public ItemStack asCraftItemStack(ItemStack itemStack){
+        return itemStackUtils.createCraftItemStack(itemStack);
+    }
+
     static boolean checkCrossReferences(LinkedList<Object> list, Collection values){
         for (Object value : values) {
             if (list.contains(value)) return true;

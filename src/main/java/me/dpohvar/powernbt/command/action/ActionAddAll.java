@@ -1,6 +1,7 @@
 package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.PowerNBT;
+import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.exception.NBTTagNotFound;
 import me.dpohvar.powernbt.exception.NBTTagUnexpectedType;
 import me.dpohvar.powernbt.nbt.*;
@@ -49,7 +50,9 @@ public class ActionAddAll extends Action {
         if (base1 instanceof NBTTagCompound && base2 instanceof NBTTagCompound){
             NBTTagCompound tag1 = (NBTTagCompound) base1;
             NBTTagCompound tag2 = (NBTTagCompound) base2;
-            tag1.putAll(tag2);
+            NBTCompound cmp1 = NBTCompound.forNBT(base1.getHandle());
+            NBTCompound cmp2 = NBTCompound.forNBT(base2.getHandle());
+            cmp1.merge(cmp2);
             container1.setCustomTag(query1,tag1);
             caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(tag2, false));
         } else if (base1 instanceof NBTTagList && base2 instanceof NBTTagList){

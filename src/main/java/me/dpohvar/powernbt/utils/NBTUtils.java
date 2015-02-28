@@ -42,7 +42,7 @@ public abstract class NBTUtils {
         }
         if (javaObject instanceof Collection) return new NBTList((Collection) javaObject).getHandle();
         if (javaObject instanceof Short) return createTagShort((Short) javaObject);
-        if (javaObject instanceof String) return createTagString((String) javaObject);
+        if (javaObject instanceof CharSequence) return createTagString(javaObject.toString());
         if (javaObject instanceof Byte) return createTagByte((Byte) javaObject);
         if (javaObject instanceof Integer) return createTagInt((Integer) javaObject);
         if (javaObject instanceof Float) return createTagFloat((Float) javaObject);
@@ -67,32 +67,32 @@ public abstract class NBTUtils {
             }
             case 1: {
                 if (value instanceof Number) return ((Number) value).byteValue();
-                if (value instanceof String) return new Long((String) value).byteValue();
+                if (value instanceof CharSequence) return new Long((String) value).byteValue();
                 throw new NBTConvertException(value, type);
             }
             case 2: {
                 if (value instanceof Number) return ((Number) value).shortValue();
-                if (value instanceof String) return new Long((String) value).shortValue();
+                if (value instanceof CharSequence) return new Long(value.toString()).shortValue();
                 throw new NBTConvertException(value, type);
             }
             case 3: {
                 if (value instanceof Number) return (((Number) value).intValue());
-                if (value instanceof String) return (new Long((String)value).intValue());
+                if (value instanceof CharSequence) return (new Long(value.toString()).intValue());
                 throw new NBTConvertException(value, type);
             }
             case 4: {
                 if (value instanceof Number) return ((Number) value).longValue();
-                if (value instanceof String) return Long.parseLong((String)value);
+                if (value instanceof CharSequence) return Long.parseLong(value.toString());
                 throw new NBTConvertException(value, type);
             }
             case 5: {
                 if (value instanceof Number) return ((Number)value).floatValue();
-                if (value instanceof String) return new Double((String)value).floatValue();
+                if (value instanceof CharSequence) return new Double(value.toString()).floatValue();
                 throw new NBTConvertException(value, type);
             }
             case 6: {
                 if (value instanceof Number) return ((Number)value).doubleValue();
-                if (value instanceof String) return new Double((String)value);
+                if (value instanceof CharSequence) return new Double(value.toString());
                 throw new NBTConvertException(value, type);
             }
             case 7: {
@@ -114,7 +114,7 @@ public abstract class NBTUtils {
                     }
                     return temp;
                 }
-                if (value instanceof String) return ((String)value).getBytes(PowerNBT.charset);
+                if (value instanceof CharSequence) return (value.toString()).getBytes(PowerNBT.charset);
                 throw new NBTConvertException(value, type);
             }
             case 8: {

@@ -295,7 +295,7 @@ public class NBTCompound implements Map<String,Object> {
         if (val instanceof Float) return ((Float)val)!=0.f;
         if (val instanceof Double) return ((Double)val)!=0.d;
         if (val instanceof Number) return ((Number)val).longValue()!=0;
-        if (val instanceof String) return ((String)val).isEmpty();
+        if (val instanceof CharSequence) return ((CharSequence)val).length()!=0;
         if (val instanceof int[]) return ((int[])val).length!=0;
         if (val instanceof byte[]) return ((byte[])val).length!=0;
         if (val instanceof Collection) return !((Collection)val).isEmpty();
@@ -311,11 +311,11 @@ public class NBTCompound implements Map<String,Object> {
     public byte getByte(String key) {
         Object val = get(key);
         if (val instanceof Number) return ((Number)val).byteValue();
-        if (val instanceof String) try {
-            return (byte) Long.parseLong((String)val);
+        if (val instanceof CharSequence) try {
+            return (byte) Long.parseLong(val.toString());
         } catch (Exception e){
             try {
-                return (byte) Double.parseDouble((String) val);
+                return (byte) Double.parseDouble(val.toString());
             } catch (Exception ignored){
             }
         }
@@ -330,11 +330,11 @@ public class NBTCompound implements Map<String,Object> {
     public short getShort(String key) {
         Object val = get(key);
         if (val instanceof Number) return ((Number)val).shortValue();
-        if (val instanceof String) try {
-            return (short) Long.parseLong((String)val);
+        if (val instanceof CharSequence) try {
+            return (short) Long.parseLong(val.toString());
         } catch (Exception e){
             try {
-                return (short) Double.parseDouble((String)val);
+                return (short) Double.parseDouble(val.toString());
             } catch (Exception ignored){
             }
         }
@@ -349,11 +349,11 @@ public class NBTCompound implements Map<String,Object> {
     public int getInt(String key) {
         Object val = get(key);
         if (val instanceof Number) return ((Number)val).intValue();
-        if (val instanceof String) try {
-            return (int) Long.parseLong((String)val);
+        if (val instanceof CharSequence) try {
+            return (int) Long.parseLong(val.toString());
         } catch (Exception e){
             try {
-                return (int) Double.parseDouble((String)val);
+                return (int) Double.parseDouble(val.toString());
             } catch (Exception ignored){
             }
         }
@@ -368,11 +368,11 @@ public class NBTCompound implements Map<String,Object> {
     public long getLong(String key) {
         Object val = get(key);
         if (val instanceof Number) return ((Number)val).longValue();
-        if (val instanceof String) try {
-            return Long.parseLong((String)val);
+        if (val instanceof CharSequence) try {
+            return Long.parseLong(val.toString());
         } catch (Exception e){
             try {
-                return (long) Double.parseDouble((String)val);
+                return (long) Double.parseDouble(val.toString());
             } catch (Exception ignored){
             }
         }
@@ -387,8 +387,8 @@ public class NBTCompound implements Map<String,Object> {
     public float getFloat(String key) {
         Object val = get(key);
         if (val instanceof Number) return ((Number)val).floatValue();
-        if (val instanceof String) try {
-            return (float) Double.parseDouble((String)val);
+        if (val instanceof CharSequence) try {
+            return (float) Double.parseDouble(val.toString());
         } catch (Exception ignored){
         }
         return 0;
@@ -402,8 +402,8 @@ public class NBTCompound implements Map<String,Object> {
     public double getDouble(String key) {
         Object val = get(key);
         if (val instanceof Number) return ((Number)val).doubleValue();
-        if (val instanceof String) try {
-            return Double.parseDouble((String)val);
+        if (val instanceof CharSequence) try {
+            return Double.parseDouble(val.toString());
         } catch (Exception ignored){
         }
         return 0;

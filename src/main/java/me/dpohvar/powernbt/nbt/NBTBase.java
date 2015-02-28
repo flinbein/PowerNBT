@@ -165,7 +165,7 @@ public abstract class NBTBase {
         if (o instanceof Float) return new NBTTagFloat((Float) o);
         if (o instanceof Double) return new NBTTagDouble((Double) o);
         if (o instanceof byte[]) return new NBTTagByteArray((byte[]) o);
-        if (o instanceof String) return new NBTTagString((String) o);
+        if (o instanceof CharSequence) return new NBTTagString(o.toString());
         if (o instanceof int[]) return new NBTTagIntArray((int[]) o);
         if (o instanceof Map){
             NBTTagCompound tag = new NBTTagCompound();

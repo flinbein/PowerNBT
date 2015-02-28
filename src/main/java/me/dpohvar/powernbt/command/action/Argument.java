@@ -17,10 +17,7 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 import static me.dpohvar.powernbt.utils.MojangsonUtils.*;
@@ -114,7 +111,7 @@ public class Argument {
         if (object.equals("block") || object.equals("b")) {
             if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
             //noinspection deprecation
-            return new NBTContainerBlock(((Player) caller.getOwner()).getTargetBlock(null, 20));
+            return new NBTContainerBlock(((Player) caller.getOwner()).getTargetBlock((HashSet<Byte>)null, 128));
         }
         if (object.equals("chunk")) {
             CommandSender owner = caller.getOwner();

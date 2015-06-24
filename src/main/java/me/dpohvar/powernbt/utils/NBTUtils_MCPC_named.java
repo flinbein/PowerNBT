@@ -115,8 +115,8 @@ final class NBTUtils_MCPC_named extends NBTUtils {
     }
 
     @Override
-    public Object createTagString(String a) {
-        return con_NBTagString.create("", a);
+    public Object createTagString(CharSequence a) {
+        return con_NBTagString.create("", a.toString());
     }
 
     @Override

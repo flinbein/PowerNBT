@@ -13,8 +13,6 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 
-import static me.dpohvar.powernbt.utils.MojangsonUtils.*;
-
 /**
  * PowerNBT API.<br>
  * This class has methods to read and write NBT tags.<br>
@@ -411,7 +409,7 @@ public class NBTManager {
      */
     public Object parseMojangson(String value){
         if (value == null) return null;
-        Object tag = mojangsonUtils.parseString("",value);
+        Object tag = NBTParser.parser("", value).parse();
         return nbtUtils.getValue(tag);
     }
 

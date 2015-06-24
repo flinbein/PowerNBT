@@ -53,8 +53,14 @@ public class ChunkUtils {
             RefClass cWorld = getRefClass("{nms}.World, {nm}.world.World, {World}");
             RefClass cNBTTagCompound = getRefClass("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}");
             mSaveChunk = cChunkRegionLoader.findMethodByParams(cChunk, cWorld, cNBTTagCompound);
-            RefClass cLongObjectHashMap = getRefClass("{cb}.util.LongObjectHashMap, {LongObjectHashMap}");
-            fChunks = cChunkProviderServer.findField(cLongObjectHashMap);
+            RefClass cLongObjectHashMap;
+            try {
+                cLongObjectHashMap = getRefClass("{cb}.util.LongObjectHashMap, {LongObjectHashMap}");
+                fChunks = cChunkProviderServer.findField(cLongObjectHashMap);
+            } catch (RuntimeException ignored) {
+                cLongObjectHashMap = getRefClass("{nm}.util.LongHashMap, {LongHashMap}");
+                fChunks = cChunkProviderServer.findField(cLongObjectHashMap);
+            }
             mLoadChunk = cChunkRegionLoader.findMethodByParams(cWorld, cNBTTagCompound);
             mLoadEntities = cChunkRegionLoader.findMethod(
                     new MethodCondition()

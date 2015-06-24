@@ -54,7 +54,12 @@ final class NBTUtils_MCPC_raw extends NBTUtils {
     private RefField field_NBTagList_byte = class_NBTTagList.findField(byte.class);
 
     private RefMethod met_NBTBase_getTypeId = class_NBTBase.findMethodByReturnType(byte.class);
-    private RefMethod met_NBTBase_clone = class_NBTBase.findMethodByReturnType(class_NBTBase);
+    private RefMethod met_NBTBase_clone = class_NBTBase.findMethod(
+            new MethodCondition()
+            .withStatic(false)
+            .withReturnType(class_NBTBase)
+            .withTypes()
+    );
     private RefMethod met_NBTBase_createTag = class_NBTBase.findMethodByParams(byte.class);
     private RefMethod met_NBTBase_write = class_NBTBase.findMethodByParams(DataOutput.class);
 
@@ -112,8 +117,8 @@ final class NBTUtils_MCPC_raw extends NBTUtils {
     }
 
     @Override
-    public Object createTagString(String a) {
-        return con_NBTagString.create(a);
+    public Object createTagString(CharSequence a) {
+        return con_NBTagString.create(a.toString());
     }
 
     @Override

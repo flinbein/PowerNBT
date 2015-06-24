@@ -134,7 +134,7 @@ public class PowerNBT extends JavaPlugin {
         printDebug(NBTBlockUtils.nbtBlockUtils);
         printDebug(NBTCompressedUtils.nbtCompressedUtils);
         printDebug(ChunkUtils.chunkUtils);
-        printDebug(MojangsonUtils.mojangsonUtils);
+        // printDebug(MojangsonUtils.mojangsonUtils);
         printDebug(NBTUtils.nbtUtils);
         printDebug(PacketUtils.packetUtils);
     }

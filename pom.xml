@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <plugin-version>0.8.3</plugin-version>
+        <plugin-version>0.8.4.1</plugin-version>
         <plugin-debug>false</plugin-debug>
 
         <plugin-author>DPOH-VAR</plugin-author>

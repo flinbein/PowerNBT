@@ -176,7 +176,7 @@ public abstract class NBTUtils {
 
     public abstract Object createTagDouble(Double a);
 
-    public abstract Object createTagString(String a);
+    public abstract Object createTagString(CharSequence a);
 
     public abstract Object createTagByteArray(byte[] a);
 

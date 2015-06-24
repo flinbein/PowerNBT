@@ -4,7 +4,7 @@ import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.completer.TypeCompleter;
 import me.dpohvar.powernbt.nbt.*;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.MojangsonUtils;
+import me.dpohvar.powernbt.utils.NBTParser;
 import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.StringParser;
 import org.bukkit.Bukkit;
@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.*;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
-import static me.dpohvar.powernbt.utils.MojangsonUtils.*;
 
 public class Argument {
 
@@ -236,7 +235,7 @@ public class Argument {
             int z = Integer.parseInt(t[1]);
             World w = null;
             String ww = "";
-            if (t.length >= 4) ww = t[2];
+            if (t.length >= 3) ww = t[2];
             if (ww.isEmpty()) {
                 CommandSender owner = caller.getOwner();
                 if (owner instanceof BlockCommandSender) w = ((BlockCommandSender) owner).getBlock().getWorld();
@@ -331,7 +330,7 @@ public class Argument {
         }
         Object mojangsonTag = null;
         if (param == null) try {
-            mojangsonTag = mojangsonUtils.parseString("",object);
+            mojangsonTag = NBTParser.parser("", object).parse();
         } catch (Exception ignored){}
         if (mojangsonTag != null) {
             return new NBTContainerBase(NBTBase.wrap(mojangsonTag));

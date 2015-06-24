@@ -112,8 +112,8 @@ final class NBTUtils_Bukkit_raw extends NBTUtils {
     }
 
     @Override
-    public Object createTagString(String a) {
-        return con_NBTagString.create(a);
+    public Object createTagString(CharSequence a) {
+        return con_NBTagString.create(a.toString());
     }
 
     @Override

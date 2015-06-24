@@ -32,9 +32,16 @@ public class ReflectionUtils {
         replacements.put("nm","net.minecraft");
         replacements.put("nms","net.minecraft.server");
         if(Bukkit.getServer()!=null) {
-            if (Bukkit.getVersion().contains("MCPC")) forge = true;
-            else if (Bukkit.getVersion().contains("Forge")) forge = true;
-            else if (Bukkit.getVersion().contains("Cauldron")) forge = true;
+            String version = Bukkit.getVersion();
+            if (version.contains("MCPC")) forge = true;
+            else if (version.contains("Forge")) forge = true;
+            else if (version.contains("Cauldron")) forge = true;
+            else {
+                try {
+                    classLoader.loadClass("net.minecraft.nbt.NBTBase");
+                    forge = true;
+                } catch (ClassNotFoundException ignored) {}
+            }
             Server server = Bukkit.getServer();
             Class<?> bukkitServerClass = server.getClass();
             String[] pas = bukkitServerClass.getName().split("\\.");

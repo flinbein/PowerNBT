@@ -38,7 +38,7 @@ public abstract class NBTUtils {
         if (javaObject instanceof NBTList) return cloneTag(((NBTList)javaObject).getHandle());
         if (javaObject instanceof Boolean) {
             if ((Boolean)javaObject) return createTagByte((byte) 1);
-            else return (byte)0;
+            else return createTagByte((byte)0);
         }
         if (javaObject instanceof Collection) return new NBTList((Collection) javaObject).getHandle();
         if (javaObject instanceof Short) return createTagShort((Short) javaObject);

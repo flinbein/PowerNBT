@@ -25,9 +25,13 @@ public final class NBTBlockUtils {
     private RefClass classTileEntity = getRefClass("{nms}.TileEntity, {nm}.tileentity.TileEntity, {TileEntity}");
     private RefMethod getTileEntityAt = classCraftWorld.findMethodByReturnType(classTileEntity); // (int x, int y, int z)
     private RefMethod getUpdatePacket = classTileEntity.findMethodByReturnType("{nms}.Packet, {nm}.network.Packet {nm}.network.packet.Packet, {Packet}");
-    private RefMethod read = classTileEntity.findMethod( new MethodCondition()
+    private RefMethod read = classTileEntity.findMethod(
+            new MethodCondition()
                     .withTypes("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}")
-                    .withSuffix("b")
+                    .withSuffix("b"),
+            new MethodCondition()
+                    .withTypes("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}")
+                    .withSuffix("save")
     );
     private RefMethod write = classTileEntity.findMethod( new MethodCondition()
                     .withTypes("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}")

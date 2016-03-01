@@ -1,4 +1,5 @@
 .idea
+*.jar
 PowerNBT.iml
 target
 out

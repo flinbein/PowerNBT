@@ -5,10 +5,19 @@ import me.dpohvar.powernbt.exception.NBTConvertException;
 import me.dpohvar.powernbt.exception.NBTReadException;
 import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.api.NBTList;
+import org.bukkit.Chunk;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
+import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 
+import static me.dpohvar.powernbt.utils.ChunkUtils.chunkUtils;
+import static me.dpohvar.powernbt.utils.EntityUtils.entityUtils;
+import static me.dpohvar.powernbt.utils.ItemStackUtils.itemStackUtils;
 import static me.dpohvar.powernbt.utils.ReflectionUtils.*;
 
 public abstract class NBTUtils {
@@ -48,10 +57,32 @@ public abstract class NBTUtils {
         if (javaObject instanceof Float) return createTagFloat((Float) javaObject);
         if (javaObject instanceof Double) return createTagDouble((Double) javaObject);
         if (javaObject instanceof Long) return createTagLong((Long) javaObject);
+        if (javaObject instanceof BigDecimal) return createTagDouble(((BigDecimal) javaObject).doubleValue());
+        if (javaObject instanceof BigInteger) return createTagLong(((BigInteger) javaObject).longValue());
+        if (javaObject instanceof UUID) return createTagString(javaObject.toString());
         if (javaObject instanceof byte[]) return createTagByteArray((byte[]) javaObject);
         if (javaObject instanceof int[]) return createTagIntArray((int[]) javaObject);
         if (javaObject instanceof Map) return new NBTCompound((Map) javaObject).getHandle();
         if (javaObject instanceof Object[]) return new NBTList((Arrays.asList((Object[]) javaObject))).getHandle();
+        if (javaObject instanceof Chunk) {
+            Object compound = createTagCompound();
+            chunkUtils.readChunk((Chunk)javaObject, compound);
+            return compound;
+        }
+        if (javaObject instanceof Entity) {
+            Object compound = createTagCompound();
+            entityUtils.readEntity((Entity)javaObject, compound);
+            return compound;
+        }
+        if (javaObject instanceof ItemStack) {
+            Object tag = itemStackUtils.getTag((ItemStack)javaObject);
+            return (tag == null) ? null : cloneTag(tag);
+        }
+        if (javaObject instanceof Block) {
+            Object compound = createTagCompound();
+            NBTBlockUtils.nbtBlockUtils.readTag((Block)javaObject,compound);
+            return compound;
+        }
         throw new NBTConvertException(javaObject);
     }
 

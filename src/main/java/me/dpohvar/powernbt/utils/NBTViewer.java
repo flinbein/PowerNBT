@@ -5,10 +5,10 @@ import me.dpohvar.powernbt.nbt.*;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -20,8 +20,13 @@ import java.util.logging.Level;
  */
 public class NBTViewer {
 
-    static int v_limit = 60;
-    static int h_limit = 10;
+    private static int v_limit = 60;
+    private static int h_limit = 10;
+
+    public static void applyConfig(FileConfiguration config){
+        v_limit = config.getInt("limit.vertical", 60);
+        h_limit = config.getInt("limit.horizontal", 10);
+    }
 
     @Deprecated
     public static String getShortValueWithPrefix(NBTBase base, boolean hex){

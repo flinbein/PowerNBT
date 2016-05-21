@@ -1,9 +1,9 @@
-name: ${artifactId}
+name: ${project.artifactId}
 description: ${plugin-description}
 author: ${plugin-author}
 main: me.dpohvar.powernbt.PowerNBT
 website: http://dev.bukkit.org/bukkit-plugins/varscript/
-version: ${plugin-version}
+version: ${project.version}
 commands:
     powernbt:
         description: use nbt commands

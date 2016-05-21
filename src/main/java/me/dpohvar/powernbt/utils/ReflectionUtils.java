@@ -318,42 +318,50 @@ public class ReflectionUtils {
 
         /**
          * find method by return value
-         * @param type type of returned value
+         * @param types type of returned value
          * @throws RuntimeException if method not found
          * @return RefMethod
          */
-        public <Z> RefMethod<Z> findMethodByReturnType(RefClass<Z> type) {
-            return findMethodByReturnType(type.clazz);
+        public <Z> RefMethod<Z> findMethodByReturnType(RefClass<Z> ...types) {
+            Class<Z>[] classes = new Class[types.length];
+            for (int i=0; i<types.length; i++) classes[i] = types[i].clazz;
+            return findMethodByReturnType(classes);
         }
 
         /**
          * find method by return value
-         * @param pattern type of returned value, see {@link #getRefClass(String)}
+         * @param patterns type of returned value, see {@link #getRefClass(String)}
          * @throws RuntimeException if method not found
          * @return RefMethod
          */
-        public RefMethod findMethodByReturnType(String pattern) {
-            return findMethodByReturnType(getRefClass(pattern));
+        public RefMethod findMethodByReturnType(String ...patterns) {
+            for (String pattern: patterns) try {
+                return findMethodByReturnType(getRefClass(pattern));
+            } catch (RuntimeException ignored) {}
+            throw new RuntimeException("no such method");
         }
 
         /**
          * find method by return value
-         * @param type type of returned value
+         * @param types type of returned value
          * @return RefMethod
          * @throws RuntimeException if method not found
          */
         @SuppressWarnings("unchecked")
-        public <Z> RefMethod<Z> findMethodByReturnType(Class<Z> type) {
-            if (type==null) type = (Class<Z>) void.class;
-            List<Method> methods = new ArrayList<Method>();
-            Collections.addAll(methods, clazz.getMethods());
-            Collections.addAll(methods, clazz.getDeclaredMethods());
-            for (Method m: methods) {
-                if (type.equals(m.getReturnType())) {
-                    return new RefMethod(m);
+        public <Z> RefMethod<Z> findMethodByReturnType(Class<Z> ...types) {
+            for (Class<Z> type : types) {
+                if (type==null) type = (Class<Z>) void.class;
+                List<Method> methods = new ArrayList<Method>();
+                Collections.addAll(methods, clazz.getMethods());
+                Collections.addAll(methods, clazz.getDeclaredMethods());
+                for (Method m: methods) {
+                    if (type.equals(m.getReturnType())) {
+                        return new RefMethod(m);
+                    }
                 }
             }
             throw new RuntimeException("no such method");
+
         }
 
         /**

@@ -5,7 +5,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <plugin-version>0.8.5.1</plugin-version>
         <plugin-debug>false</plugin-debug>
 
         <plugin-author>DPOH-VAR</plugin-author>
@@ -14,8 +13,8 @@
 
         <java-version>1.6</java-version>
 
-        <bukkit-version>1.8-R0.1-SNAPSHOT</bukkit-version>
-        <spigot-version>1.8-R0.1-SNAPSHOT</spigot-version>
+        <bukkit-version>1.9.4-R0.1-SNAPSHOT</bukkit-version>
+        <spigot-version>1.9.4-R0.1-SNAPSHOT</spigot-version>
 
         <github.global.server>github</github.global.server>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -31,7 +30,7 @@
 
     <groupId>me.dpohvar.powernbt</groupId>
     <artifactId>PowerNBT</artifactId>
-    <version>${plugin-version}</version>
+    <version>0.8.6</version>
     <packaging>jar</packaging>
 
     <description>Powerful NBT editor for CraftBukkit 1.5 and later</description>
@@ -42,12 +41,12 @@
         <snapshotRepository>
             <id>dpohvar.ru</id>
             <name>dpohvar.ru-snapshots</name>
-            <url>http://dpohvar.ru/artifactory/snapshots</url>
+            <url>https://repo.varscript.ru/snapshots</url>
         </snapshotRepository>
         <repository>
             <id>dpohvar.ru</id>
             <name>dpohvar.ru-releases</name>
-            <url>http://dpohvar.ru/artifactory/release</url>
+            <url>https://repo.varscript.ru/release</url>
         </repository>
     </distributionManagement>
 

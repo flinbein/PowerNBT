@@ -104,6 +104,9 @@ public class StringParser {
                         case '&':
                             buffer.append('&');
                             break;
+                        case '_':
+                            buffer.append(' ');
+                            break;
                         case 'u': {
                             mode = UNICODE;
                             continue parse;
@@ -200,15 +203,16 @@ public class StringParser {
     }
 
     public static String wrap(String raw) {
-        raw = raw.replace("\\", "\\\\");
-        raw = raw.replace("\n", "\\n");
-        raw = raw.replace("\b", "\\b");
-        raw = raw.replace("\r", "\\r");
-        raw = raw.replace("\t", "\\t");
-        raw = raw.replace("\f", "\\f");
-        raw = raw.replace("\"", "\\\"");
-        raw = raw.replace("&", "\\&");
-        raw = raw.replace(String.valueOf(ChatColor.COLOR_CHAR), "&");
-        return raw;
+        return raw
+            .replace("\\", "\\\\")
+            .replace("\n", "\\n")
+            .replace("\b", "\\b")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t")
+            .replace("\f", "\\f")
+            .replace("\"", "\\\"")
+            .replace("&", "\\&")
+            .replace(String.valueOf(ChatColor.COLOR_CHAR), "&")
+        ;
     }
 }

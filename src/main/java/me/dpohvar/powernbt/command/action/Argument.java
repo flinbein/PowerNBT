@@ -124,71 +124,88 @@ public class Argument {
         if (object.equals("buffer") || object.equals("clipboard") || object.equals("c")) {
             return caller;
         }
-        if (object.startsWith("*") && object.length() > 1) {
-            return new NBTContainerEntity(Bukkit.getPlayer(object.substring(1)));
+        if (object.startsWith("*") && object.length() > 1 || object.startsWith("player:") && object.length() > 7) {
+            String tokenText = object.substring( object.startsWith("*") ? 1 : 7);
+            if (tokenText.startsWith("\"") && tokenText.endsWith("\"")) {
+                tokenText = StringParser.parse(tokenText.substring(1,tokenText.length()-1)).trim();
+            }
+            Player player = Bukkit.getPlayer(tokenText);
+            if (player == null) throw new RuntimeException(plugin.translate("error_playernotfound", tokenText));
+            return new NBTContainerEntity(player);
         }
         if (object.startsWith("%") && object.length() > 1) {
-            return new NBTContainerVariable(caller, object.substring(1));
+            String tokenText = object.substring(1);
+            if (tokenText.startsWith("\"") && tokenText.endsWith("\"") && tokenText.length()>1) {
+                tokenText = StringParser.parse(tokenText.substring(1,tokenText.length()-1)).trim();
+            }
+            return new NBTContainerVariable(caller, tokenText);
         }
         if (object.startsWith("$$") && object.length() > 2) {
-            return new NBTContainerFileCustom(object.substring(2));
+            String tokenText = object.substring(2);
+            if (tokenText.startsWith("\"") && tokenText.endsWith("\"") && tokenText.length()>1) {
+                tokenText = StringParser.parse(tokenText.substring(1,tokenText.length()-1)).trim();
+            }
+            return new NBTContainerFileCustom(tokenText);
         }
         if (object.startsWith("$") && object.length() > 1) {
-            String name = object.substring(1);
-            if (name.contains(".") || name.contains(File.separator))
-                throw new RuntimeException(plugin.translate("error_customfile", name));
-            return new NBTContainerFile(new File(plugin.getNBTFilesFolder(), name + ".nbt"));
+            String tokenText = object.substring(1);
+            if (tokenText.startsWith("\"") && tokenText.endsWith("\"") && tokenText.length()>1) {
+                tokenText = StringParser.parse(tokenText.substring(1,tokenText.length()-1)).trim();
+            }
+            if (tokenText.contains(".") || tokenText.contains(File.separator))
+                throw new RuntimeException(plugin.translate("error_customfile", tokenText));
+            return new NBTContainerFile(new File(plugin.getNBTFilesFolder(), tokenText + ".nbt"));
         }
         if (colors.containsKey(object)) {
             return new NBTContainerBase(new NBTTagInt(colors.get(object)));
         }
         if (object.startsWith("file:") && object.length() > 5) {
-            String s = object.substring(5);
-            if (s.startsWith("\"") && s.endsWith("\"") && s.length()>1 ) {
-                s = StringParser.parse(s.substring(1,s.length()-1));
+            String tokenText = object.substring(5);
+            if (tokenText.startsWith("\"") && tokenText.endsWith("\"") && tokenText.length()>1 ) {
+                tokenText = StringParser.parse(tokenText.substring(1,tokenText.length()-1)).trim();
             }
             try {
-                File file = new File(s).getCanonicalFile();
+                File file = new File(tokenText).getCanonicalFile();
                 File folder = new File(".").getCanonicalFile();
                 if (!file.toString().startsWith(folder.toString())) {
                     throw new RuntimeException(plugin.translate("error_accessfile", file.getName()));
                 }
                 return new NBTContainerFile(file);
             } catch (IOException e) {
-                throw new RuntimeException("file " + s + " not found", e);
+                throw new RuntimeException("file " + tokenText + " not found", e);
             }
 
         }
         if ((object.startsWith("gzip:") && object.length() > 5)||(object.startsWith("gz:") && object.length() > 3)) {
-            String s = object.substring(object.indexOf(':')+1);
-            if (s.startsWith("\"") && s.endsWith("\"") && s.length()>1 ) {
-                s = StringParser.parse(s.substring(1,s.length()-1));
+            String tokenText = object.substring(object.indexOf(':')+1);
+            if (tokenText.startsWith("\"") && tokenText.endsWith("\"") && tokenText.length()>1 ) {
+                tokenText = StringParser.parse(tokenText.substring(1,tokenText.length()-1)).trim();
             }
             try {
-                File file = new File(s).getCanonicalFile();
+                File file = new File(tokenText).getCanonicalFile();
                 File folder = new File(".").getCanonicalFile();
                 if (!file.toString().startsWith(folder.toString())) {
                     throw new RuntimeException(plugin.translate("error_accessfile", file.getName()));
                 }
                 return new NBTContainerFileGZip(file);
             } catch (IOException e) {
-                throw new RuntimeException("file " + s + " not found", e);
+                throw new RuntimeException("file " + tokenText + " not found", e);
             }
         }
         if ((object.startsWith("schematic:") && object.length() > 10)||(object.startsWith("sch:") && object.length() > 3)) {
-            String s = object.substring(object.indexOf(':')+1);
-            if (s.startsWith("\"") && s.endsWith("\"") && s.length()>1 ) {
-                s = StringParser.parse(s.substring(1,s.length()-1));
+            String tokenText = object.substring(object.indexOf(':')+1);
+            if (tokenText.startsWith("\"") && tokenText.endsWith("\"") && tokenText.length()>1 ) {
+                tokenText = StringParser.parse(tokenText.substring(1,tokenText.length()-1)).trim();
             }
             try {
                 File schematicFolder = new File("plugins/WorldEdit/schematics").getCanonicalFile();
-                File file = new File(schematicFolder, s + ".schematic").getCanonicalFile();
+                File file = new File(schematicFolder, tokenText + ".schematic").getCanonicalFile();
                 if (!file.toString().startsWith(schematicFolder.toString())) {
                     throw new RuntimeException(plugin.translate("error_accessfile", file.getName()));
                 }
                 return new NBTContainerFileGZip(file);
             } catch (IOException e) {
-                throw new RuntimeException("schematic file " + s + " not found", e);
+                throw new RuntimeException("schematic file " + tokenText + " not found", e);
             }
         }
         if (object.equals("compound") || object.equals("com")) {
@@ -248,20 +265,27 @@ public class Argument {
             }
             return new NBTContainerChunk(w.getChunkAt(x, z));
         }
-        if (object.startsWith("@") && !object.contains(File.separator)) {
-            File baseDir = (Bukkit.getWorlds().get(0)).getWorldFolder();
-            File playerFile;
-            try {
-                UUID uuid = Bukkit.getOfflinePlayer(object.substring(1)).getUniqueId();
-                File playerDir = new File(baseDir, "playerdata");
-                playerFile = new File(playerDir, uuid+".dat");
-            } catch (NoSuchMethodError ignored) { // no getUniqueId()
-                File playerDir = new File(baseDir, "players");
-                playerFile = new File(playerDir, object.substring(1) + ".dat");
+        if (object.startsWith("@")) {
+            String tokenText = object.substring(1);
+            if (tokenText.startsWith("\"") && tokenText.endsWith("\"") && tokenText.length()>1 ) {
+                tokenText = StringParser.parse(tokenText.substring(1,tokenText.length()-1)).trim();
             }
-            return new NBTContainerFileGZip(playerFile);
+            if (!tokenText.contains(File.separator)) {
+                File baseDir = (Bukkit.getWorlds().get(0)).getWorldFolder();
+                File playerFile;
+                try {
+                    UUID uuid = Bukkit.getOfflinePlayer(tokenText).getUniqueId();
+                    File playerDir = new File(baseDir, "playerdata");
+                    playerFile = new File(playerDir, uuid+".dat");
+                } catch (NoSuchMethodError ignored) { // no getUniqueId()
+                    File playerDir = new File(baseDir, "players");
+                    playerFile = new File(playerDir, tokenText + ".dat");
+                }
+                return new NBTContainerFileGZip(playerFile);
+            }
+
         }
-        if (object.startsWith("\"") && object.endsWith("\"")) {
+        if (object.startsWith("\"") && object.endsWith("\"") && object.length() > 1) {
             String s = StringParser.parse(object.substring(1, object.length() - 1));
             NBTType type = NBTType.STRING;
             if (param != null) type = NBTType.fromString(param);
@@ -282,6 +306,13 @@ public class Argument {
             return new NBTContainerBase(type.parse(s));
         }
         if (object.matches("-?[0-9]*")) {
+            if (param == null) return null;
+            NBTType type = NBTType.fromString(param);
+            if(type.equals(NBTType.BYTEARRAY)) type = NBTType.BYTE;
+            else if(type.equals(NBTType.INTARRAY)) type = NBTType.INT;
+            return new NBTContainerBase(type.parse(object));
+        }
+        if (object.matches("NaN|-?Infinity")) {
             if (param == null) return null;
             NBTType type = NBTType.fromString(param);
             if(type.equals(NBTType.BYTEARRAY)) type = NBTType.BYTE;
@@ -328,13 +359,41 @@ public class Argument {
             NBTQuery q = new NBTQuery("Inventory",result);
             return new NBTContainerComplex(player,q);
         }
-        Object mojangsonTag = null;
-        if (param == null) try {
-            mojangsonTag = NBTParser.parser("", object).parse();
-        } catch (Exception ignored){}
-        if (mojangsonTag != null) {
-            return new NBTContainerBase(NBTBase.wrap(mojangsonTag));
+        if (object.startsWith("hand:") && object.length()>5 || object.startsWith("h:") && object.length() > 2) {
+            String tokenText = object.substring(object.indexOf(':')+1);
+            if (tokenText.startsWith("\"") && tokenText.endsWith("\"") && tokenText.length()>1) {
+                tokenText = StringParser.parse(tokenText.substring(1,tokenText.length()-1)).trim();
+            }
+            Player player = Bukkit.getPlayer(tokenText);
+
+            if (player == null) throw new RuntimeException(plugin.translate("error_playernotfound", tokenText));
+            NBTContainerEntity container = new NBTContainerEntity(player);
+            int pslot = player.getInventory().getHeldItemSlot();
+            int ind = 0;
+            int result = -1;
+            NBTTagList inventory = ((NBTTagCompound)container.getCustomTag()).getList("Inventory");
+            for(NBTBase bt: inventory){
+                NBTTagCompound ct = (NBTTagCompound) bt;
+                if( ct.getByte("Slot") == pslot ){
+                    result = ind;
+                    break;
+                }
+                ind++;
+            }
+            if (result == -1) throw new RuntimeException(plugin.translate("error_null"));
+            NBTQuery q = new NBTQuery("Inventory",result);
+            return new NBTContainerComplex(container,q);
         }
+        if (object.startsWith("{") && object.endsWith("}") || object.startsWith("[") && object.endsWith("]") || object.matches("-?[0-9]*(\\.[0-9])?[fd]") || object.matches("-?[0-9]*[bsil]")) {
+            Object mojangsonTag = null;
+            try {
+                mojangsonTag = NBTParser.parser("", object).parse();
+            } catch (Exception ignored){}
+            if (mojangsonTag != null) {
+                return new NBTContainerBase(NBTBase.wrap(mojangsonTag));
+            }
+        }
+
         throw new RuntimeException(plugin.translate("error_undefinedobject", object));
     }
 
@@ -380,7 +439,7 @@ public class Argument {
             this.container = new NBTContainerBase(type.parse(val.toString()));
             this.query = emptyQuery;
             action.execute();
-        } else if (objectFuture.matches("-?[0-9]*(.[0-9]*)?")) {
+        } else if (objectFuture.matches("-?[0-9]*(.[0-9]*)?") || objectFuture.matches("NaN|-?Infinity")) {
             if (paramContainer == null){
                 throw new RuntimeException(plugin.translate("error_undefinedtype", objectFuture));
             }

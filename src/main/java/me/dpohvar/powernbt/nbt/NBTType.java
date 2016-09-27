@@ -125,7 +125,8 @@ public enum NBTType {
             case DOUBLE: {
                 Double v = null;
                 try {
-                    v = Double.parseDouble(s);
+                    if (s.equalsIgnoreCase("NaN")) v = Double.NaN;
+                    else v = Double.parseDouble(s);
                 } catch (Throwable ignored) {
                 }
                 if (v == null) throw new RuntimeException(plugin.translate("error_parse", s, this.name));
@@ -134,7 +135,8 @@ public enum NBTType {
             case FLOAT: {
                 Float v = null;
                 try {
-                    v = Float.parseFloat(s);
+                    if (s.equalsIgnoreCase("NaN")) v = Float.NaN;
+                    else v = Float.parseFloat(s);
                 } catch (Throwable ignored) {
                 }
                 if (v == null) try {
@@ -201,9 +203,7 @@ public enum NBTType {
                 return new NBTTagIntArray(v);
             }
             default: {
-                if (s.matches("-?[0-9]+")) return new NBTTagInt(Integer.parseInt(s));
-                else if (s.matches("-?[0-9]+\\.[0-9]*")) return new NBTTagDouble(Double.parseDouble(s));
-                else return new NBTTagString(s);
+                throw new RuntimeException(plugin.translate("error_parse", s, this.name));
             }
         }
     }

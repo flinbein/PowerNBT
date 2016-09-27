@@ -31,8 +31,8 @@ public class CompleterNBT extends Completer {
     public void fillTabs(Caller caller, TabFormer former) throws Exception {
         String word = former.poll(); // object
         if (word.isEmpty()) {
-            former.addIfStarts("me", "item", "chunk", "buffer", "list", "compound", "byte[]", "int[]", "debug", "file:", "gz:", "sch:", "chunk:");
-            if (caller.getObject() instanceof Entity) former.addIfStarts("block", "chunk", "inventory","hand");
+            former.addIfStarts("buffer", "list", "compound", "byte[]", "int[]", "debug", "file:", "gz:", "sch:");
+            if (caller.getOwner() instanceof Entity) former.addIfStarts("block", "inventory","hand","hand:");
             if (caller.getOwner() instanceof Entity && former.getQuery().startsWith("id")) {
                 Player p = (Player) caller.getOwner();
                 List<Entity> ents = p.getNearbyEntities(20, 20, 20);
@@ -112,6 +112,8 @@ public class CompleterNBT extends Completer {
                     former.addIfStarts("int", "byte", "short", "long");
                 } else if (val1.matches("-?[0-9]+(.[0-9]*)?")) {
                     former.addIfStarts("int", "byte", "short", "long", "float", "double");
+                } else if (val1.matches("NaN|-?Infinity")) {
+                    former.addIfStarts("float", "double");
                 } else if (val1.matches("\\[((-?[0-9]+|#-?[0-9a-fA-F]+)(,(?!\\])|(?=\\])))*\\]")) {
                     former.addIfStarts("byte[]", "int[]");
                 }
@@ -231,8 +233,8 @@ public class CompleterNBT extends Completer {
                         }
                     }
                 }
-                former.addIfStarts("me", "item", "chunk", "buffer", "list", "compound", "byte[]", "int[]");
-                if (caller.getObject() instanceof Entity) former.addIfStarts("block", "inventory","hand");
+                former.addIfStarts("me", "item", "buffer", "list", "compound", "byte[]", "int[]");
+                if (caller.getOwner() instanceof Entity) former.addIfStarts("block", "inventory","hand","hand:");
                 if (caller.getOwner() instanceof Entity && former.getQuery().startsWith("id")) {
                     Player p = (Player) caller.getOwner();
                     List<Entity> ents = p.getNearbyEntities(20, 20, 20);
@@ -309,6 +311,8 @@ public class CompleterNBT extends Completer {
                         former.addIfStarts("int", "byte", "short", "long");
                     } else if (val2.matches("-?[0-9]+(.[0-9]*)?")) {
                         former.addIfStarts("int", "byte", "short", "long", "float", "double");
+                    } else if (val1.matches("NaN|-?Infinity")) {
+                        former.addIfStarts("float", "double");
                     } else if (val2.matches("\\[((-?[0-9]+|#-?[0-9a-fA-F]+)(,(?!\\])|(?=\\])))*\\]")) {
                         former.addIfStarts("byte[]", "int[]");
                     }

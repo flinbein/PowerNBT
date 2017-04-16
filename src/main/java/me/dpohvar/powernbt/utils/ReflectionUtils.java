@@ -113,7 +113,7 @@ public class ReflectionUtils {
     public static RefClass getRefClass(String pattern){
         String[] vars;
         if (pattern.contains(" ")||pattern.contains(",")) {
-            vars = pattern.split(" |,");
+            vars = pattern.split("[ ,]");
         } else {
             vars = new String[1];
             vars[0] = pattern;

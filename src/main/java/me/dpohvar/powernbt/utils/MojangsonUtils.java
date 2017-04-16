@@ -2,6 +2,10 @@ package me.dpohvar.powernbt.utils;
 
 import static me.dpohvar.powernbt.utils.ReflectionUtils.*;
 
+/**
+ * @deprecated use {@link me.dpohvar.powernbt.utils.NBTParser}
+ */
+@Deprecated
 public class MojangsonUtils {
 
     public static MojangsonUtils mojangsonUtils = new MojangsonUtils();

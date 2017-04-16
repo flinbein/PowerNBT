@@ -30,7 +30,7 @@
 
     <groupId>me.dpohvar.powernbt</groupId>
     <artifactId>PowerNBT</artifactId>
-    <version>0.8.6.2</version>
+    <version>0.8.7</version>
     <packaging>jar</packaging>
 
     <description>Powerful NBT editor for CraftBukkit 1.5 and later</description>
@@ -41,12 +41,12 @@
         <snapshotRepository>
             <id>dpohvar.ru</id>
             <name>dpohvar.ru-snapshots</name>
-            <url>https://repo.varscript.ru/snapshots</url>
+            <url>http://repo.varscript.ru/snapshots</url>
         </snapshotRepository>
         <repository>
             <id>dpohvar.ru</id>
             <name>dpohvar.ru-releases</name>
-            <url>https://repo.varscript.ru/release</url>
+            <url>http://repo.varscript.ru/release</url>
         </repository>
     </distributionManagement>
 

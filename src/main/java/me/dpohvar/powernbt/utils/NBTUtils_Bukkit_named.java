@@ -83,6 +83,11 @@ final class NBTUtils_Bukkit_named extends NBTUtils {
     }
 
     @Override
+    RefClass getNBTCompoundRefClass(){
+        return class_NBTTagCompound;
+    }
+
+    @Override
     public Object createTagByte(Byte a) {
         return con_NBTagByte.create("", a);
     }

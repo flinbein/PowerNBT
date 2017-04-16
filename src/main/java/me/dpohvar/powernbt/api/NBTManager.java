@@ -1,13 +1,12 @@
 package me.dpohvar.powernbt.api;
 
 import me.dpohvar.powernbt.utils.*;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 import java.io.*;
 import java.util.*;
@@ -278,6 +277,70 @@ public class NBTManager {
         }
     }
 
+    public NBTList read(Inventory inventory){
+        ItemStack[] contents = inventory.getContents();
+        List<NBTCompound> compounds = new ArrayList<NBTCompound>(36);
+        for (int i = 0; i<contents.length; i++) {
+            ItemStack stack = contents[i];
+            if (stack == null) continue;
+            Object tag = itemStackUtils.readItemStack(stack, nbtUtils.createTagCompound());
+            NBTCompound compound = NBTCompound.forNBT(tag);
+            compound.put("Slot", (byte) i);
+            compounds.add(compound);
+        }
+        if (inventory instanceof PlayerInventory) try {
+            ItemStack[] armor = ((PlayerInventory) inventory).getArmorContents();
+            for (int i = 0; i<armor.length; i++) {
+                ItemStack stack = armor[i];
+                if (stack == null) continue;
+                Object tag = itemStackUtils.readItemStack(stack, nbtUtils.createTagCompound());
+                NBTCompound compound = NBTCompound.forNBT(tag);
+                compound.put("Slot", (byte) 100 + i);
+                compounds.add(compound);
+            }
+            ItemStack[] extra = ((PlayerInventory) inventory).getExtraContents();
+            for (int i = 0; i<extra.length; i++) {
+                ItemStack stack = extra[i];
+                if (stack == null) continue;
+                Object tag = itemStackUtils.readItemStack(stack, nbtUtils.createTagCompound());
+                NBTCompound compound = NBTCompound.forNBT(tag);
+                compound.put("Slot", (byte) 150 + i);
+                compounds.add(compound);
+            }
+        } catch (Exception ignored) {}
+        return new NBTList(compounds);
+    }
+
+    public void write(Inventory inventory, NBTList value){
+        ItemStack[] contents = new ItemStack[inventory.getContents().length];
+        ItemStack[] armor = null;
+        ItemStack[] extra = null;
+        if (inventory instanceof PlayerInventory) try {
+            armor = new ItemStack[((PlayerInventory) inventory).getArmorContents().length];
+            extra = new ItemStack[((PlayerInventory) inventory).getExtraContents().length];
+        } catch (Exception ignored) {}
+        byte valueType = value.getType();
+        if (valueType != 0 && valueType != 10) return;
+        for (Object tag : value) {
+            NBTCompound compound = (NBTCompound) tag;
+            int slot = compound.getByte("Slot") & 255;
+            ItemStack itemstack = itemStackUtils.createCraftItemStackFromNBT(compound.getHandle());
+            if (slot >= 0 && slot < contents.length) {
+                contents[slot] = itemstack;
+            } else if (armor != null && slot >= 100 && slot < armor.length + 100) {
+                armor[slot - 100] = itemstack;
+            } else if (extra != null && slot >= 150 && slot < extra.length + 150) {
+                extra[slot - 150] = itemstack;
+            }
+        }
+        inventory.clear();
+        inventory.setContents(contents);
+        if (inventory instanceof PlayerInventory) try {
+            ((PlayerInventory) inventory).setArmorContents(armor);
+            ((PlayerInventory) inventory).setExtraContents(extra);
+        } catch (Exception ignored) {}
+    }
+
     /**
      * Read compressed nbt data from file and convert to java object.
      *
@@ -435,6 +498,11 @@ public class NBTManager {
      */
     public ItemStack asCraftItemStack(ItemStack itemStack){
         return itemStackUtils.createCraftItemStack(itemStack);
+    }
+
+    public ItemStack createCraftItemStack(NBTCompound compound){
+        if (compound == null) return new ItemStack(Material.AIR);
+        return itemStackUtils.createCraftItemStackFromNBT(compound.getHandle());
     }
 
     static boolean checkCrossReferences(LinkedList<Object> list, Collection values){

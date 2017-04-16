@@ -87,6 +87,11 @@ final class NBTUtils_MCPC_raw extends NBTUtils {
     }
 
     @Override
+    RefClass getNBTCompoundRefClass(){
+        return class_NBTTagCompound;
+    }
+
+    @Override
     public Object createTagByte(Byte a) {
         return con_NBTagByte.create(a);
     }

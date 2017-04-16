@@ -146,6 +146,11 @@ final class NBTUtils_Bukkit_raw extends NBTUtils {
         }
     }
 
+    @Override
+    RefClass getNBTCompoundRefClass(){
+        return class_NBTTagCompound;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     protected void setRawValue(Object tag, Object value) throws NBTReadException {

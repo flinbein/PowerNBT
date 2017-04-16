@@ -149,6 +149,11 @@ final class NBTUtils_MCPC_named extends NBTUtils {
         }
     }
 
+    @Override
+    RefClass getNBTCompoundRefClass(){
+        return class_NBTTagCompound;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     protected void setRawValue(Object tag, Object value) throws NBTReadException {

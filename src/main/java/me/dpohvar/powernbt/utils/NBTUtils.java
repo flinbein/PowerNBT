@@ -195,6 +195,8 @@ public abstract class NBTUtils {
         }
     }
 
+    abstract RefClass getNBTCompoundRefClass();
+
     public abstract Object createTagByte(Byte a);
 
     public abstract Object createTagShort(Short a);

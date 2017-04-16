@@ -607,7 +607,7 @@ public class NBTCompound implements Map<String,Object> {
 
         private Set<Entry<String, Object>> entries;
 
-        public NBTEntrySet(Set<Entry<String, Object>> entries) {
+        NBTEntrySet(Set<Entry<String, Object>> entries) {
             this.entries = entries;
         }
 
@@ -649,7 +649,7 @@ public class NBTCompound implements Map<String,Object> {
 
                 private Entry<String, Object> entry;
 
-                public NBTEntry(Entry<String, Object> entry) {
+                NBTEntry(Entry<String, Object> entry) {
                     this.entry = entry;
                 }
 

@@ -277,6 +277,12 @@ public class NBTManager {
         }
     }
 
+    /**
+     * Read items as nbt values from inventory
+     *
+     * @param inventory an inventory
+     * @return NBTList with items
+     */
     public NBTList read(Inventory inventory){
         ItemStack[] contents = inventory.getContents();
         List<NBTCompound> compounds = new ArrayList<NBTCompound>(36);
@@ -311,6 +317,12 @@ public class NBTManager {
         return new NBTList(compounds);
     }
 
+    /**
+     * Store items from nbt data to inventory
+     *
+     * @param inventory an inventory to change
+     * @param value nbt array with items
+     */
     public void write(Inventory inventory, NBTList value){
         ItemStack[] contents = new ItemStack[inventory.getContents().length];
         ItemStack[] armor = null;
@@ -500,6 +512,12 @@ public class NBTManager {
         return itemStackUtils.createCraftItemStack(itemStack);
     }
 
+    /**
+     * Create CraftItemStack from nbt value
+     *
+     * @param compound nbt data of item: Slot, Count, Damage, id, tag
+     * @return new CraftItemStack
+     */
     public ItemStack createCraftItemStack(NBTCompound compound){
         if (compound == null) return new ItemStack(Material.AIR);
         return itemStackUtils.createCraftItemStackFromNBT(compound.getHandle());

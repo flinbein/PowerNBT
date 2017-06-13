@@ -23,10 +23,10 @@ public class EntityUtils {
     private RefClass cCraftEntity = getRefClass("{cb}.entity.CraftEntity, {CraftEntity}");
     private RefClass cEntityPlayer = getRefClass("{nms}.EntityPlayer, {nm}.entity.player.EntityPlayer, {EntityPlayer}");
     private RefMethod mGetHandleEntity = cCraftEntity.findMethodByReturnType(cEntity);
-    private RefMethod mReadEntity;
-    private RefMethod mWriteEntity;
-    private RefMethod mReadPlayer;
-    private RefMethod mWritePlayer;
+    private RefMethod mReadEntityToNBT;
+    private RefMethod mWriteNBTToEntity;
+    private RefMethod mReadPlayerToNBT;
+    private RefMethod mWriteNBTToPlayer;
     private RefField fForgeData;
 
     private RefMethod mCreateEntity;
@@ -62,13 +62,13 @@ public class EntityUtils {
                 fForgeData = cEntity.findField(cNBTTagCompound);
             } catch (Exception ignored){}
             try { // forge 1.6+
-                mWriteEntity = mWritePlayer = cEntity.findMethod(
+                mWriteNBTToEntity = mWriteNBTToPlayer = cEntity.findMethod(
                         new MethodCondition().withTypes(cNBTTagCompound).withSuffix("e")
                 );
-                mReadEntity = cEntity.findMethod(
+                mReadEntityToNBT = cEntity.findMethod(
                         new MethodCondition().withTypes(cNBTTagCompound).withSuffix("c").withIndex(0)
                 );
-                mReadPlayer = cEntity.findMethod(
+                mReadPlayerToNBT = cEntity.findMethod(
                         new MethodCondition().withTypes(cNBTTagCompound).withSuffix("d")
                 );
             } catch (Exception e) {
@@ -77,23 +77,25 @@ public class EntityUtils {
             }
         } else {
             try { // bukkit 1.6+
-                mWriteEntity = mWritePlayer = cEntity.findMethod(
+                mWriteNBTToEntity = mWriteNBTToPlayer = cEntity.findMethod(
                         new MethodCondition().withTypes(cNBTTagCompound).withName("f")
                 );
-                mReadEntity = cEntity.findMethod(
+                mReadEntityToNBT = cEntity.findMethod(
+                        new MethodCondition().withTypes(cNBTTagCompound).withName("save"), // spigot 1.12
                         new MethodCondition().withTypes(cNBTTagCompound).withName("c")
                 );
-                mReadPlayer = cEntity.findMethod(
+                mReadPlayerToNBT = cEntity.findMethod(
+                        new MethodCondition().withTypes(cNBTTagCompound).withName("save"), // spigot 1.12
                         new MethodCondition().withTypes(cNBTTagCompound).withName("e")
                 );
             } catch (Exception ignored) { // old bukkit
-                mWriteEntity = mWritePlayer = cEntity.findMethod(
+                mWriteNBTToEntity = mWriteNBTToPlayer = cEntity.findMethod(
                         new MethodCondition().withTypes(cNBTTagCompound).withName("e")
                 );
-                mReadEntity = cEntity.findMethod(
+                mReadEntityToNBT = cEntity.findMethod(
                         new MethodCondition().withTypes(cNBTTagCompound).withName("c")
                 );
-                mReadPlayer = cEntity.findMethod(
+                mReadPlayerToNBT = cEntity.findMethod(
                         new MethodCondition().withTypes(cNBTTagCompound).withName("d")
                 );
             }
@@ -107,18 +109,18 @@ public class EntityUtils {
     public void readEntity(Entity entity, Object nbtTagCompound){
         Object nmsEntity = getHandleEntity(entity);
         if (cEntityPlayer.isInstance(nmsEntity)) {
-            mReadPlayer.of(nmsEntity).call(nbtTagCompound);
+            mReadPlayerToNBT.of(nmsEntity).call(nbtTagCompound);
         } else {
-            mReadEntity.of(nmsEntity).call(nbtTagCompound);
+            mReadEntityToNBT.of(nmsEntity).call(nbtTagCompound);
         }
     }
 
     public void writeEntity(Entity entity, Object nbtTagCompound){
         Object liv = getHandleEntity(entity);
         if(entity.getType() == EntityType.PLAYER){
-            mWritePlayer.of(liv).call(nbtTagCompound);
+            mWriteNBTToPlayer.of(liv).call(nbtTagCompound);
         }else{
-            mWriteEntity.of(liv).call(nbtTagCompound);
+            mWriteNBTToEntity.of(liv).call(nbtTagCompound);
         }
     }
 

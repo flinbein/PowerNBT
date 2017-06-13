@@ -2,7 +2,7 @@ name: ${project.artifactId}
 description: ${plugin-description}
 author: ${plugin-author}
 main: me.dpohvar.powernbt.PowerNBT
-website: http://dev.bukkit.org/bukkit-plugins/varscript/
+website: ${plugin-website}
 version: ${project.version}
 commands:
     powernbt:

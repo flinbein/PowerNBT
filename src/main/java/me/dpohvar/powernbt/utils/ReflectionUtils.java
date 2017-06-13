@@ -286,7 +286,7 @@ public class ReflectionUtils {
                 return c.find(this);
             } catch (Exception ignored){
             }
-            throw new RuntimeException("no such method");
+            throw new RuntimeException("no such method: " + Arrays.toString(condition) + " for class "+this.clazz.getName());
         }
 
         /**
@@ -456,6 +456,21 @@ public class ReflectionUtils {
         private boolean checkStatic = false;
         private boolean modStatic;
 
+        @Override
+        public String toString() {
+            StringBuilder b = new StringBuilder("");
+            if (name != null) b.append("name:").append(name).append(",");
+            if (prefix != null) b.append("prefix:").append(prefix).append(",");
+            if (suffix != null) b.append("suffix:").append(suffix).append(",");
+            if (checkForge) b.append("forge:").append(forge).append(",");
+            if (types != null) b.append("types:").append(types.toString()).append(",");
+            if (index != -1) b.append("index:").append(index).append(",");
+            if (checkAbstract) b.append("abstract:").append(modAbstract).append(",");
+            if (checkFinal) b.append("final:").append(modFinal).append(",");
+            if (checkStatic) b.append("modStatic:").append(modStatic).append(",");
+            return b.substring(0,b.length()-1);
+        }
+
         public MethodCondition withForge(boolean forge){
             this.checkForge = true;
             this.forge = forge;
@@ -594,6 +609,7 @@ public class ReflectionUtils {
                 return new RefMethod(methods.get(index));
             }
         }
+
     }
 
     /**

@@ -136,9 +136,18 @@ public final class ItemStackUtils {
     }
 
     public Object getTag(ItemStack itemStack){
-        if (classCraftItemStack.isInstance(itemStack)) return getTagCB(itemStack);
+        // if (classCraftItemStack.isInstance(itemStack)) return getTagCB(itemStack);
+        Object nmsItemStack = tryGetNMSHandleItemStack(itemStack);
+        if (nmsItemStack != null) return getTag(nmsItemStack);
         else if (classItemMeta != null) return getTagOrigin(itemStack);
         else return null;
+    }
+
+    private Object tryGetNMSHandleItemStack(ItemStack itemStack){
+        if ( !classCraftItemStack.isInstance(itemStack) ) return null;
+        Object nmsItemStack = getHandle(itemStack);
+        if (nmsItemStack != null) return nmsItemStack;
+        return null;
     }
 
 
@@ -175,10 +184,9 @@ public final class ItemStackUtils {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void setTagCB(ItemStack itemStack, Object nbtTagCompound){
         Object nmsItemStack = getHandle(itemStack);
-        setTag(nmsItemStack,nbtTagCompound);
+        setTag(nmsItemStack, nbtTagCompound);
     }
 
     private Object getTagCB(ItemStack itemStack){

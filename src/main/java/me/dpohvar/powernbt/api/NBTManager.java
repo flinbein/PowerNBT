@@ -41,7 +41,6 @@ public class NBTManager {
     NBTBlockUtils nbtBlockUtils = NBTBlockUtils.nbtBlockUtils;
     NBTCompressedUtils nbtCompressedUtils = NBTCompressedUtils.nbtCompressedUtils;
     NBTUtils nbtUtils = NBTUtils.nbtUtils;
-    ChunkUtils chunkUtils = ChunkUtils.chunkUtils;
     ReflectionUtils.RefMethod getUUID;
 
     private NBTManager(){
@@ -117,7 +116,7 @@ public class NBTManager {
      */
     public NBTCompound read(Chunk chunk){
         NBTCompound compound = new NBTCompound();
-        chunkUtils.readChunk(chunk, compound.getHandle());
+        ChunkUtils.chunkUtils.readChunk(chunk, compound.getHandle());
         return compound;
     }
 
@@ -129,7 +128,7 @@ public class NBTManager {
      * @since 0.8.1
      */
     public void write(Chunk chunk, NBTCompound compound){
-        chunkUtils.writeChunk(chunk, compound.getHandle());
+        ChunkUtils.chunkUtils.writeChunk(chunk, compound.getHandle());
     }
 
     /**

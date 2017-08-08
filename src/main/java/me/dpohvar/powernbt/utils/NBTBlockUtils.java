@@ -38,7 +38,7 @@ public final class NBTBlockUtils {
     );
     private RefMethod write = classTileEntity.findMethod( new MethodCondition()
                     .withTypes("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}")
-                    .withSuffix("a")
+                    .withSuffix("load")
     );
 
     /**

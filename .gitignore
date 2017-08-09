@@ -4,3 +4,6 @@ PowerNBT.iml
 target
 out
 doc
+.classpath
+.settings/
+.project

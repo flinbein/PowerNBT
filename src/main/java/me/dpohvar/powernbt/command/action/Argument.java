@@ -9,6 +9,7 @@ import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.StringParser;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
@@ -110,7 +111,7 @@ public class Argument {
         if (object.equals("block") || object.equals("b")) {
             if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
             //noinspection deprecation
-            return new NBTContainerBlock(((Player) caller.getOwner()).getTargetBlock((HashSet<Byte>)null, 128));
+            return new NBTContainerBlock(((Player) caller.getOwner()).getTargetBlock((Set<Material>)null, 128));
         }
         if (object.equals("chunk")) {
             CommandSender owner = caller.getOwner();

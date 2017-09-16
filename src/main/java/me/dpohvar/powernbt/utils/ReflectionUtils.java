@@ -53,7 +53,9 @@ public class ReflectionUtils {
                 Object handle = getHandle.invoke(server);
                 Class handleServerClass = handle.getClass();
                 pas = handleServerClass.getName().split("\\.");
-                if (pas.length == 5) {
+                if (pas.length > 3 && pas[3].equals("dedicated")) {
+                    replacements.put("nms","net.minecraft.server");
+                } else if (pas.length == 5) {
                     replacements.put("nms","net.minecraft.server."+pas[3]);
                 }
             } catch (Exception ignored) {

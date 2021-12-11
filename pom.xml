@@ -37,16 +37,11 @@
     <url>http://dev.bukkit.org/bukkit-plugins/powernbt/</url>
 
     <distributionManagement>
-        <downloadUrl>http://dev.bukkit.org/bukkit-plugins/powernbt/</downloadUrl>
-        <snapshotRepository>
-            <id>dpohvar.ru</id>
-            <name>dpohvar.ru-snapshots</name>
-            <url>https://repo.varscript.ru/snapshots</url>
-        </snapshotRepository>
+        <downloadUrl>https://github.com/flinbein/PowerNBT/releases</downloadUrl>
         <repository>
-            <id>dpohvar.ru</id>
-            <name>dpohvar.ru-releases</name>
-            <url>https://repo.varscript.ru/release</url>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/flinbein/PowerNBT</url>
         </repository>
     </distributionManagement>
 

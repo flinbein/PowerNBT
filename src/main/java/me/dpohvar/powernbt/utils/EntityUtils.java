@@ -19,9 +19,9 @@ public class EntityUtils {
 
     public static EntityUtils entityUtils = new EntityUtils();
 
-    private RefClass cEntity = getRefClass("{nms}.Entity, {nm}.entity.Entity, {Entity}");
+    private RefClass cEntity = getRefClass("{nms}.Entity, {nm}.entity.Entity, {nm}.world.entity.Entity, {Entity}");
     private RefClass cCraftEntity = getRefClass("{cb}.entity.CraftEntity, {CraftEntity}");
-    private RefClass cEntityPlayer = getRefClass("{nms}.EntityPlayer, {nm}.entity.player.EntityPlayer, {EntityPlayer}");
+    private RefClass cEntityPlayer = getRefClass("{nms}.EntityPlayer, {nm}.entity.player.EntityPlayer, {nm}.server.level.EntityPlayer, {EntityPlayer}");
     private RefMethod mGetHandleEntity = cCraftEntity.findMethodByReturnType(cEntity);
     private RefMethod mReadEntityToNBT;
     private RefMethod mWriteNBTToEntity;
@@ -36,12 +36,12 @@ public class EntityUtils {
 
     private EntityUtils(){
         RefClass cCraftWorld = getRefClass("{cb}.CraftWorld, {CraftWorld}");
-        RefClass cWorldServer = getRefClass("{nms}.WorldServer, {nm}.world.WorldServer, {WorldServer}");
-        RefClass cWorld = getRefClass("{nms}.World, {nm}.world.World, {World}");
+        RefClass cWorldServer = getRefClass("{nms}.WorldServer, {nm}.world.WorldServer, {nms}.level.WorldServer, {WorldServer}");
+        RefClass cWorld = getRefClass("{nms}.World, {nm}.world.World, {nms}.level.World, {World}");
         RefClass cNBTTagCompound = getRefClass("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}");
 
         try {
-            RefClass cEntityTypes = getRefClass("{nms}.EntityTypes, {nm}.entity.EntityTypes, {nm}.entity.EntityList, {EntityTypes}");
+            RefClass cEntityTypes = getRefClass("{nms}.EntityTypes, {nm}.entity.EntityTypes,{nm}.world.entity.EntityTypes, {nm}.entity.EntityList, {EntityTypes}");
             mCreateEntity = cEntityTypes.findMethodByParams(cNBTTagCompound, cWorld);
             mGetWorldHandle = cCraftWorld.findMethodByReturnType(cWorldServer);
             mGetBukkitEntity = cEntity.findMethodByReturnType(cCraftEntity);

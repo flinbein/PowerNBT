@@ -8,7 +8,7 @@
         <plugin-debug>false</plugin-debug>
 
         <plugin-author>DPOH-VAR</plugin-author>
-        <plugin-website>https://www.spigotmc.org/resources/powernbt.9098/</plugin-website>
+        <plugin-website>https://github.com/flinbein/powernbt</plugin-website>
         <plugin-description>Powerful nbt editor for bukkit</plugin-description>
 
         <java-version>17</java-version>
@@ -29,7 +29,7 @@
     </developers>
 
     <groupId>me.dpohvar.powernbt</groupId>
-    <artifactId>PowerNBT</artifactId>
+    <artifactId>powernbt</artifactId>
     <version>0.8.9.2</version>
     <packaging>jar</packaging>
 
@@ -37,11 +37,11 @@
     <url>http://dev.bukkit.org/bukkit-plugins/powernbt/</url>
 
     <distributionManagement>
-        <downloadUrl>https://github.com/flinbein/PowerNBT/releases</downloadUrl>
+        <downloadUrl>https://github.com/flinbein/powernbt/releases</downloadUrl>
         <repository>
             <id>github</id>
             <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/flinbein/PowerNBT</url>
+            <url>https://maven.pkg.github.com/flinbein/powernbt</url>
         </repository>
     </distributionManagement>
 

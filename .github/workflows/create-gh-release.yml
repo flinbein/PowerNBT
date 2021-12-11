@@ -17,10 +17,7 @@ jobs:
   build:
     if: github.event.ref_type == 'tag' && startsWith(github.event.ref, 'v')
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
+    
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK
@@ -43,7 +40,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: v${{ steps.version.outputs.ver }}
+        tag_name: ${{ github.event.ref }}
         release_name: PowerNBT ${{ steps.version.outputs.ver }}
         draft: false
         prerelease: false
@@ -55,6 +52,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: /target/PowerNBT.jar
+        asset_path: target/powernbt.jar
         asset_name: PowerNBT.jar
         asset_content_type: application/zip

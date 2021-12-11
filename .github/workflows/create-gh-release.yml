@@ -1,0 +1,60 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Create GH release
+
+# Controls when the workflow will run
+on:
+  push:
+    branches:    
+      - master
+    tags:
+      - v*
+  create:
+    tags:
+      - v*
+
+jobs:
+  build:
+    if: github.event.ref_type == 'tag' && startsWith(github.event.ref, 'v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK
+      uses: actions/setup-java@v2
+      with:
+        java-version: '17'
+        distribution: 'adopt'
+      
+    - name: MVN build package
+      run: mvn --batch-mode package
+      
+    - name: Retrive version from tag
+      id: version
+      run: |
+          echo "::set-output name=ver::$(echo ${{ github.event.ref }} | egrep -o '[[:digit:]]{1}.[[:digit:]]{1,10}(.[[:digit:]]{1,2})?')"
+      
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.version.outputs.ver }}
+        release_name: PowerNBT ${{ steps.version.outputs.ver }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      id: upload_release_asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: /target/PowerNBT.jar
+        asset_name: PowerNBT.jar
+        asset_content_type: application/zip

@@ -50,7 +50,7 @@ public class ChunkUtils {
             fChunkProvider = cWorldServer.findField(cChunkProviderServer);
             fChunkLoader = cChunkProviderServer.findField(iChunkLoader);
             RefClass cChunkRegionLoader = getRefClass("{nms}.ChunkRegionLoader, {nm}.world.chunk.storage.AnvilChunkLoader, {ChunkRegionLoader}");
-            RefClass cWorld = getRefClass("{nms}.World, {nm}.world.World, {nms}.level.World, {World}");
+            RefClass cWorld = getRefClass("{nms}.World, {nm}.world.World, {nm}.world.level.World, {nms}.level.World, {World}");
             RefClass cNBTTagCompound = getRefClass("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}");
             mSaveChunk = cChunkRegionLoader.findMethodByParams(cChunk, cWorld, cNBTTagCompound);
             RefClass cLongObjectHashMap;

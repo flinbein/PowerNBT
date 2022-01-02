@@ -19,7 +19,7 @@ public final class ItemStackUtils {
 
 
     private final RefClass classCraftItemStack = getRefClass("{cb}.inventory.CraftItemStack, {CraftItemStack}");
-    private final RefClass classItemStack = getRefClass("{nms}.ItemStack, {nm}.item.ItemStack, {ItemStack}");
+    private final RefClass classItemStack = getRefClass("{nms}.ItemStack, {nm}.item.ItemStack, {nm}.world.item.ItemStack, {ItemStack}");
     private final RefField itemHandle = classCraftItemStack.findField(classItemStack);
     private final RefField tag = classItemStack.findField("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}");
 

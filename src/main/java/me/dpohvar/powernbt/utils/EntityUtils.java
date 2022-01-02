@@ -37,7 +37,7 @@ public class EntityUtils {
     private EntityUtils(){
         RefClass cCraftWorld = getRefClass("{cb}.CraftWorld, {CraftWorld}");
         RefClass cWorldServer = getRefClass("{nms}.WorldServer, {nm}.world.WorldServer, {nms}.level.WorldServer, {WorldServer}");
-        RefClass cWorld = getRefClass("{nms}.World, {nm}.world.World, {nms}.level.World, {World}");
+        RefClass cWorld = getRefClass("{nms}.World, {nm}.world.World, {nm}.world.level.World, {nms}.level.World, {World}");
         RefClass cNBTTagCompound = getRefClass("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}");
 
         try {
@@ -78,7 +78,7 @@ public class EntityUtils {
         } else {
             try { // bukkit 1.6+
                 mWriteNBTToEntity = mWriteNBTToPlayer = cEntity.findMethod(
-                        new MethodCondition().withTypes(cNBTTagCompound).withName("f")
+                        new MethodCondition().withTypes(cNBTTagCompound).withName("f", "load")
                 );
                 mReadEntityToNBT = cEntity.findMethod(
                         new MethodCondition().withTypes(cNBTTagCompound).withName("save"), // spigot 1.12
@@ -90,10 +90,10 @@ public class EntityUtils {
                 );
             } catch (Exception ignored) { // old bukkit
                 mWriteNBTToEntity = mWriteNBTToPlayer = cEntity.findMethod(
-                        new MethodCondition().withTypes(cNBTTagCompound).withName("e")
+                        new MethodCondition().withTypes(cNBTTagCompound).withName("loadData", "e")
                 );
-                mReadEntityToNBT = cEntity.findMethod(
-                        new MethodCondition().withTypes(cNBTTagCompound).withName("c")
+                mReadEntityToNBT = mReadPlayerToNBT = cEntity.findMethod(
+                        new MethodCondition().withTypes(cNBTTagCompound).withName("loadData", "c")
                 );
                 mReadPlayerToNBT = cEntity.findMethod(
                         new MethodCondition().withTypes(cNBTTagCompound).withName("d")

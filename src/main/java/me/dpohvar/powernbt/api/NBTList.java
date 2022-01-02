@@ -78,9 +78,9 @@ public class NBTList implements List<Object> {
      *
      * @param collection collection
      */
-    public NBTList(Collection collection) {
+    public NBTList(Collection<?> collection) {
         this(nbtUtils.createTagList());
-        for (Object t: collection) add(t);
+        this.addAll(collection);
     }
 
     /**
@@ -90,7 +90,7 @@ public class NBTList implements List<Object> {
      */
     public NBTList(Object[] array) {
         this(nbtUtils.createTagList());
-        for (Object t: array) add(t);
+        this.addAll(Arrays.asList(array));
     }
 
     /**

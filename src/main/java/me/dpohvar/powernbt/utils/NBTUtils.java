@@ -34,7 +34,7 @@ public abstract class NBTUtils {
             nbtUtils = raw ? new NBTUtils_MCPC_raw() : new NBTUtils_MCPC_named();
         } else { // NMS classpath
             try{ // to get raw constructor
-                getRefClass("{nms}.NBTTagByte, {NBTTagByte}").getConstructor(byte.class);
+                getRefClass("{nms}.NBTTagByte, {nm}.nbt.NBTTagByte, {NBTTagByte}").getConstructor(byte.class);
                 raw = true; // on success
             } catch (Exception ignored) {}
             nbtUtils = raw ? new NBTUtils_Bukkit_raw() : new NBTUtils_Bukkit_named();
@@ -92,106 +92,108 @@ public abstract class NBTUtils {
 
     public Object convertValue(Object value, byte type) throws NBTConvertException{
         switch (type) {
-            case 0: {
-                if (value==null) return null;
+            case 0 -> {
+                if (value == null) return null;
                 throw new NBTConvertException(value, type);
             }
-            case 1: {
-                if (value instanceof Number) return ((Number) value).byteValue();
-                if (value instanceof CharSequence) return new Long((String) value).byteValue();
+            case 1 -> {
+                if (value instanceof Number num) return num.byteValue();
+                if (value instanceof CharSequence) return (byte) Long.parseLong(value.toString());
                 throw new NBTConvertException(value, type);
             }
-            case 2: {
-                if (value instanceof Number) return ((Number) value).shortValue();
-                if (value instanceof CharSequence) return new Long(value.toString()).shortValue();
+            case 2 -> {
+                if (value instanceof Number num) return num.shortValue();
+                if (value instanceof CharSequence) return (short) Long.parseLong(value.toString());
                 throw new NBTConvertException(value, type);
             }
-            case 3: {
+            case 3 -> {
                 if (value instanceof Number) return (((Number) value).intValue());
-                if (value instanceof CharSequence) return (new Long(value.toString()).intValue());
+                if (value instanceof CharSequence) return (int) Long.parseLong(value.toString());
                 throw new NBTConvertException(value, type);
             }
-            case 4: {
-                if (value instanceof Number) return ((Number) value).longValue();
+            case 4 -> {
+                if (value instanceof Number num) return num.longValue();
                 if (value instanceof CharSequence) return Long.parseLong(value.toString());
                 throw new NBTConvertException(value, type);
             }
-            case 5: {
-                if (value instanceof Number) return ((Number)value).floatValue();
-                if (value instanceof CharSequence) return new Double(value.toString()).floatValue();
+            case 5 -> {
+                if (value instanceof Number num) return num.floatValue();
+                if (value instanceof CharSequence) return (float) Double.parseDouble(value.toString());
                 throw new NBTConvertException(value, type);
             }
-            case 6: {
-                if (value instanceof Number) return ((Number)value).doubleValue();
-                if (value instanceof CharSequence) return new Double(value.toString());
+            case 6 -> {
+                if (value instanceof Number num) return num.doubleValue();
+                if (value instanceof CharSequence) return Double.parseDouble(value.toString());
                 throw new NBTConvertException(value, type);
             }
-            case 7: {
+            case 7 -> {
                 if (value instanceof byte[]) return value;
-                if (value instanceof int[]) {
-                    int[] values = (int[]) value;
+                if (value instanceof int[] values) {
                     byte[] temp = new byte[values.length];
-                    int t=0; for(int i:values) temp[t++]=(byte)i;
+                    int t = 0;
+                    for (int i : values) temp[t++] = (byte) i;
                     return temp;
                 }
-                if (value instanceof Collection) {
-                    Collection values = (Collection) value;
+                if (value instanceof Collection values) {
                     byte[] temp = new byte[values.size()];
-                    int t=0; for(Object obj: values) {
+                    int t = 0;
+                    for (Object obj : values) {
                         byte val;
-                        if (obj instanceof Number) val = ((Number)obj).byteValue();
+                        if (obj instanceof Number num) val = num.byteValue();
                         else throw new NBTConvertException(value, type);
-                        temp[t++]=val;
+                        temp[t++] = val;
                     }
                     return temp;
                 }
                 if (value instanceof CharSequence) return (value.toString()).getBytes(PowerNBT.charset);
                 throw new NBTConvertException(value, type);
             }
-            case 8: {
+            case 8 -> {
                 return value.toString();
             }
-            case 9: {
+            case 9 -> {
                 if (value instanceof Collection) return value;
                 if (value instanceof Object[]) return value;
                 if (value instanceof byte[]) {
-                    ArrayList<Byte> list = new ArrayList<Byte>( ((byte[])value).length );
-                    for (byte b: (byte[]) value) list.add(b);
+                    ArrayList<Byte> list = new ArrayList<Byte>(((byte[]) value).length);
+                    for (byte b : (byte[]) value) list.add(b);
                     return list;
                 }
                 if (value instanceof int[]) {
-                    ArrayList<Integer> list = new ArrayList<Integer>( ((int[])value).length );
-                    for (int t: (int[]) value) list.add(t);
+                    ArrayList<Integer> list = new ArrayList<Integer>(((int[]) value).length);
+                    for (int t : (int[]) value) list.add(t);
                     return list;
                 }
                 throw new NBTConvertException(value, type);
             }
-            case 10: {
+            case 10 -> {
                 if (value instanceof Map) return value;
                 throw new NBTConvertException(value, type);
             }
-            case 11: {
+            case 11 -> {
                 if (value instanceof int[]) return value;
                 if (value instanceof byte[]) {
                     byte[] values = (byte[]) value;
                     int[] temp = new int[values.length];
-                    int t=0; for(byte i:values) temp[t++]=i;
+                    int t = 0;
+                    for (byte i : values) temp[t++] = i;
                     return temp;
                 }
                 if (value instanceof Collection) {
                     Collection values = (Collection) value;
                     int[] temp = new int[values.size()];
-                    int t=0; for(Object obj: values) {
+                    int t = 0;
+                    for (Object obj : values) {
                         int val;
-                        if (obj instanceof Number) val = ((Number)obj).intValue();
+                        if (obj instanceof Number) val = ((Number) obj).intValue();
                         else throw new NBTConvertException(value, type);
-                        temp[t++]=val;
+                        temp[t++] = val;
                     }
                     return temp;
                 }
                 throw new NBTConvertException(value, type);
             }
-            default: throw new NBTConvertException(value, type);
+            default -> throw new NBTConvertException(value, type);
         }
     }
 

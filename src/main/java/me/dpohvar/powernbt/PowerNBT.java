@@ -12,18 +12,19 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 
 public class PowerNBT extends JavaPlugin {
 
     private static final boolean SILENT = true;
     public static PowerNBT plugin;
-    public static final Charset charset = Charset.forName("UTF8");
+    public static final Charset charset = StandardCharsets.UTF_8;
     private final HashMap<String, Caller> callers = new HashMap<String, Caller>();
     private Translator translator;
     private static final Tokenizer tokenizer = new Tokenizer(
-            null, null, null, Arrays.asList('\"'), null, Arrays.asList(' ')
+            null, null, null, List.of('\"'), null, List.of(' ')
     );
     private final String prefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[" + ChatColor.YELLOW + "PowerNBT" + ChatColor.GOLD + ChatColor.BOLD + "] " + ChatColor.RESET;
     private final String errorPrefix = ChatColor.DARK_RED.toString() + ChatColor.BOLD + "[" + ChatColor.RED + "PowerNBT" + ChatColor.DARK_RED + ChatColor.BOLD + "] " + ChatColor.RESET;

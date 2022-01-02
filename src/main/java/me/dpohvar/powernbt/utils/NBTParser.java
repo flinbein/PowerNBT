@@ -347,7 +347,7 @@ public class NBTParser {
     }
 
     static class ListParser extends TypeParser {
-        protected List<TypeParser> parsers = new ArrayList<TypeParser>();
+        protected List<TypeParser> parsers = new ArrayList<>();
 
         public ListParser(String name) {
             this.name = name;
@@ -363,7 +363,7 @@ public class NBTParser {
     }
 
     static class CompoundParser extends TypeParser {
-        protected List<TypeParser> parsers = new ArrayList<TypeParser>();
+        protected List<TypeParser> parsers = new ArrayList<>();
 
         public CompoundParser(String name) {
             this.name = name;

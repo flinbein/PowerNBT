@@ -15,18 +15,18 @@ import static me.dpohvar.powernbt.utils.ReflectionUtils.*;
 
 final class NBTUtils_Bukkit_named extends NBTUtils {
 
-    private RefClass class_NBTBase = getRefClass("{nms}.NBTBase, {NBTBase}");
-    private RefClass class_NBTTagByte = getRefClass("{nms}.NBTTagByte, {NBTTagByte}");
-    private RefClass class_NBTTagShort = getRefClass("{nms}.NBTTagShort, {NBTTagShort}");
-    private RefClass class_NBTTagInt = getRefClass("{nms}.NBTTagInt, {NBTTagInt}");
-    private RefClass class_NBTTagLong = getRefClass("{nms}.NBTTagLong, {NBTTagLong}");
-    private RefClass class_NBTTagFloat = getRefClass("{nms}.NBTTagFloat, {NBTTagFloat}");
-    private RefClass class_NBTTagDouble = getRefClass("{nms}.NBTTagDouble, {NBTTagDouble}");
-    private RefClass class_NBTTagString = getRefClass("{nms}.NBTTagString, {NBTTagString}");
-    private RefClass class_NBTTagByteArray = getRefClass("{nms}.NBTTagByteArray, {NBTTagByteArray}");
-    private RefClass class_NBTTagIntArray = getRefClass("{nms}.NBTTagIntArray, {NBTTagIntArray}");
-    private RefClass class_NBTTagList = getRefClass("{nms}.NBTTagList, {NBTTagList}");
-    private RefClass class_NBTTagCompound = getRefClass("{nms}.NBTTagCompound, {NBTTagCompound}");
+    private RefClass class_NBTBase = getRefClass("{nms}.NBTBase, {nm}.nbt.NBTBase, {NBTBase}");
+    private RefClass class_NBTTagByte = getRefClass("{nms}.NBTTagByte, {nm}.nbt.NBTTagByte, {NBTTagByte}");
+    private RefClass class_NBTTagShort = getRefClass("{nms}.NBTTagShort, {nm}.nbt.NBTTagShort, {NBTTagShort}");
+    private RefClass class_NBTTagInt = getRefClass("{nms}.NBTTagInt, {nm}.nbt.NBTTagInt, {NBTTagInt}");
+    private RefClass class_NBTTagLong = getRefClass("{nms}.NBTTagLong, {nm}.nbt.NBTTagLong, {NBTTagLong}");
+    private RefClass class_NBTTagFloat = getRefClass("{nms}.NBTTagFloat, {nm}.nbt.NBTTagFloat, {NBTTagFloat}");
+    private RefClass class_NBTTagDouble = getRefClass("{nms}.NBTTagDouble, {nm}.nbt.NBTTagDouble, {NBTTagDouble}");
+    private RefClass class_NBTTagString = getRefClass("{nms}.NBTTagString, {nm}.nbt.NBTTagString, {NBTTagString}");
+    private RefClass class_NBTTagByteArray = getRefClass("{nms}.NBTTagByteArray, {nm}.nbt.NBTTagByteArray, {NBTTagByteArray}");
+    private RefClass class_NBTTagIntArray = getRefClass("{nms}.NBTTagIntArray, {nm}.nbt.NBTTagIntArray, {NBTTagIntArray}");
+    private RefClass class_NBTTagList = getRefClass("{nms}.NBTTagList, {nm}.nbt.NBTTagList, {NBTTagList}");
+    private RefClass class_NBTTagCompound = getRefClass("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}");
 
     private RefConstructor con_NBTagByte = class_NBTTagByte.getConstructor(String.class, byte.class);
     private RefConstructor con_NBTagShort = class_NBTTagShort.getConstructor(String.class, short.class);

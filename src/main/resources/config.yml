@@ -11,3 +11,24 @@ ignore_set:
   - UUIDLeast
   - WorldUUIDLeast
   - WorldUUIDMost
+
+hooks:
+
+  compound_create: # () -> nbt
+    - new net.minecraft.nbt.NBTTagCompound                                                 # || -> nbt
+
+  entity_read: # (craftEntity) -> nbt
+    - invoke org.bukkit.craftbukkit.v1_18_R1.entity.getHandle()                            # -> nmsEntity
+    - dup                                                                                  # -> nmsEntity,nmsEntity
+    - instanceof net.minecraft.server.level.EntityPlayer                                   # -> nmsEntity,bool
+    - if entity_read_player else entity_read_simple                                        # -> nbt
+
+  entity_read_simple: # (craftEntity) -> nbt
+    - get field net.minecraft.server.level.EntityPlayer.handle                             # -> nmsEntity
+    - call compound_create 0                                                               # -> nmsEntity,nbt
+    - dup                                                                                  # -> nmsEntity,nbt,nbt
+    - swap 2                                                                               # -> nbt,nbt,nmsEntity
+    - invoke net.minecraft.world.entity.Entity.f(net.minecraft.nbt.NBTTagCompound)         # -> nbt,result
+    - swap
+
+  entity_read_player: # (craftEntity) -> nbt

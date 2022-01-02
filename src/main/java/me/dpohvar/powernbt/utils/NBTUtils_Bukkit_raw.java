@@ -15,18 +15,18 @@ import static me.dpohvar.powernbt.utils.ReflectionUtils.*;
 
 final class NBTUtils_Bukkit_raw extends NBTUtils {
 
-    private RefClass class_NBTBase = getRefClass("{nms}.NBTBase, {NBTBase}");
-    private RefClass class_NBTTagByte = getRefClass("{nms}.NBTTagByte, {NBTTagByte}");
-    private RefClass class_NBTTagShort = getRefClass("{nms}.NBTTagShort, {NBTTagShort}");
-    private RefClass class_NBTTagInt = getRefClass("{nms}.NBTTagInt, {NBTTagInt}");
-    private RefClass class_NBTTagLong = getRefClass("{nms}.NBTTagLong, {NBTTagLong}");
-    private RefClass class_NBTTagFloat = getRefClass("{nms}.NBTTagFloat, {NBTTagFloat}");
-    private RefClass class_NBTTagDouble = getRefClass("{nms}.NBTTagDouble, {NBTTagDouble}");
-    private RefClass class_NBTTagString = getRefClass("{nms}.NBTTagString, {NBTTagString}");
-    private RefClass class_NBTTagByteArray = getRefClass("{nms}.NBTTagByteArray, {NBTTagByteArray}");
-    private RefClass class_NBTTagIntArray = getRefClass("{nms}.NBTTagIntArray, {NBTTagIntArray}");
-    private RefClass class_NBTTagList = getRefClass("{nms}.NBTTagList, {NBTTagList}");
-    private RefClass class_NBTTagCompound = getRefClass("{nms}.NBTTagCompound, {NBTTagCompound}");
+    private RefClass class_NBTBase = getRefClass("{nms}.NBTBase, {nm}.nbt.NBTBase, {NBTBase}");
+    private RefClass class_NBTTagByte = getRefClass("{nms}.NBTTagByte, {nm}.nbt.NBTTagByte, {NBTTagByte}");
+    private RefClass class_NBTTagShort = getRefClass("{nms}.NBTTagShort, {nm}.nbt.NBTTagShort, {NBTTagShort}");
+    private RefClass class_NBTTagInt = getRefClass("{nms}.NBTTagInt, {nm}.nbt.NBTTagInt, {NBTTagInt}");
+    private RefClass class_NBTTagLong = getRefClass("{nms}.NBTTagLong, {nm}.nbt.NBTTagLong, {NBTTagLong}");
+    private RefClass class_NBTTagFloat = getRefClass("{nms}.NBTTagFloat, {nm}.nbt.NBTTagFloat, {NBTTagFloat}");
+    private RefClass class_NBTTagDouble = getRefClass("{nms}.NBTTagDouble, {nm}.nbt.NBTTagDouble, {NBTTagDouble}");
+    private RefClass class_NBTTagString = getRefClass("{nms}.NBTTagString, {nm}.nbt.NBTTagString, {NBTTagString}");
+    private RefClass class_NBTTagByteArray = getRefClass("{nms}.NBTTagByteArray, {nm}.nbt.NBTTagByteArray, {NBTTagByteArray}");
+    private RefClass class_NBTTagIntArray = getRefClass("{nms}.NBTTagIntArray, {nm}.nbt.NBTTagIntArray, {NBTTagIntArray}");
+    private RefClass class_NBTTagList = getRefClass("{nms}.NBTTagList, {nm}.nbt.NBTTagList, {NBTTagList}");
+    private RefClass class_NBTTagCompound = getRefClass("{nms}.NBTTagCompound, {nm}.nbt.NBTTagCompound, {NBTTagCompound}");
 
     private RefConstructor con_NBTagByte = class_NBTTagByte.getConstructor(byte.class);
     private RefConstructor con_NBTagShort = class_NBTTagShort.getConstructor(short.class);
@@ -155,25 +155,27 @@ final class NBTUtils_Bukkit_raw extends NBTUtils {
     @Override
     protected void setRawValue(Object tag, Object value) throws NBTReadException {
         if (! class_NBTBase.isInstance(tag)) throw new NBTReadException(tag);
-        switch (getTagType(tag)){
-            case 1: field_NBTagByte_data.of(tag).set(value); break;
-            case 2: field_NBTagShort_data.of(tag).set(value); break;
-            case 3: field_NBTagInt_data.of(tag).set(value); break;
-            case 4: field_NBTagLong_data.of(tag).set(value); break;
-            case 5: field_NBTagFloat_data.of(tag).set(value); break;
-            case 6: field_NBTagDouble_data.of(tag).set(value); break;
-            case 7: field_NBTagByteArray_data.of(tag).set(value); break;
-            case 8: field_NBTagString_data.of(tag).set(value); break;
-            case 9: NBTList list = NBTList.forNBT(tag);
-                    list.clear();
-                    list.addAll((Collection)value);
-                    break;
-            case 10: NBTCompound compound = NBTCompound.forNBT(tag);
-                    compound.clear();
-                    compound.putAll((Map)value);
-                    break;
-            case 11: field_NBTagIntArray_data.of(tag).set(value); break;
-            default: throw new RuntimeException("unexpected tag: "+tag.getClass());
+        switch (getTagType(tag)) {
+            case 1 -> field_NBTagByte_data.of(tag).set(value);
+            case 2 -> field_NBTagShort_data.of(tag).set(value);
+            case 3 -> field_NBTagInt_data.of(tag).set(value);
+            case 4 -> field_NBTagLong_data.of(tag).set(value);
+            case 5 -> field_NBTagFloat_data.of(tag).set(value);
+            case 6 -> field_NBTagDouble_data.of(tag).set(value);
+            case 7 -> field_NBTagByteArray_data.of(tag).set(value);
+            case 8 -> field_NBTagString_data.of(tag).set(value);
+            case 9 -> {
+                NBTList list = NBTList.forNBT(tag);
+                list.clear();
+                list.addAll((Collection) value);
+            }
+            case 10 -> {
+                NBTCompound compound = NBTCompound.forNBT(tag);
+                compound.clear();
+                compound.putAll((Map) value);
+            }
+            case 11 -> field_NBTagIntArray_data.of(tag).set(value);
+            default -> throw new RuntimeException("unexpected tag: " + tag.getClass());
         }
     }
 

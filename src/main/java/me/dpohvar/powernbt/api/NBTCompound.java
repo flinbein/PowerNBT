@@ -1,8 +1,6 @@
 package me.dpohvar.powernbt.api;
 
 import java.util.*;
-
-import static me.dpohvar.powernbt.api.NBTManager.*;
 import static me.dpohvar.powernbt.utils.NBTUtils.nbtUtils;
 
 /**
@@ -210,8 +208,8 @@ public class NBTCompound implements Map<String,Object> {
      * @param map Mappings to be stored in this map
      */
     @Override
-    public void putAll(@SuppressWarnings("NullableProblems") Map<? extends String, ?> map) {
-        if (map==null) return;
+    public void putAll(Map<? extends String, ?> map) {
+        if (map == null) return;
         for (Entry<? extends String, ?> e: map.entrySet()) {
             String key = e.getKey();
             if (key==null) continue;
@@ -225,19 +223,16 @@ public class NBTCompound implements Map<String,Object> {
     }
 
     @Override
-    @SuppressWarnings("NullableProblems")
     public Set<String> keySet() {
         return handleMap.keySet();
     }
 
     @Override
-    @SuppressWarnings("NullableProblems")
     public Collection<Object> values() {
         return new NBTValues(handleMap.values());
     }
 
     @Override
-    @SuppressWarnings("NullableProblems")
     public NBTEntrySet entrySet() {
         return new NBTEntrySet(handleMap.entrySet());
     }
@@ -248,7 +243,7 @@ public class NBTCompound implements Map<String,Object> {
      *
      * @param map map to merge
      */
-    public void merge(Map map) {
+    public void merge(Map<?,?> map) {
         for(Object key: map.keySet()) {
             if (key == null) continue;
             if (!containsKey(key)) {
@@ -257,8 +252,8 @@ public class NBTCompound implements Map<String,Object> {
             }
             Object val = get(key);
             Object value = map.get(key);
-            if (val instanceof NBTCompound && value instanceof Map) {
-                ((NBTCompound)val).merge((Map)value);
+            if (val instanceof NBTCompound cmp && value instanceof Map<?,?> vMap) {
+                cmp.merge(vMap);
             } else {
                 put(key.toString(),value);
             }
@@ -273,10 +268,10 @@ public class NBTCompound implements Map<String,Object> {
             NBTEntrySet.NBTIterator.NBTEntry e = i.next();
             Object val = e.getValue();
             sb.append(e.getKey()).append('=');
-            if (val instanceof byte[]) {
-                sb.append("int[").append(((byte[]) val).length).append(']');
-            } else if (val instanceof int[]) {
-                sb.append("byte[").append(((int[]) val).length).append(']');
+            if (val instanceof byte[] bs) {
+                sb.append("int[").append(bs.length).append(']');
+            } else if (val instanceof int[] ints) {
+                sb.append("byte[").append(ints.length).append(']');
             } else {
                 sb.append(val);
             }
@@ -292,14 +287,14 @@ public class NBTCompound implements Map<String,Object> {
      */
     public boolean getBoolean(String key) {
         Object val = get(key);
-        if (val instanceof Float) return ((Float)val)!=0.f;
-        if (val instanceof Double) return ((Double)val)!=0.d;
-        if (val instanceof Number) return ((Number)val).longValue()!=0;
-        if (val instanceof CharSequence) return ((CharSequence)val).length()!=0;
-        if (val instanceof int[]) return ((int[])val).length!=0;
-        if (val instanceof byte[]) return ((byte[])val).length!=0;
-        if (val instanceof Collection) return !((Collection)val).isEmpty();
-        if (val instanceof Map) return !((Map)val).isEmpty();
+        if (val instanceof Float f) return f!=0.f;
+        if (val instanceof Double d) return d!=0.d;
+        if (val instanceof Number num) return num.longValue()!=0;
+        if (val instanceof CharSequence cs) return cs.length()!=0;
+        if (val instanceof int[] ints) return ints.length!=0;
+        if (val instanceof byte[] bytes) return bytes.length!=0;
+        if (val instanceof Collection col) return col.isEmpty();
+        if (val instanceof Map map) return !map.isEmpty();
         return false;
     }
 
@@ -348,7 +343,7 @@ public class NBTCompound implements Map<String,Object> {
      */
     public int getInt(String key) {
         Object val = get(key);
-        if (val instanceof Number) return ((Number)val).intValue();
+        if (val instanceof Number num) return num.intValue();
         if (val instanceof CharSequence) try {
             return (int) Long.parseLong(val.toString());
         } catch (Exception e){
@@ -367,7 +362,7 @@ public class NBTCompound implements Map<String,Object> {
      */
     public long getLong(String key) {
         Object val = get(key);
-        if (val instanceof Number) return ((Number)val).longValue();
+        if (val instanceof Number num) return num.longValue();
         if (val instanceof CharSequence) try {
             return Long.parseLong(val.toString());
         } catch (Exception e){
@@ -428,8 +423,7 @@ public class NBTCompound implements Map<String,Object> {
     public int[] getIntArray(String key) {
         Object val = get(key);
         if (val instanceof int[]) return (int[]) val;
-        if (val instanceof byte[]) {
-            byte[] bytes = (byte[]) val;
+        if (val instanceof byte[] bytes) {
             int[] result = new int[bytes.length];
             for(int i=0; i<bytes.length; i++) result[i]=bytes[i];
             return result;
@@ -445,8 +439,7 @@ public class NBTCompound implements Map<String,Object> {
     public byte[] getByteArray(String key) { // sorry for typo
         Object val = get(key);
         if (val instanceof byte[]) return (byte[]) val;
-        if (val instanceof int[]) {
-            int[] ints = (int[]) val;
+        if (val instanceof int[] ints) {
             byte[] result = new byte[ints.length];
             for(int i=0; i<ints.length; i++) result[i]=(byte)ints[i];
             return result;
@@ -461,7 +454,7 @@ public class NBTCompound implements Map<String,Object> {
      */
     public NBTCompound getCompound(String key) {
         Object val = get(key);
-        if (val instanceof NBTCompound) return (NBTCompound) val;
+        if (val instanceof NBTCompound cmp) return cmp;
         return null;
     }
 
@@ -472,7 +465,7 @@ public class NBTCompound implements Map<String,Object> {
      */
     public NBTList getList(String key) {
         Object val = get(key);
-        if (val instanceof NBTList) return (NBTList) val;
+        if (val instanceof NBTList list) return list;
         return null;
     }
 
@@ -487,7 +480,7 @@ public class NBTCompound implements Map<String,Object> {
      */
     public NBTCompound compound(String key) {
         Object val = get(key);
-        if (val instanceof NBTCompound) return (NBTCompound) val;
+        if (val instanceof NBTCompound cmp) return cmp;
         NBTCompound compound = new NBTCompound();
         put_handle(key,compound.getHandle());
         return compound;
@@ -504,7 +497,7 @@ public class NBTCompound implements Map<String,Object> {
      */
     public NBTList list(String key) {
         Object val = get(key);
-        if (val instanceof NBTList) return (NBTList) val;
+        if (val instanceof NBTList list) return list;
         NBTList list = new NBTList();
         put_handle(key,list.getHandle());
         return list;
@@ -543,9 +536,9 @@ public class NBTCompound implements Map<String,Object> {
      * @param type type of value
      * @return true if compound has key with specific value
      */
-    public boolean containsKey(String key, Class type){
+    public boolean containsKey(String key, Class<?> type){
         Object t = get(key);
-        return t!=null && type.isInstance(t);
+        return type.isInstance(t);
     }
 
     /**
@@ -559,7 +552,7 @@ public class NBTCompound implements Map<String,Object> {
         return tag!=null && nbtUtils.getTagType(tag) == type;
     }
 
-    public class NBTValues extends AbstractCollection<Object>{
+    public static class NBTValues extends AbstractCollection<Object>{
 
         Collection<Object> handle;
 
@@ -568,7 +561,6 @@ public class NBTCompound implements Map<String,Object> {
         }
 
         @Override
-        @SuppressWarnings("NullableProblems")
         public Iterator<Object> iterator() {
             return new NBTValuesIterator(handle.iterator());
         }
@@ -578,9 +570,9 @@ public class NBTCompound implements Map<String,Object> {
             return handle.size();
         }
 
-        public class NBTValuesIterator implements Iterator<Object>{
+        public static class NBTValuesIterator implements Iterator<Object>{
 
-            private Iterator<Object> handle;
+            private final Iterator<Object> handle;
 
             private NBTValuesIterator(Iterator<Object> iterator) {
                 this.handle = iterator;
@@ -603,16 +595,15 @@ public class NBTCompound implements Map<String,Object> {
         }
     }
 
-    public class NBTEntrySet extends AbstractSet<Entry<String, Object>> {
+    public static class NBTEntrySet extends AbstractSet<Entry<String, Object>> {
 
-        private Set<Entry<String, Object>> entries;
+        private final Set<Entry<String, Object>> entries;
 
-        NBTEntrySet(Set<Entry<String, Object>> entries) {
+        private NBTEntrySet(Set<Entry<String, Object>> entries) {
             this.entries = entries;
         }
 
         @Override
-        @SuppressWarnings("NullableProblems")
         public NBTIterator iterator() {
             return new NBTIterator(entries.iterator());
         }
@@ -622,9 +613,9 @@ public class NBTCompound implements Map<String,Object> {
             return entries.size();
         }
 
-        public class NBTIterator implements Iterator<Entry<String, Object>> {
+        public static class NBTIterator implements Iterator<Entry<String, Object>> {
 
-            private Iterator<Entry<String, Object>> iterator;
+            private final Iterator<Entry<String, Object>> iterator;
 
             private NBTIterator(Iterator<Entry<String, Object>> iterator) {
                 this.iterator = iterator;
@@ -645,9 +636,9 @@ public class NBTCompound implements Map<String,Object> {
                 iterator.remove();
             }
 
-            public class NBTEntry implements Entry<String, Object>{
+            public class NBTEntry implements Entry<String, Object> {
 
-                private Entry<String, Object> entry;
+                private final Entry<String, Object> entry;
 
                 NBTEntry(Entry<String, Object> entry) {
                     this.entry = entry;
@@ -665,7 +656,7 @@ public class NBTCompound implements Map<String,Object> {
 
                 @Override
                 public Object setValue(Object value) {
-                    if (value==null) {
+                    if (value == null) {
                         Object val = getValue();
                         remove();
                         return val;

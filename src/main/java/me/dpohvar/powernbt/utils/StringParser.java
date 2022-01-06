@@ -12,7 +12,7 @@ import static me.dpohvar.powernbt.utils.StringParser.Mode.*;
  * Time: 1:35
  */
 public class StringParser {
-    public static enum Mode {
+    public enum Mode {
         CHAR, ESCAPE, UNICODE, SPACE
     }
 
@@ -32,127 +32,54 @@ public class StringParser {
                 col++;
             }
             switch (mode) {
-                case CHAR: {
+                case CHAR -> {
                     switch (c) {
-                        case '\\': {
-                            mode = ESCAPE;
-                            continue parse;
-                        }
-                        case '&': {
-                            buffer.append(ChatColor.COLOR_CHAR);
-                            continue parse;
-                        }
-                        case '\"': {
-                            throw new ParseException(input, row, col, "unescaped '\"'");
-                        }
-                        default: {
-                            buffer.append(c);
-                            continue parse;
-                        }
+                        case '\\' -> mode = ESCAPE;
+                        case '&' -> buffer.append(ChatColor.COLOR_CHAR);
+                        case '\"' -> throw new ParseException(input, row, col, "unescaped '\"'");
+                        default -> buffer.append(c);
                     }
                 }
-                case ESCAPE: {
+                case ESCAPE -> {
                     switch (c) {
-                        case '\\':
-                            buffer.append('\\');
-                            break;
-                        case '\'':
-                            buffer.append('\'');
-                            break;
-                        case '\"':
-                            buffer.append('\"');
-                            break;
-                        case '0':
-                            buffer.append('\0');
-                            break;
-                        case '1':
-                            buffer.append('\1');
-                            break;
-                        case '2':
-                            buffer.append('\2');
-                            break;
-                        case '3':
-                            buffer.append('\3');
-                            break;
-                        case '4':
-                            buffer.append('\4');
-                            break;
-                        case '5':
-                            buffer.append('\5');
-                            break;
-                        case '6':
-                            buffer.append('\6');
-                            break;
-                        case '7':
-                            buffer.append('\7');
-                            break;
-                        case 'r':
-                            buffer.append('\r');
-                            break;
-                        case 't':
-                            buffer.append('\t');
-                            break;
-                        case 'f':
-                            buffer.append('\f');
-                            break;
-                        case 'b':
-                            buffer.append('\b');
-                            break;
-                        case 'n':
-                            buffer.append('\n');
-                            break;
-                        case '&':
-                            buffer.append('&');
-                            break;
-                        case '_':
-                            buffer.append(' ');
-                            break;
-                        case 'u': {
+                        case '\\' -> buffer.append('\\');
+                        case '\'' -> buffer.append('\'');
+                        case '\"' -> buffer.append('\"');
+                        case '0' -> buffer.append('\0');
+                        case '1' -> buffer.append('\1');
+                        case '2' -> buffer.append('\2');
+                        case '3' -> buffer.append('\3');
+                        case '4' -> buffer.append('\4');
+                        case '5' -> buffer.append('\5');
+                        case '6' -> buffer.append('\6');
+                        case '7' -> buffer.append('\7');
+                        case 'r' -> buffer.append('\r');
+                        case 't' -> buffer.append('\t');
+                        case 'f' -> buffer.append('\f');
+                        case 'b' -> buffer.append('\b');
+                        case 'n' -> buffer.append('\n');
+                        case '&' -> buffer.append('&');
+                        case '_' -> buffer.append(' ');
+                        case 'u' -> {
                             mode = UNICODE;
                             continue parse;
                         }
-                        case ' ':
-                        case '\t': {
+                        case ' ', '\t' -> {
                             mode = SPACE;
                             continue parse;
                         }
-                        case '\r':
-                        case '\n': {
+                        case '\r', '\n' -> {
                             buffer.append(c);
                             mode = SPACE;
                             continue parse;
                         }
-                        default: {
-                            throw new ParseException(input, row, col, "can't escape symbol " + c);
-                        }
+                        default -> throw new ParseException(input, row, col, "can't escape symbol " + c);
                     }
                     mode = CHAR;
-                    continue parse;
                 }
-                case UNICODE: {
+                case UNICODE -> {
                     switch (c) {
-                        case '0':
-                        case '1':
-                        case '2':
-                        case '3':
-                        case '4':
-                        case '5':
-                        case '6':
-                        case '7':
-                        case '8':
-                        case '9':
-                        case 'A':
-                        case 'B':
-                        case 'C':
-                        case 'D':
-                        case 'E':
-                        case 'F':
-                        case 'a':
-                        case 'b':
-                        case 'c':
-                        case 'd':
-                        case 'e':
-                        case 'f': {
+                        case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'a', 'b', 'c', 'd', 'e', 'f' -> {
                             unicode.append(c);
                             if (unicode.length() == 4) {
                                 char character = (char) Integer.parseInt(unicode.toString(), 16);
@@ -160,42 +87,25 @@ public class StringParser {
                                 unicode = new StringBuilder();
                                 mode = CHAR;
                             }
-                            continue parse;
                         }
-                        default: {
+                        default -> {
                             throw new ParseException(input, row, col, "unexpected hex character: " + c);
                         }
                     }
                 }
-                case SPACE: {
+                case SPACE -> {
                     switch (c) {
-                        case '\t':
-                        case '\r':
-                        case ' ': {
-                            continue parse;
-                        }
-                        case '\n': {
-                            buffer.append(c);
-                            continue parse;
-                        }
-                        case '\\': {
-                            mode = ESCAPE;
-                            continue parse;
-                        }
-                        case '\"': {
-                            throw new ParseException(input, row, col, "unescaped '\"'");
-                        }
-                        default: {
+                        case '\t', '\r', ' ' -> {}
+                        case '\n' -> buffer.append(c);
+                        case '\\' -> mode = ESCAPE;
+                        case '\"' -> throw new ParseException(input, row, col, "unescaped '\"'");
+                        default -> {
                             buffer.append(c);
                             mode = CHAR;
-                            continue parse;
                         }
-
                     }
                 }
-                default: {
-                    throw new ParseException(input, row, col, "unknown");
-                }
+                default -> throw new ParseException(input, row, col, "unknown");
             }
         }
         if (mode == CHAR) return buffer.toString();

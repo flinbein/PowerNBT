@@ -13,6 +13,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 
 /**
@@ -128,22 +129,14 @@ public class ReflectionUtils {
         put("long",long.class);
         put("float",float.class);
         put("double",double.class);
-        put("boolean[]",boolean[].class);
-        put("byte[]",byte[].class);
-        put("char[]",char[].class);
-        put("short[]",short[].class);
-        put("int[]",int[].class);
-        put("long[]",long[].class);
-        put("float[]",float[].class);
-        put("double[]",double[].class);
     }};
 
     private static Class<?> classByName(String pattern) throws ClassNotFoundException {
+        if (pattern.endsWith("[]")) return classByName(pattern.substring(0, pattern.length() - 2)).arrayType();
         if (classPatterns.containsKey(pattern)) return classPatterns.get(pattern);
         for(Map.Entry<String,String> e: replacements.entrySet()) {
             pattern = pattern.replace("{"+e.getKey()+"}", e.getValue());
         }
-        if (pattern.endsWith("[]")) pattern = "[L"+pattern.substring(0,pattern.length()-2)+";";
         return classLoader.loadClass(pattern);
     }
 
@@ -174,7 +167,7 @@ public class ReflectionUtils {
             return getRealClass.isInstance(object);
         }
 
-        private static Class<?>[] getParamClasses(Object[] types) {
+        private static Class<?> [] getParamClasses(Object[] types) {
             Class<?>[] classes = new Class[types.length];
             int i = 0;
             for (Object e : types) classes[i++] = getParamClass(e);
@@ -182,14 +175,12 @@ public class ReflectionUtils {
         }
 
 
+        @Contract("null -> null")
         private static Class<?> getParamClass(Object type) {
+            if (type == null) return null;
+            if (type instanceof RefClass rc) return rc.getRealClass();
+            if (type instanceof String s) return getRefClass(s).getRealClass();
             if (type instanceof Class c) return c;
-            else if (type instanceof RefClass rc) return rc.getRealClass();
-            else if (type instanceof String s) {
-                var rc = getRefClass(s);
-                if (rc != null) return rc.getRealClass();
-                throw new RuntimeException("class not found: " + s);
-            }
             throw new IllegalArgumentException(type + " is not a Class or RefClass");
         }
 
@@ -390,7 +381,7 @@ public class ReflectionUtils {
         /**
          * find method by return value
          *
-         * @param patterns type of returned value, see {@link #getRefClass(String)}
+         * @param patterns type of returned value, see {@link #getRefClass(String...)}
          * @return RefMethod
          * @throws RuntimeException if method not found
          */
@@ -478,7 +469,7 @@ public class ReflectionUtils {
         /**
          * find field by type
          *
-         * @param pattern field type, see {@link #getRefClass(String)}
+         * @param pattern field type, see {@link #getRefClass(String...)}
          * @return RefField
          * @throws RuntimeException if field not found
          */
@@ -771,27 +762,71 @@ public class ReflectionUtils {
                     + ")";
         }
 
-        @Contract("_ -> new")
         public static @NotNull RefMethod<?> parse(@NotNull String string){
-            try {
-                var args = string.split("[(), ]+");
-                Class<?> clazz = Class.forName(args[0]);
-                String methodName = args[1];
-                var paramTypes = Arrays.stream(args, 2, args.length).map(s -> {
-                    try {
-                        return Class.forName(s);
-                    } catch (ClassNotFoundException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).toArray(Class[]::new);
+            var args = string.split("[|]+");
+            Error lastError = null;
+            for (String arg : args) {
                 try {
-                    return new RefMethod(clazz.getDeclaredMethod(methodName, paramTypes));
-                } catch (NoSuchMethodException e) {
-                    return new RefMethod(clazz.getMethod(methodName, paramTypes));
+                    return parse0(arg);
+                } catch (Error error) {
+                    lastError = error;
                 }
-            } catch (ClassNotFoundException | NoSuchMethodException e) {
-                throw new RuntimeException(e);
             }
+            throw new RuntimeException("parse RefMethod error: "+string, lastError);
+
+
+        }
+
+        // {cb}.entity.CraftEntity public !static final testName*(String, Number): net.minecraft.nbt.NBTTagCompound
+        public static @NotNull RefMethod<?> parse0(@NotNull String string){
+            var split1 = string.strip().split("\\s+", 2);
+            RefClass<?> refClass = ReflectionUtils.getRefClass(split1[0]); // {cb}.entity.CraftEntity
+            String methodDescription = split1[1]; // public !static final testName*(String, Number): net.minecraft.nbt.NBTTagCompound
+            var split2 = methodDescription.strip().split("[:]+", 2);
+            String methodAttrsAndNameAndArgs = split2[0]; // // public !static final testName*(String, Number) | public !static final testName*
+            String methodReturnTypePattern = split2.length > 1 ? split2[1] : null; // net.minecraft.nbt.NBTTagCompound | null
+
+            String[] split3 = methodAttrsAndNameAndArgs.split("[(]", 2);
+            String methodAttrsAndNamePattern = split3[0].replaceAll("[:()]+",""); // public !static final testName*
+            String methodParamsPattern = split3.length >= 2 ? split3[1].replaceAll("[:()]+","") : null; // String, Number) | null
+
+            String name = split3[split3.length - 1]; // testName*
+            String[] methodAttrs = Arrays.copyOfRange(split3, 0, split3.length - 1); // public !static final
+
+            String[] methodParams = methodParamsPattern == null ? null : methodParamsPattern.replace(")", "").strip().split("[(), ]+");
+
+            var condition = new MethodCondition();
+
+            for (String methodAttr : methodAttrs) {
+                condition = switch (methodAttr) {
+                    case "abstract", "!abstract" -> condition.withAbstract(methodAttr.equals("abstract"));
+                    case "final", "!final" -> condition.withFinal(methodAttr.equals("final"));
+                    case "static", "!static" -> condition.withStatic(methodAttr.equals("static"));
+                    default -> throw new RuntimeException("Wrong method attribute " + methodAttr + ": " + string);
+                };
+            }
+
+            if (!name.equals("*")) {
+                if (name.startsWith("*")) {
+                    condition = condition.withPrefix(name.substring(1));
+                } else if (name.endsWith("*")) {
+                    condition = condition.withSuffix(name.substring(0, name.length() - 1));
+                } else if (name.contains("*")) {
+                    var index = name.indexOf("*");
+                    condition = condition.withPrefix(name.substring(0, index-1));
+                    condition = condition.withSuffix(name.substring(index));
+                }
+            }
+
+            if (methodReturnTypePattern != null && !methodReturnTypePattern.isEmpty() && !methodReturnTypePattern.equals("*")){
+                condition.withReturnType(methodReturnTypePattern);
+            }
+
+            if (methodParams != null) {
+                condition = condition.withTypes((Object[]) methodParams);
+            }
+
+            return refClass.findMethod(condition);
         }
     }
 
@@ -832,10 +867,16 @@ public class ReflectionUtils {
                 throw new RuntimeException(e);
             }
         }
+
+        public static @NotNull RefConstructor<?> parse(@NotNull String string){
+            var args = string.split("[(), ]+");
+            String[] argTypes = Arrays.stream(args, 1, args.length).toArray(String[]::new);
+            return ReflectionUtils.getRefClass(args[0]).getConstructor(/*...*/ (Object[]) argTypes);
+        }
     }
 
     public static class RefField<T> {
-        private Field field;
+        private final Field field;
 
         /**
          * @return passed field
@@ -847,9 +888,8 @@ public class ReflectionUtils {
         /**
          * @return owner class of field
          */
-        @SuppressWarnings("unchecked")
-        public RefClass getRefClass(){
-            return new RefClass(field.getDeclaringClass());
+        public RefClass<?> getRefClass(){
+            return new RefClass<>(field.getDeclaringClass());
         }
 
         /**
@@ -859,6 +899,7 @@ public class ReflectionUtils {
         public RefClass<T> getFieldRefClass(){
             return new RefClass(field.getType());
         }
+
         public RefField (Field field) {
             this.field = field;
             field.setAccessible(true);
@@ -902,6 +943,19 @@ public class ReflectionUtils {
                     throw new RuntimeException(e);
                 }
             }
+        }
+
+        //
+        public static @NotNull RefField<?> parse(@NotNull String string){
+            var args = string.split("[ ]+",2);
+            RefClass<?> refClass = ReflectionUtils.getRefClass(args[0]);
+            var nameAndType = args[1];
+            if (nameAndType.startsWith("*:")) {
+                return refClass.findField(nameAndType.substring(2).strip());
+            } else {
+                return refClass.getField(nameAndType);
+            }
+
         }
     }
 

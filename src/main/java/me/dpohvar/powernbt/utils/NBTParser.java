@@ -4,6 +4,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.api.NBTList;
+import me.dpohvar.powernbt.api.NBTManager;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -14,7 +15,6 @@ import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
 import static java.lang.Short.parseShort;
-import static me.dpohvar.powernbt.utils.NBTUtils.nbtUtils;
 
 public class NBTParser {
     private static final Pattern b = Pattern.compile("\\[[-+\\d|,\\s]+\\]");
@@ -279,25 +279,25 @@ public class NBTParser {
 
         public Object parse() throws RuntimeException {
             if (patDouble.matcher(value).matches()) {
-                return nbtUtils.createTagDouble(parseDouble(value.substring(0, value.length() - 1)));
+                return NBTManager.getInstance().getTagOfValue(parseDouble(value.substring(0, value.length() - 1)));
             } else if (patFloat.matcher(value).matches()) {
-                return nbtUtils.createTagFloat(parseFloat(value.substring(0, value.length() - 1)));
+                return NBTManager.getInstance().getTagOfValue(parseFloat(value.substring(0, value.length() - 1)));
             } else if (patByte.matcher(value).matches()) {
-                return nbtUtils.createTagByte(parseByte(value.substring(0, value.length() - 1)));
+                return NBTManager.getInstance().getTagOfValue(parseByte(value.substring(0, value.length() - 1)));
             } else if (patLong.matcher(value).matches()) {
-                return nbtUtils.createTagLong(parseLong(value.substring(0, value.length() - 1)));
+                return NBTManager.getInstance().getTagOfValue(parseLong(value.substring(0, value.length() - 1)));
             } else if (patShort.matcher(value).matches()) {
-                return nbtUtils.createTagShort(parseShort(value.substring(0, value.length() - 1)));
+                return NBTManager.getInstance().getTagOfValue(parseShort(value.substring(0, value.length() - 1)));
             } else if (patInt.matcher(value).matches()) {
-                return nbtUtils.createTagInt(parseInt(value.substring(0, value.length() - 1)));
+                return NBTManager.getInstance().getTagOfValue(parseInt(value.substring(0, value.length() - 1)));
             } else if (patIntDef.matcher(value).matches()) {
-                return nbtUtils.createTagInt(parseInt(value));
+                return NBTManager.getInstance().getTagOfValue(parseInt(value));
             } else if (patDoubleDef.matcher(value).matches()) {
-                return nbtUtils.createTagDouble(parseDouble(value));
+                return NBTManager.getInstance().getTagOfValue(parseDouble(value));
             } else if (value.equalsIgnoreCase("true")) {
-                return nbtUtils.createTagByte((byte)1);
+                return NBTManager.getInstance().getTagOfValue((byte)1);
             } else if (value.equalsIgnoreCase("false")) {
-                return nbtUtils.createTagByte((byte)0);
+                return NBTManager.getInstance().getTagOfValue(((byte)0);
             } else if(this.value.startsWith("[") && this.value.endsWith("]i")) {
                 String token = value.substring(1, this.value.length() - 2);
                 List<Integer> tempResult = new ArrayList<Integer>();

@@ -1,8 +1,9 @@
 package me.dpohvar.powernbt.api;
 
-import java.util.*;
+import org.apache.commons.lang.ArrayUtils;
 
-import static me.dpohvar.powernbt.utils.NBTUtils.nbtUtils;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 /**
  * Represent net.minecraft.server.NBTTagList.<br>
@@ -38,10 +39,12 @@ import static me.dpohvar.powernbt.utils.NBTUtils.nbtUtils;
  * {@link me.dpohvar.powernbt.api.NBTList} can not contain empty values (null).<br>
  * {@link me.dpohvar.powernbt.api.NBTList} can not contain cross-references.
  */
-public class NBTList implements List<Object> {
+public class NBTList implements List<Object>, NBTBox {
 
     private final List<Object> handleList;
     private final Object handle;
+    private static final NBTBridge nbtBridge = NBTBridge.getInstance();
+    private static final NBTManager nbt = NBTManager.getInstance();
 
     /**
      * Create a new instance of NBTList by NBTTagList.<br>
@@ -63,13 +66,13 @@ public class NBTList implements List<Object> {
      */
     public static NBTList forNBTCopy(Object tag){
         if (tag==null) return null;
-        return new NBTList(nbtUtils.cloneTag(tag));
+        return new NBTList(nbtBridge.cloneTag(tag));
     }
 
     NBTList(Object tag) {
-        assert nbtUtils.getTagType(tag) == 9;
+        assert nbtBridge.getTagType(tag) == 9;
         this.handle = tag;
-        this.handleList = nbtUtils.getHandleList(tag);
+        this.handleList = nbtBridge.getNbtInnerList(tag);
     }
 
     /**
@@ -79,7 +82,7 @@ public class NBTList implements List<Object> {
      * @param collection collection
      */
     public NBTList(Collection<?> collection) {
-        this(nbtUtils.createTagList());
+        this(nbtBridge.createNBTTagList());
         this.addAll(collection);
     }
 
@@ -89,7 +92,7 @@ public class NBTList implements List<Object> {
      * @param array array
      */
     public NBTList(Object[] array) {
-        this(nbtUtils.createTagList());
+        this(nbtBridge.createNBTTagList());
         this.addAll(Arrays.asList(array));
     }
 
@@ -97,7 +100,7 @@ public class NBTList implements List<Object> {
      * Create a new empty NBTList
      */
     public NBTList() {
-        this(nbtUtils.createTagList());
+        this(nbtBridge.createNBTTagList());
     }
 
     @Override
@@ -129,7 +132,7 @@ public class NBTList implements List<Object> {
      * @return NBTTagList
      */
     public Object getHandleCopy(){
-        return nbtUtils.cloneTag(handle);
+        return nbtBridge.cloneTag(handle);
     }
 
     /**
@@ -139,22 +142,140 @@ public class NBTList implements List<Object> {
      */
     public byte getType(){
         if (size()==0) return 0;
-        else return nbtUtils.getNBTTagListType(handle);
+        else return nbtBridge.getNBTTagListType(handle);
     }
 
     private void setType(byte type){
-        nbtUtils.setNBTTagListType(handle, type);
+        nbtBridge.setNBTTagListType(handle, type);
     }
 
-    private Object convertToCurrentType(Object javaObject){
+    private Object convertToCurrentTypeTag(Object value){
         byte type = getType();
         if (type == 0) {
-            Object tag = nbtUtils.createTag(javaObject);
-            type = nbtUtils.getTagType(tag);
+            Object tag;
+            if (value instanceof Map map) tag = new NBTCompound(map).getHandle();
+            else if (value instanceof Collection col) tag = new NBTList(col).getHandle();
+            else if (value instanceof Object[] col) tag = new NBTList(col).getHandle();
+            else tag = nbtBridge.getTagValueByPrimitive(value);
+            type = nbtBridge.getTagType(tag);
             setType(type);
             return tag;
         }
-        else return nbtUtils.createTag(javaObject, type);
+        else return createTagOfType(type, value); // CREATE TAG AND CONVERT FOR TYPE
+    }
+
+    private static Object createTagOfType(byte type, Object value) {
+        return switch (type) {
+            case 0 /*end*/ -> null;
+            case 1 /*byte*/ -> {
+                if (value instanceof Byte current) yield current;
+                if (value == null) yield (byte) 0;
+                if (value instanceof Boolean b) yield (byte) (b ? 1 : 0);
+                if (value instanceof Number n) yield n.byteValue();
+                if (value instanceof CharSequence) yield Byte.valueOf(value.toString());
+                if (value instanceof Character n) yield (byte) (char) n;
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 2 /*short*/ -> {
+                if (value instanceof Short current) yield current;
+                if (value == null) yield (short) 0;
+                if (value instanceof Boolean b) yield (short) (b ? 1 : 0);
+                if (value instanceof Number n) yield n.shortValue();
+                if (value instanceof CharSequence) yield Short.valueOf(value.toString());
+                if (value instanceof Character n) yield (short) (char) n;
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 3 /*int*/ -> {
+                if (value instanceof Integer current) yield current;
+                if (value == null) yield (int) 0;
+                if (value instanceof Boolean b) yield (int) (b ? 1 : 0);
+                if (value instanceof Number n) yield n.intValue();
+                if (value instanceof CharSequence) yield Integer.valueOf(value.toString());
+                if (value instanceof Character n) yield (int) (char) n;
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 4 /*long*/ -> {
+                if (value instanceof Long current) yield current;
+                if (value == null) yield (long) 0;
+                if (value instanceof Boolean b) yield (long) (b ? 1 : 0);
+                if (value instanceof Number n) yield n.longValue();
+                if (value instanceof CharSequence) yield Long.valueOf(value.toString());
+                if (value instanceof Character n) yield (long) (char) n;
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 5 /*float*/ -> {
+                if (value instanceof Float current) yield current;
+                if (value == null) yield (float) 0;
+                if (value instanceof Boolean b) yield (float) (b ? 1 : 0);
+                if (value instanceof Number n) yield n.floatValue();
+                if (value instanceof CharSequence) yield Float.valueOf(value.toString());
+                if (value instanceof Character n) yield (float) (char) n;
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 6 /*double*/ -> {
+                if (value instanceof Double current) yield current;
+                if (value == null) yield (double) 0;
+                if (value instanceof Boolean b) yield (double) (b ? 1 : 0);
+                if (value instanceof Number n) yield n.doubleValue();
+                if (value instanceof CharSequence) yield Double.valueOf(value.toString());
+                if (value instanceof Character n) yield (double) (char) n;
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 7 /*byte[]*/ -> {
+                if (value instanceof byte[] current) yield current;
+                if (value == null) yield new byte[0];
+                Object[] arr = convertToObjectArrayOrNull(value);
+                if (arr != null) yield ArrayUtils.toPrimitive(Arrays.stream(arr).map(val -> (Byte) createTagOfType((byte) 1, val)).toArray(Byte[]::new));
+                if (value instanceof CharSequence cs) yield cs.toString().getBytes(StandardCharsets.UTF_8);
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 8 /*String*/ -> {
+                if (value instanceof String s) yield s;
+                if (value instanceof CharSequence) yield value.toString();
+                if (value instanceof char[] c) yield String.copyValueOf(c);
+                if (value instanceof byte[] c) yield new String(c, StandardCharsets.UTF_8);
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 9 /*List*/ -> {
+                if (value instanceof CharSequence s) yield Arrays.stream(s.toString().split("")).toList();
+                if (value instanceof Collection a) yield a;
+                Object[] arr = convertToObjectArrayOrNull(value);
+                if (arr != null) yield Arrays.stream(arr).toList();
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 10 /*Compound*/ -> {
+                if (value instanceof Map s) yield s;
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 11 /*int[]*/ -> {
+                if (value instanceof int[] current) yield current;
+                if (value == null) yield new int[0];
+                Object[] arr = convertToObjectArrayOrNull(value);
+                if (arr != null) yield ArrayUtils.toPrimitive(Arrays.stream(arr).map(val -> (Integer) createTagOfType((byte) 3, val)).toArray(Integer[]::new));
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 12 /*long[]*/ -> {
+                if (value instanceof long[] current) yield current;
+                if (value == null) yield new long[0];
+                Object[] arr = convertToObjectArrayOrNull(value);
+                if (arr != null) yield ArrayUtils.toPrimitive(Arrays.stream(arr).map(val -> (Long) createTagOfType((byte) 4, val)).toArray(Long[]::new));
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            default -> throw new RuntimeException("unknown tag type:"+type);
+        };
+    }
+
+    private static Object[] convertToObjectArrayOrNull(Object someArray){
+        if (someArray instanceof Object[] res) return res;
+        if (someArray instanceof boolean[] a) return ArrayUtils.toObject(a);
+        if (someArray instanceof byte[] a) return ArrayUtils.toObject(a);
+        if (someArray instanceof short[] a) return ArrayUtils.toObject(a);
+        if (someArray instanceof int[] a) return ArrayUtils.toObject(a);
+        if (someArray instanceof long[] a) return ArrayUtils.toObject(a);
+        if (someArray instanceof float[] a) return ArrayUtils.toObject(a);
+        if (someArray instanceof char[] a) return ArrayUtils.toObject(a);
+        if (someArray instanceof Collection a) return a.toArray();
+        return null;
     }
 
     /**
@@ -176,13 +297,13 @@ public class NBTList implements List<Object> {
     public <T extends Collection<Object>> T toCollection(T collection) {
         collection.clear();
         for (Object nbtTag: handleList) {
-            byte type = nbtUtils.getTagType(nbtTag);
+            byte type = nbtBridge.getTagType(nbtTag);
             if (type==9) {
-                collection.add(forNBT(nbtTag).toList(new ArrayList<Object>()));
+                collection.add(forNBT(nbtTag).toList(new ArrayList<>()));
             } else if (type==10) {
-                collection.add(NBTCompound.forNBT(nbtTag).toMap(new HashMap<String, Object>()));
+                collection.add(NBTCompound.forNBT(nbtTag).toMap(new HashMap<>()));
             } else {
-                collection.add(nbtUtils.getValue(nbtTag));
+                collection.add(nbt.getValueOfTag(nbtTag));
             }
         }
         return collection;
@@ -203,7 +324,7 @@ public class NBTList implements List<Object> {
     @Override
     @SuppressWarnings("CloneDoesntCallSuperClone, CloneDoesntDeclareCloneNotSupportedException")
     public NBTList clone(){
-        return new NBTList(nbtUtils.cloneTag(handle));
+        return new NBTList(nbtBridge.cloneTag(handle));
     }
 
     @Override
@@ -217,8 +338,13 @@ public class NBTList implements List<Object> {
     }
 
     @Override
-    public boolean contains(Object o) {
-        return handleList.contains(nbtUtils.createTag(o));
+    public boolean contains(Object value) {
+        Object tag;
+        if (value instanceof Map map) tag = new NBTCompound(map).getHandle();
+        else if (value instanceof Collection col) tag = new NBTList(col).getHandle();
+        else if (value instanceof Object[] col) tag = new NBTList(col).getHandle();
+        else tag = nbtBridge.getTagValueByPrimitive(value);
+        return handleList.contains(tag);
     }
 
     @Override
@@ -254,19 +380,24 @@ public class NBTList implements List<Object> {
      */
     @Override
     public boolean add(Object o) {
-        Object tag = convertToCurrentType(o);
+        Object tag = convertToCurrentTypeTag(o);
         return handleList.add(tag);
     }
 
     @Override
-    public boolean remove(Object o) {
-        return handleList.remove(nbtUtils.createTag(o));
+    public boolean remove(Object value) {
+        Object tag;
+        if (value instanceof Map map) tag = new NBTCompound(map).getHandle();
+        else if (value instanceof Collection col) tag = new NBTList(col).getHandle();
+        else if (value instanceof Object[] col) tag = new NBTList(col).getHandle();
+        else tag = nbtBridge.getTagValueByPrimitive(value);
+        return handleList.remove(tag);
     }
 
     @Override
-    public boolean containsAll(@SuppressWarnings("NullableProblems") Collection<?> c) {
-        for (Object value : c) {
-            if (!handleList.contains(nbtUtils.createTag(value))) return false;
+    public boolean containsAll(@SuppressWarnings("NullableProblems") Collection<?> col) {
+        for (Object value : col) {
+            if (!contains(value)) return false;
         }
         return true;
     }
@@ -275,7 +406,7 @@ public class NBTList implements List<Object> {
     public boolean addAll(@SuppressWarnings("NullableProblems") Collection<?> c) {
         boolean modified = false;
         for (Object t: c) {
-            Object tag = convertToCurrentType(t);
+            Object tag = convertToCurrentTypeTag(t);
             modified |= handleList.add(tag);
         }
         return modified;
@@ -286,7 +417,7 @@ public class NBTList implements List<Object> {
         boolean modified = false;
         for (Object t: c) {
             if (t == null) continue;
-            Object tag = convertToCurrentType(t);
+            Object tag = convertToCurrentTypeTag(t);
             modified = true;
             handleList.add(index++, tag);
         }
@@ -296,8 +427,13 @@ public class NBTList implements List<Object> {
     @Override
     public boolean removeAll(@SuppressWarnings("NullableProblems") Collection<?> c) {
         boolean modified = false;
-        for (Object t: c) {
-            modified |= handleList.remove(nbtUtils.createTag(t));
+        for (Object value: c) {
+            Object tag;
+            if (value instanceof Map map) tag = new NBTCompound(map).getHandle();
+            else if (value instanceof Collection col) tag = new NBTList(col).getHandle();
+            else if (value instanceof Object[] col) tag = new NBTList(col).getHandle();
+            else tag = nbtBridge.getTagValueByPrimitive(value);
+            modified |= handleList.remove(tag);
         }
         return modified;
     }
@@ -305,7 +441,7 @@ public class NBTList implements List<Object> {
     @Override
     public boolean retainAll(@SuppressWarnings("NullableProblems") Collection<?> c) {
         boolean modified = false;
-        Iterator itr = iterator();
+        Iterator<Object> itr = iterator();
         while (itr.hasNext()) {
             if (!c.contains(itr.next())) {
                 itr.remove();
@@ -322,37 +458,48 @@ public class NBTList implements List<Object> {
 
     @Override
     public Object get(int index) {
-        return nbtUtils.getValue(handleList.get(index));
+        Object tag = handleList.get(index);
+        return nbt.getValueOfTag(tag);
     }
 
     @Override
     public Object set(int index, Object element) {
         if (element == null) return remove(index);
-        Object tag = convertToCurrentType(element);
+        Object tag = convertToCurrentTypeTag(element);
         Object oldTag = handleList.set(index, tag);
-        return nbtUtils.getValue(oldTag);
+        return nbt.getValueOfTag(oldTag);
     }
 
     @Override
     public void add(int index, Object element) {
         if (element == null) return;
-        Object tag = convertToCurrentType(element);
+        Object tag = convertToCurrentTypeTag(element);
         handleList.add(index, tag);
     }
 
     @Override
     public Object remove(int index) {
-        return nbtUtils.getValue(handleList.remove(index));
+        return nbt.getValueOfTag(handleList.remove(index));
     }
 
     @Override
-    public int indexOf(Object o) {
-        return handleList.indexOf(nbtUtils.createTag(o));
+    public int indexOf(Object value) {
+        Object tag;
+        if (value instanceof Map map) tag = new NBTCompound(map).getHandle();
+        else if (value instanceof Collection col) tag = new NBTList(col).getHandle();
+        else if (value instanceof Object[] col) tag = new NBTList(col).getHandle();
+        else tag = nbtBridge.getTagValueByPrimitive(value);
+        return handleList.indexOf(tag);
     }
 
     @Override
-    public int lastIndexOf(Object o) {
-        return handleList.lastIndexOf(nbtUtils.createTag(o));
+    public int lastIndexOf(Object value) {
+        Object tag;
+        if (value instanceof Map map) tag = new NBTCompound(map).getHandle();
+        else if (value instanceof Collection col) tag = new NBTList(col).getHandle();
+        else if (value instanceof Object[] col) tag = new NBTList(col).getHandle();
+        else tag = nbtBridge.getTagValueByPrimitive(value);
+        return handleList.lastIndexOf(tag);
     }
 
     @Override
@@ -389,7 +536,7 @@ public class NBTList implements List<Object> {
 
         @Override
         public Object next() {
-            return nbtUtils.getValue(iterator.next());
+            return nbt.getValueOfTag(iterator.next());
         }
 
         @Override
@@ -399,7 +546,7 @@ public class NBTList implements List<Object> {
 
         @Override
         public Object previous() {
-            return nbtUtils.getValue(iterator.previous());
+            return nbt.getValueOfTag(iterator.previous());
         }
 
         @Override
@@ -422,19 +569,19 @@ public class NBTList implements List<Object> {
             if (o==null) {
                 remove();
             } else {
-                Object tag = convertToCurrentType(o);
+                Object tag = convertToCurrentTypeTag(o);
                 iterator.set(tag);
             }
         }
 
         @Override
         public void add(Object o) {
-            Object tag = convertToCurrentType(o);
+            Object tag = convertToCurrentTypeTag(o);
             iterator.add(tag);
         }
     }
 
-    public class NBTSubList extends NBTList {
+    public static class NBTSubList extends NBTList {
         private final NBTList list;
         private final int offset;
         private int size;

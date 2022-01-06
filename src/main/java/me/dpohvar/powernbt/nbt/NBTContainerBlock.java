@@ -1,11 +1,13 @@
 package me.dpohvar.powernbt.nbt;
 
+import me.dpohvar.powernbt.api.NBTCompound;
+import me.dpohvar.powernbt.api.NBTManager;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.TileState;
 
 import java.util.Arrays;
 import java.util.List;
-
-import static me.dpohvar.powernbt.utils.NBTBlockUtils.nbtBlockUtils;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
@@ -31,22 +33,23 @@ public class NBTContainerBlock extends NBTContainer<Block> {
         NBTTagCompound tag = readTag();
         if (tag!=null) {
             List<String> ignores = plugin.getConfig().getStringList("ignore_get.block");
-            if(ignores!=null) for(String s:ignores) tag.remove(s);
+            for (String s:ignores) tag.remove(s);
         }
         return tag;
     }
 
     public NBTTagCompound readTag() {
-        NBTTagCompound base = new NBTTagCompound();
-        nbtBlockUtils.readTag(block, base.getHandle());
-        return base;
+        NBTCompound compound = NBTManager.getInstance().read(block);
+        return new NBTTagCompound(false, compound.getHandle());
     }
 
     @Override
     public void writeTag(NBTBase base) {
-        if (!(base instanceof NBTTagCompound)) return;
-        nbtBlockUtils.setTag(block,base.getHandle());
-        nbtBlockUtils.update(block);
+        BlockState state = block.getState();
+        if (state instanceof TileState tile) {
+            NBTManager.getInstance().write(tile, NBTCompound.forNBT(base.getHandle()));
+            state.update();
+        }
     }
 
     @Override
@@ -54,7 +57,7 @@ public class NBTContainerBlock extends NBTContainer<Block> {
         if (!(base instanceof NBTTagCompound)) return;
         NBTTagCompound tag = (NBTTagCompound) base.clone();
         List<String> ignores = plugin.getConfig().getStringList("ignore_set.block");
-        if(ignores!=null) for(String s:ignores) tag.remove(s);
+        for (String s:ignores) tag.remove(s);
         NBTTagCompound original = readTag();
         if(tag.getInt("x")==null)tag.put("x",original.get("x"));
         if(tag.getInt("y")==null)tag.put("y",original.get("y"));

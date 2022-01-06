@@ -1,14 +1,13 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.utils.NBTUtils;
+import me.dpohvar.powernbt.api.NBTCompound;
+import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.utils.ReflectionUtils;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
-
-import static me.dpohvar.powernbt.utils.EntityUtils.entityUtils;
 
 public class NBTContainerEntity extends NBTContainer<Entity> {
 
@@ -34,12 +33,11 @@ public class NBTContainerEntity extends NBTContainer<Entity> {
 
     @Override
     public NBTTagCompound readTag() {
-        NBTTagCompound tag = new NBTTagCompound();
-        entityUtils.readEntity(entity, tag.getHandle());
+        NBTTagCompound tag = new NBTTagCompound(false, NBTManager.getInstance().read(entity).getHandle());
         if (ReflectionUtils.isForge()) {
-            Object t = entityUtils.getForgeData(entity);
-            if (t != null) {
-                NBTTagCompound forgeData = new NBTTagCompound(false,t);
+            NBTCompound nbtCompound = NBTManager.getInstance().readForgeData(entity);
+            if (nbtCompound != null) {
+                NBTTagCompound forgeData = new NBTTagCompound(false,nbtCompound.getHandle());
                 tag.put("ForgeData", forgeData);
             } else {
                 tag.put("ForgeData", new NBTTagCompound());
@@ -50,17 +48,11 @@ public class NBTContainerEntity extends NBTContainer<Entity> {
 
     @Override
     public void writeTag(NBTBase base) {
-        entityUtils.writeEntity(entity, base.getHandle());
-        if (ReflectionUtils.isForge()){
-            Object forgeData = ((NBTTagCompound)base).get("ForgeData");
-            if (forgeData instanceof NBTTagCompound) {
-                Object data = base.getHandle();
-                entityUtils.writeEntity(entity, NBTUtils.nbtUtils.cloneTag(data));
-            } else {
-                entityUtils.setForgeData(entity, NBTUtils.nbtUtils.createTagCompound());
-            }
+        NBTManager.getInstance().write(entity, NBTCompound.forNBT(base.getHandle()));
+        if (ReflectionUtils.isForge() && base instanceof NBTTagCompound nbtTagCompound){
+            NBTBase forgeData = nbtTagCompound.get("ForgeData");
+            NBTManager.getInstance().writeForgeData(entity, NBTCompound.forNBT(forgeData.getHandle()));
         }
-
     }
 
     @Override

@@ -1,11 +1,11 @@
 package me.dpohvar.powernbt.nbt;
 
-import org.bukkit.Bukkit;
+import me.dpohvar.powernbt.api.NBTCompound;
+import me.dpohvar.powernbt.api.NBTManager;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
@@ -23,48 +23,32 @@ public class NBTContainerFileGZip extends NBTContainer<File> {
 
     @Override
     public List<String> getTypes() {
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     @Override
-    public NBTTagCompound readTag() {
-        FileInputStream input = null;
+    public NBTBase readTag() {
         try {
-            input = new FileInputStream(file);
-            return NBTTagCompound.readGZip(input);
-        } catch (FileNotFoundException e) {
-            return null;
+            NBTCompound nbtCompound = NBTManager.getInstance().readCompressed(file);
+            return new NBTTagCompound(false, nbtCompound.getHandle());
         } catch (Exception e) {
-            throw new RuntimeException("IO error", e);
-        } finally {
-            if (input != null) try {
-                input.close();
-            } catch (Exception e) {
-                Bukkit.getLogger().log(Level.ALL, "can not close NBT file " + file, e);
-            }
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void writeTag(NBTBase base) {
-        FileOutputStream output = null;
+    public void writeTag(NBTBase data) {
         try {
             if (!file.exists()) {
                 new File(file.getParent()).mkdirs();
                 file.createNewFile();
             }
-            output = new FileOutputStream(file);
-            ((NBTTagCompound)base).writeGZip(output);
+            NBTCompound nbtCompound = NBTCompound.forNBT(data.getHandle());
+            NBTManager.getInstance().writeCompressed(file, nbtCompound);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(plugin.translate("error_nofile", file.getName()), e);
         } catch (Exception e) {
-            throw new RuntimeException(plugin.translate("IO error", e));
-        } finally {
-            if (output != null) try {
-                output.close();
-            } catch (IOException e) {
-                Bukkit.getLogger().log(Level.ALL, "can not close NBT file "+file, e);
-            }
+            throw new RuntimeException("IO error", e);
         }
     }
 

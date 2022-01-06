@@ -72,8 +72,8 @@ public class Argument {
         if (container == null) {
             objectFuture = object;
             queryFuture = param;
-        } else if (container instanceof NBTContainerBase) {
-            NBTContainerBase c = (NBTContainerBase) container;
+        } else if (container instanceof NBTContainerValue) {
+            NBTContainerValue c = (NBTContainerValue) container;
             byte t = c.getObject().getTypeId();
             if (t == 9 || t == 10) query = NBTQuery.fromString(param);
             else query = emptyQuery;
@@ -158,7 +158,7 @@ public class Argument {
             return new NBTContainerFile(new File(plugin.getNBTFilesFolder(), tokenText + ".nbt"));
         }
         if (colors.containsKey(object)) {
-            return new NBTContainerBase(new NBTTagInt(colors.get(object)));
+            return new NBTContainerValue(new NBTTagInt(colors.get(object)));
         }
         if (object.startsWith("file:") && object.length() > 5) {
             String tokenText = object.substring(5);
@@ -210,22 +210,25 @@ public class Argument {
             }
         }
         if (object.equals("compound") || object.equals("com")) {
-            return new NBTContainerBase(new NBTTagCompound());
+            return new NBTContainerValue(new NBTTagCompound());
         }
         if (object.equals("list")) {
-            return new NBTContainerBase(new NBTTagList());
+            return new NBTContainerValue(new NBTTagList());
         }
         if (object.equals("on") || object.equals("true")) {
-            return new NBTContainerBase(new NBTTagByte((byte) 1));
+            return new NBTContainerValue(new NBTTagByte((byte) 1));
         }
         if (object.equals("off") || object.equals("false")) {
-            return new NBTContainerBase(new NBTTagByte((byte) 0));
+            return new NBTContainerValue(new NBTTagByte((byte) 0));
         }
         if (object.equals("int[]")) {
-            return new NBTContainerBase(new NBTTagIntArray());
+            return new NBTContainerValue(new NBTTagIntArray());
+        }
+        if (object.equals("long[]")) {
+            return new NBTContainerValue(new NBTTagLongArray());
         }
         if (object.equals("byte[]")) {
-            return new NBTContainerBase(new NBTTagByteArray());
+            return new NBTContainerValue(new NBTTagByteArray());
         }
         if (object.matches("(-?[0-9]+):(-?[0-9]+):(-?[0-9]+)(:.*)?")) {
             String[] t = object.split(":");
@@ -290,42 +293,45 @@ public class Argument {
             String s = StringParser.parse(object.substring(1, object.length() - 1));
             NBTType type = NBTType.STRING;
             if (param != null) type = NBTType.fromString(param);
-            return new NBTContainerBase(type.parse(s));
+            return new NBTContainerValue(type.parse(s));
         }
         if (object.matches("#-?[0-9a-fA-F]+")) {
             Long l = Long.parseLong(object.substring(1), 16);
             String s = l.toString();
             NBTType type = NBTType.INT;
             if (param != null) type = NBTType.fromString(param);
-            return new NBTContainerBase(type.parse(s));
+            return new NBTContainerValue(type.parse(s));
         }
         if (object.matches("b[0-1]+")) {
             if (param == null) return null;
             Long l = Long.parseLong(object.substring(1), 2);
             String s = l.toString();
             NBTType type = NBTType.fromString(param);
-            return new NBTContainerBase(type.parse(s));
+            return new NBTContainerValue(type.parse(s));
         }
         if (object.matches("-?[0-9]*")) {
             if (param == null) return null;
             NBTType type = NBTType.fromString(param);
             if(type.equals(NBTType.BYTEARRAY)) type = NBTType.BYTE;
             else if(type.equals(NBTType.INTARRAY)) type = NBTType.INT;
-            return new NBTContainerBase(type.parse(object));
+            else if(type.equals(NBTType.LONGARRAY)) type = NBTType.LONG;
+            return new NBTContainerValue(type.parse(object));
         }
         if (object.matches("NaN|-?Infinity")) {
             if (param == null) return null;
             NBTType type = NBTType.fromString(param);
             if(type.equals(NBTType.BYTEARRAY)) type = NBTType.BYTE;
             else if(type.equals(NBTType.INTARRAY)) type = NBTType.INT;
-            return new NBTContainerBase(type.parse(object));
+            else if(type.equals(NBTType.LONGARRAY)) type = NBTType.LONG;
+            return new NBTContainerValue(type.parse(object));
         }
         if (object.matches("-?[0-9]+\\.[0-9]*")) {
             if (param == null) return null;
             NBTType type = NBTType.fromString(param);
             if(type.equals(NBTType.BYTEARRAY)) type = NBTType.BYTE;
             else if(type.equals(NBTType.INTARRAY)) type = NBTType.INT;
-            return new NBTContainerBase(type.parse(object));
+            else if(type.equals(NBTType.LONGARRAY)) type = NBTType.LONG;
+            return new NBTContainerValue(type.parse(object));
         }
         if (object.equals("*") || object.equals("self") || object.equals("this")) {
             return null;
@@ -337,7 +343,8 @@ public class Argument {
                 NBTType type = NBTType.fromString(param);
                 if (type == NBTType.BYTE) type = NBTType.BYTEARRAY;
                 else if (type == NBTType.INT) type = NBTType.INTARRAY;
-                return new NBTContainerBase(type.parse(object));
+                else if (type == NBTType.LONG) type = NBTType.LONGARRAY;
+                return new NBTContainerValue(type.parse(object));
             }
         }
         if (object.equals("hand") || object.equals("h")) {
@@ -391,7 +398,7 @@ public class Argument {
                 mojangsonTag = NBTParser.parser("", object).parse();
             } catch (Exception ignored){}
             if (mojangsonTag != null) {
-                return new NBTContainerBase(NBTBase.wrap(mojangsonTag));
+                return new NBTContainerValue(NBTBase.wrap(mojangsonTag));
             }
         }
 
@@ -437,7 +444,7 @@ public class Argument {
             }
             Long val = Long.parseLong(objectFuture, 2);
             NBTType type = NBTType.fromBase(paramQuery.get(paramContainer.getCustomTag()));
-            this.container = new NBTContainerBase(type.parse(val.toString()));
+            this.container = new NBTContainerValue(type.parse(val.toString()));
             this.query = emptyQuery;
             action.execute();
         } else if (objectFuture.matches("-?[0-9]*(.[0-9]*)?") || objectFuture.matches("NaN|-?Infinity")) {
@@ -461,6 +468,7 @@ public class Argument {
             }
             if (type == NBTType.BYTEARRAY) type = NBTType.BYTE;
             else if (type == NBTType.INTARRAY) type = NBTType.INT;
+            else if (type == NBTType.LONGARRAY) type = NBTType.LONG;
             if (type == NBTType.END && paramQuery!=null) {
                 NBTQuery parent = paramQuery.getParent();
                 if (parent != null) {
@@ -471,7 +479,7 @@ public class Argument {
                 }
             }
 
-            this.container = new NBTContainerBase(type.parse(objectFuture));
+            this.container = new NBTContainerValue(type.parse(objectFuture));
             this.query = emptyQuery;
             action.execute();
         } else if (objectFuture.matches("\\[((-?[0-9]+|#-?[0-9a-fA-F]+)(,(?!\\])|(?=\\])))*\\]")) {
@@ -480,6 +488,7 @@ public class Argument {
             NBTType type = NBTType.fromBase(paramQuery.get(paramContainer.getCustomTag()));
             if (type == NBTType.INT) type = NBTType.INTARRAY;
             else if (type == NBTType.BYTE) type = NBTType.BYTEARRAY;
+            else if (type == NBTType.LONG) type = NBTType.LONGARRAY;
             else if (type == null || type == NBTType.END) {
                 TypeCompleter comp = plugin.getTypeCompleter();
                 for (String name : paramContainer.getTypes()) {
@@ -490,7 +499,7 @@ public class Argument {
                     }
                 }
             }
-            this.container = new NBTContainerBase(type.parse(objectFuture));
+            this.container = new NBTContainerValue(type.parse(objectFuture));
             this.query = emptyQuery;
             action.execute();
         } else {

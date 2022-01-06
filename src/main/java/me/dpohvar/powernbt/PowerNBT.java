@@ -122,24 +122,10 @@ public class PowerNBT extends JavaPlugin {
         getCommand("powernbt.").setExecutor(new CommandNBT(SILENT));
         getCommand("powernbt").setTabCompleter(new CompleterNBT());
         getCommand("powernbt.").setTabCompleter(new CompleterNBT());
-
-        initializeUtils();
     }
 
     public TypeCompleter getTypeCompleter() {
         return typeCompleter;
-    }
-
-    private void initializeUtils() {
-        printDebug(EntityUtils.entityUtils);
-        printDebug(ItemStackUtils.itemStackUtils);
-        printDebug(NBTBlockUtils.nbtBlockUtils);
-        printDebug(NBTCompressedUtils.nbtCompressedUtils);
-        if (getConfig().getBoolean("utils.chunk", false)) {
-            printDebug(ChunkUtils.chunkUtils);
-        }
-        printDebug(NBTUtils.nbtUtils);
-        printDebug(PacketUtils.packetUtils);
     }
 
     private void printDebug(Object t){

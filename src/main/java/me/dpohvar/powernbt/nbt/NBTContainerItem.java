@@ -1,11 +1,11 @@
 package me.dpohvar.powernbt.nbt;
 
+import me.dpohvar.powernbt.api.NBTCompound;
+import me.dpohvar.powernbt.api.NBTManager;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static me.dpohvar.powernbt.utils.ItemStackUtils.itemStackUtils;
 
 public class NBTContainerItem extends NBTContainer<ItemStack> {
 
@@ -47,16 +47,17 @@ public class NBTContainerItem extends NBTContainer<ItemStack> {
 
     @Override
     public NBTTagCompound readTag() {
-        Object tag = itemStackUtils.getTag(item);
-        if (tag==null) return null;
-        return (NBTTagCompound) new NBTTagCompound(false, tag).clone();
+        Object handle = NBTManager.getInstance().read(item).getHandle();
+        return (NBTTagCompound) new NBTTagCompound(false, handle).clone();
     }
 
     @Override
     public void writeTag(NBTBase base) {
-        Object handle = null;
-        if (base != null) handle = base.clone().handle;
-        itemStackUtils.setTag(item, handle);
+        if (base != null) {
+            Object tag = base.clone().handle;
+            NBTManager.getInstance().write(item, NBTCompound.forNBT(tag));
+        }
+
     }
 
     @Override

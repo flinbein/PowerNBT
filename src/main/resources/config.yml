@@ -13,22 +13,22 @@ ignore_set:
   - WorldUUIDMost
 
 hooks:
-
-  compound_create: # () -> nbt
-    - new net.minecraft.nbt.NBTTagCompound                                                 # || -> nbt
-
-  entity_read: # (craftEntity) -> nbt
-    - invoke org.bukkit.craftbukkit.v1_18_R1.entity.getHandle()                            # -> nmsEntity
-    - dup                                                                                  # -> nmsEntity,nmsEntity
-    - instanceof net.minecraft.server.level.EntityPlayer                                   # -> nmsEntity,bool
-    - if entity_read_player else entity_read_simple                                        # -> nbt
-
-  entity_read_simple: # (craftEntity) -> nbt
-    - get field net.minecraft.server.level.EntityPlayer.handle                             # -> nmsEntity
-    - call compound_create 0                                                               # -> nmsEntity,nbt
-    - dup                                                                                  # -> nmsEntity,nbt,nbt
-    - swap 2                                                                               # -> nbt,nbt,nmsEntity
-    - invoke net.minecraft.world.entity.Entity.f(net.minecraft.nbt.NBTTagCompound)         # -> nbt,result
-    - swap
-
-  entity_read_player: # (craftEntity) -> nbt
+  1_18_1-R0_1-SNAPSHOT:
+    entity:
+      getNBT: "net.minecraft.world.entity.Entity *(net.minecraft.nbt.NBTTagCompound): net.minecraft.nbt.NBTTagCompound"
+      setNBT: "net.minecraft.world.entity.Entity b(net.minecraft.nbt.NBTTagCompound): void"
+      getHandle: "{cb}.entity.CraftEntity *(): net.minecraft.server.level.EntityPlayer"
+      createType: "net.minecraft.world.entity.EntityTypes static *(net.minecraft.nbt.NBTTagCompound, net.minecraft.world.level.World): java.util.Optional"
+      getBukkitEntity: "net.minecraft.world.entity.Entity *(): {cb}.entity.CraftEntity"
+    block:
+      getSnapshot: "{cb}.block.CraftBlockEntityState getSnapshot()"
+      getNBT: "net.minecraft.world.level.block.entity.TileEntity m(): net.minecraft.nbt.NBTTagCompound"
+      setNBT: "net.minecraft.world.level.block.entity.TileEntity a(net.minecraft.nbt.NBTTagCompound): void"
+    item:
+      handle: "{cb}.inventory.CraftItemStack *:net.minecraft.world.item.ItemStack"
+      craftCopy: "{cb}.inventory.CraftItemStack static *(org.bukkit.inventory.ItemStack): {cb}.inventory.CraftItemStack"
+      getNBT: "net.minecraft.world.item.ItemStack *(net.minecraft.nbt.NBTTagCompound): net.minecraft.nbt.NBTTagCompound"
+      setNBT: "net.minecraft.world.item.ItemStack *(net.minecraft.nbt.NBTTagCompound): void"
+    world:
+      getHandle: "{cb}.CraftWorld *(): net.minecraft.server.level.WorldServer"
+      addEntity: "net.minecraft.server.level.WorldServer *(net.minecraft.world.entity.Entity, org.bukkit.event.entity.CreatureSpawnEvent$SpawnReason): boolean"

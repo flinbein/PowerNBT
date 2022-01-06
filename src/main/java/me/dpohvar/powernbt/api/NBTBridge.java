@@ -1,47 +1,60 @@
 package me.dpohvar.powernbt.api;
 
-import net.minecraft.world.entity.Entity;
-import org.bukkit.Chunk;
-import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
+import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.inventory.ItemStack;
 import java.io.*;
 import java.util.List;
 import java.util.Map;
 
-interface NBTBridge {
+abstract class NBTBridge {
 
-    public Map<String,?> getNbtMap(Object nbtTagCompound);
+    private static NBTBridge instance;
 
-    public List<?> getNbtList(Object nbtTagList);
+    public static NBTBridge getInstance(){
+        if (instance == null) instance = new NBTBridgeSpigot();
+        return instance;
+    }
 
-    public NBTCompound getBlockNBT(BlockState state);
+    abstract Map<String, Object> getNbtInnerMap(Object nbtTagCompound);
 
-    public NBTCompound getEntityNBT(Entity entity);
+    abstract List<Object> getNbtInnerList(Object nbtTagList);
 
-    public NBTCompound getItemStackNBT(ItemStack itemStack);
+    abstract Object getBlockNBTTag(BlockState state);
 
-    public NBTCompound getChunkNBT(Chunk chunk);
+    abstract Object getEntityNBTTag(Entity entity);
 
-    public void setBlockNBT(BlockState state, NBTCompound compound);
+    abstract Object getItemStackNBTTag(ItemStack itemStack);
 
-    public void setEntityNBT(Entity entity, NBTCompound compound);
+    abstract void setBlockNBTTag(BlockState state, Object tag);
 
-    public void setItemStackNBT(ItemStack itemStack, NBTCompound compound);
+    abstract void setEntityNBTTag(Entity entity, Object tag);
 
-    public void setChunkNBT(Chunk chunk, NBTCompound compound);
+    abstract void setItemStackNBTTag(ItemStack itemStack, Object tag);
 
-    public void readNBT(InputStream inputStream) throws IOException;
+    abstract ItemStack asCraftCopyItemStack(ItemStack itemStack);
 
-    public void writeNBT(OutputStream outputStream, Object value) throws IOException;
+    abstract Object readNBTData(DataInput dataInput) throws IOException;
 
-    public void readCompressedNBT(InputStream inputStream) throws IOException;
+    abstract void writeNBTData(DataOutput dataInput, Object tag) throws IOException;
 
-    public void writeCompressedNBT(OutputStream outputStream, Object value) throws IOException;
+    abstract Entity spawnEntity(Object tag, World world);
 
-    public Object readNBT(DataInput dataInput, Object value) throws IOException;
+    abstract byte getTagType(Object tag);
 
-    public Object writeNBT(DataOutput dataInput, Object value) throws IOException;
+    abstract Object getPrimitiveValue(Object tag);
 
+    abstract Object getTagValueByPrimitive(Object javaPrimitive);
+
+    abstract Object cloneTag(Object tag);
+
+    abstract Object createNBTTagCompound();
+
+    abstract Object createNBTTagList();
+
+    abstract byte getNBTTagListType(Object tagList);
+
+    abstract void setNBTTagListType(Object tagList, byte type);
 
 }

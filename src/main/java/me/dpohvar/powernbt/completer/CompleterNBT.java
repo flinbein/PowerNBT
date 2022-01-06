@@ -31,7 +31,7 @@ public class CompleterNBT extends Completer {
     public void fillTabs(Caller caller, TabFormer former) throws Exception {
         String word = former.poll(); // object
         if (word.isEmpty()) {
-            former.addIfStarts("buffer", "list", "compound", "byte[]", "int[]", "debug", "file:", "gz:", "sch:");
+            former.addIfStarts("buffer", "list", "compound", "byte[]", "int[]", "long[]", "debug", "file:", "gz:", "sch:");
             if (caller.getOwner() instanceof Entity) former.addIfStarts("block", "inventory","hand","hand:");
             if (caller.getOwner() instanceof Entity && former.getQuery().startsWith("id")) {
                 Player p = (Player) caller.getOwner();
@@ -233,7 +233,7 @@ public class CompleterNBT extends Completer {
                         }
                     }
                 }
-                former.addIfStarts("me", "item", "buffer", "list", "compound", "byte[]", "int[]");
+                former.addIfStarts("me", "item", "buffer", "list", "compound", "byte[]", "int[]", "long[]");
                 if (caller.getOwner() instanceof Entity) former.addIfStarts("block", "inventory","hand","hand:");
                 if (caller.getOwner() instanceof Entity && former.getQuery().startsWith("id")) {
                     Player p = (Player) caller.getOwner();

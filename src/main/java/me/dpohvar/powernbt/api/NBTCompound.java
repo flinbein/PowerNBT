@@ -1,7 +1,8 @@
 package me.dpohvar.powernbt.api;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
-import static me.dpohvar.powernbt.utils.NBTUtils.nbtUtils;
 
 /**
  * Represent net.minecraft.server.NBTTagCompound.<br>
@@ -26,8 +27,9 @@ import static me.dpohvar.powernbt.utils.NBTUtils.nbtUtils;
  * {@link me.dpohvar.powernbt.api.NBTCompound} can not contain cross-references.
  */
 @SuppressWarnings("UnusedDeclaration")
-public class NBTCompound implements Map<String,Object> {
+public class NBTCompound implements Map<String,Object>, NBTBox {
 
+    private static NBTBridge nbtBridge = NBTBridge.getInstance();
     private final Map<String,Object> handleMap;
     private final Object handle;
 
@@ -48,12 +50,12 @@ public class NBTCompound implements Map<String,Object> {
      */
     public static NBTCompound forNBTCopy(Object tag){
         if (tag==null) return null;
-        return forNBT(nbtUtils.cloneTag(tag));
+        return forNBT(nbtBridge.cloneTag(tag));
     }
 
     /**
      * Convert NBT compound to java {@link java.util.Map}
-     * @param map Empty map to fill
+     * @param map map to fill
      * @param <T> T
      * @return map
      */
@@ -62,13 +64,13 @@ public class NBTCompound implements Map<String,Object> {
         for (Map.Entry<String,Object> e: handleMap.entrySet()) {
             String key = e.getKey();
             Object nbtTag = e.getValue();
-            byte type = nbtUtils.getTagType(nbtTag);
+            byte type = nbtBridge.getTagType(nbtTag);
             if (type==9) {
                 map.put(key, NBTList.forNBT(nbtTag).toArrayList());
             } else if (type==10) {
                 map.put(key, forNBT(nbtTag).toHashMap());
             } else {
-                map.put(key, nbtUtils.getValue(nbtTag));
+                map.put(key, nbtBridge.getPrimitiveValue(nbtTag));
             }
         }
         return map;
@@ -79,13 +81,13 @@ public class NBTCompound implements Map<String,Object> {
      * @return HashMap
      */
     public HashMap<String,Object> toHashMap(){
-        return toMap(new HashMap<String, Object>());
+        return toMap(new HashMap<>());
     }
 
     NBTCompound(Object tag){
-        assert nbtUtils.getTagType(tag) == 10;
+        assert nbtBridge.getTagType(tag) == 10;
         this.handle = tag;
-        this.handleMap = nbtUtils.getHandleMap(tag);
+        this.handleMap = nbtBridge.getNbtInnerMap(tag);
     }
 
     /**
@@ -103,7 +105,7 @@ public class NBTCompound implements Map<String,Object> {
      * @return NBTTagCompound
      */
     public Object getHandleCopy(){
-        return nbtUtils.cloneTag(handle);
+        return nbtBridge.cloneTag(handle);
     }
 
     /**
@@ -119,7 +121,7 @@ public class NBTCompound implements Map<String,Object> {
      * Create new empty NBTCompound
      */
     public NBTCompound(){
-        this(nbtUtils.createTagCompound());
+        this(new HashMap());
     }
 
     @Override
@@ -134,10 +136,10 @@ public class NBTCompound implements Map<String,Object> {
      *
      * @param map map to convert
      */
-    public NBTCompound(Map map){
-        this(nbtUtils.createTagCompound());
-        for (Object key: map.keySet()) {
-            put(key.toString(), map.get(key));
+    public NBTCompound(Map<?,?> map){
+        this(nbtBridge.createNBTTagCompound());
+        for (var key: map.keySet()) {
+            put(String.valueOf(key), map.get(key));
         }
     }
 
@@ -145,10 +147,10 @@ public class NBTCompound implements Map<String,Object> {
      * Create clone of this NBT compouns
      * @return cloned {@link me.dpohvar.powernbt.api.NBTCompound}
      */
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
-    @SuppressWarnings({"CloneDoesntDeclareCloneNotSupportedException, CloneDoesntCallSuperClone"})
     public NBTCompound clone(){
-        return new NBTCompound(nbtUtils.cloneTag(handle));
+        return new NBTCompound(nbtBridge.cloneTag(handle));
     }
 
     @Override
@@ -168,13 +170,17 @@ public class NBTCompound implements Map<String,Object> {
 
     @Override
     public boolean containsValue(Object value) {
-        Object tag = nbtUtils.createTag(value);
+        Object tag;
+        if (value instanceof Map map) tag = new NBTCompound(map).getHandle();
+        else if (value instanceof Collection col) tag = new NBTList(col).getHandle();
+        else if (value instanceof Object[] col) tag = new NBTList(col).getHandle();
+        else tag = nbtBridge.getTagValueByPrimitive(value);
         return handleMap.containsValue(tag);
     }
 
     @Override
     public Object get(Object key) {
-        return nbtUtils.getValue(handleMap.get(key));
+        return NBTManager.getInstance().getValueOfTag(handleMap.get(key));
     }
 
     /**
@@ -187,20 +193,23 @@ public class NBTCompound implements Map<String,Object> {
     public Object put(String key, Object value) {
         if (key==null) return null;
         if (value==null) return remove(key);
-        Object tag = nbtUtils.createTag(value);
+        Object tag;
+        if (value instanceof Map map) tag = new NBTCompound(map).getHandle();
+        else if (value instanceof Collection col) tag = new NBTList(col).getHandle();
+        else if (value instanceof Object[] col) tag = new NBTList(col).getHandle();
+        else tag = nbtBridge.getTagValueByPrimitive(value);
         Object oldTag = put_handle(key,tag);
-        return nbtUtils.getValue(oldTag);
+        return NBTManager.getInstance().getValueOfTag(oldTag);
     }
 
     private Object put_handle(String key, Object tag){
-        nbtUtils.seTagName(tag, key);
         return handleMap.put(key, tag);
     }
 
     @Override
     public Object remove(Object key) {
         Object oldTag = handleMap.remove(key);
-        return nbtUtils.getValue(oldTag);
+        return NBTManager.getInstance().getValueOfTag(oldTag);
     }
 
     /**
@@ -208,8 +217,7 @@ public class NBTCompound implements Map<String,Object> {
      * @param map Mappings to be stored in this map
      */
     @Override
-    public void putAll(Map<? extends String, ?> map) {
-        if (map == null) return;
+    public void putAll(@NotNull Map<? extends String, ?> map) {
         for (Entry<? extends String, ?> e: map.entrySet()) {
             String key = e.getKey();
             if (key==null) continue;
@@ -549,7 +557,7 @@ public class NBTCompound implements Map<String,Object> {
      */
     public boolean containsKey(String key, byte type){
         Object tag = handleMap.get(key);
-        return tag!=null && nbtUtils.getTagType(tag) == type;
+        return tag!=null && nbtBridge.getTagType(tag) == type;
     }
 
     public static class NBTValues extends AbstractCollection<Object>{
@@ -585,7 +593,7 @@ public class NBTCompound implements Map<String,Object> {
 
             @Override
             public Object next() {
-                return nbtUtils.getValue(handle.next());
+                return NBTManager.getInstance().getValueOfTag(handle.next());
             }
 
             @Override
@@ -651,7 +659,7 @@ public class NBTCompound implements Map<String,Object> {
 
                 @Override
                 public Object getValue() {
-                    return nbtUtils.getValue(entry.getValue());
+                    return NBTManager.getInstance().getValueOfTag(entry.getValue());
                 }
 
                 @Override
@@ -661,9 +669,13 @@ public class NBTCompound implements Map<String,Object> {
                         remove();
                         return val;
                     } else {
-                        Object tag = nbtUtils.createTag(value);
+                        Object tag;
+                        if (value instanceof Map map) tag = new NBTCompound(map).getHandle();
+                        else if (value instanceof Collection col) tag = new NBTList(col).getHandle();
+                        else if (value instanceof Object[] col) tag = new NBTList(col).getHandle();
+                        else tag = nbtBridge.getTagValueByPrimitive(value);
                         Object oldTag = entry.setValue(tag);
-                        return nbtUtils.getValue(oldTag);
+                        return NBTManager.getInstance().getValueOfTag(oldTag);
                     }
                 }
             }

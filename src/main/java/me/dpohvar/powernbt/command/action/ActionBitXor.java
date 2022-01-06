@@ -1,8 +1,6 @@
 package me.dpohvar.powernbt.command.action;
 
-import me.dpohvar.powernbt.nbt.NBTBase;
 import me.dpohvar.powernbt.nbt.NBTContainer;
-import me.dpohvar.powernbt.nbt.NBTTagNumeric;
 import me.dpohvar.powernbt.utils.Caller;
 import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.NBTViewer;

@@ -32,7 +32,7 @@ public class Translator {
         }
         try {
             Yaml yaml = new Yaml();
-            Map<String, Object> map = (Map<String, Object>) yaml.load(is);
+            Map<String, Object> map = yaml.load(is);
             Map<String, Object> vals = (Map<String, Object>) map.get("locale");
             for (Map.Entry<String, Object> e : vals.entrySet()) {
                 tran.put(e.getKey(), e.getValue().toString());

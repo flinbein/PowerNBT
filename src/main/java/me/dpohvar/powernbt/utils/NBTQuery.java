@@ -1,50 +1,51 @@
 package me.dpohvar.powernbt.utils;
 
+import me.dpohvar.powernbt.api.NBTBox;
+import me.dpohvar.powernbt.api.NBTCompound;
+import me.dpohvar.powernbt.api.NBTList;
 import me.dpohvar.powernbt.exception.NBTTagNotFound;
 import me.dpohvar.powernbt.exception.NBTTagUnexpectedType;
-import me.dpohvar.powernbt.nbt.*;
+import org.apache.commons.lang.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
 public class NBTQuery {
 
-    private List<Object> values = new ArrayList<Object>();
+    private final Object[] values; // String, Number, null
 
     public List<Object> getValues() {
-        return new ArrayList<Object>(values);
+        return Arrays.asList(values);
     }
 
     public boolean isEmpty() {
-        return values.isEmpty();
+        return values.length == 0;
     }
 
     public NBTQuery getParent() {
-        if (values.isEmpty()) return null;
+        if (isEmpty()) return null;
         List<Object> v = getValues();
         v.remove(v.size() - 1);
         return new NBTQuery(v);
     }
 
     public String toString() {
-        String s = "";
+        StringBuilder s = new StringBuilder();
         for (Object node : values) {
-            if (node instanceof Integer) s += "[" + node + "]";
-            else s += "." + node;
+            if (node == null) s.append("[]");
+            if (node instanceof Integer) s.append("[").append(node).append("]");
+            else s.append(".").append(node);
         }
-        if (s.startsWith(".")) s = s.substring(1);
-        if (s.isEmpty()) s = ".";
-        return s;
+        if (s.toString().startsWith(".")) s = new StringBuilder(s.substring(1));
+        if (s.length() == 0) return ".";
+        return s.toString();
     }
 
     public static NBTQuery fromString(String string) {
         if (string == null || string.isEmpty()) return new NBTQuery();
-        LinkedList<Object> v = new LinkedList<Object>();
-        Queue<Character> chars = new LinkedList<Character>();
+        LinkedList<Object> tokens = new LinkedList<>();
+        Queue<Character> chars = new LinkedList<>();
         StringBuilder buffer = new StringBuilder();
         for (char c : string.toCharArray()) chars.add(c);
         byte mode = 0; // 0 = default text;  1 = text in ""; 2 = text in []
@@ -52,20 +53,20 @@ public class NBTQuery {
         while (true) {
             Character c = chars.poll();
             switch (mode) {
-                case 0: {
+                case 0 -> {
                     if (c == null) {
-                        if (buffer.length() != 0) v.add(buffer.toString());
+                        if (buffer.length() != 0) tokens.add(buffer.toString());
                         break tokenizer;
                     } else if (c == '.') {
                         if (buffer.length() != 0) {
-                            v.add(buffer.toString());
+                            tokens.add(buffer.toString());
                             buffer = new StringBuilder();
                         }
                     } else if (c == '\"') {
                         mode = 1;
                     } else if (c == '[') {
                         if (buffer.length() != 0) {
-                            v.add(buffer.toString());
+                            tokens.add(buffer.toString());
                             buffer = new StringBuilder();
                         }
                         mode = 2;
@@ -74,9 +75,8 @@ public class NBTQuery {
                     } else {
                         buffer.append(c);
                     }
-                    break;
                 }
-                case 1: {
+                case 1 -> {
                     if (c == null) {
                         throw new RuntimeException(plugin.translate("error_querynode", string));
                     }
@@ -87,23 +87,22 @@ public class NBTQuery {
                         buffer.append(t);
                     } else if (c == '"') {
                         if (buffer.length() != 0) {
-                            v.add(StringParser.parse(buffer.toString()));
+                            tokens.add(StringParser.parse(buffer.toString()));
                             buffer = new StringBuilder();
                         }
                         mode = 0;
                     } else {
                         buffer.append(c);
                     }
-                    break;
                 }
-                case 2: {
+                case 2 -> {
                     if (c == null) {
                         throw new RuntimeException(plugin.translate("error_querynode", string));
                     } else if (c == ']') {
                         String t = buffer.toString();
-                        int r = -1;
+                        Integer r = null;
                         if (!t.isEmpty()) r = Integer.parseInt(t);
-                        v.add(r);
+                        tokens.add(r);
                         buffer = new StringBuilder();
                         mode = 0;
                     } else if (c.toString().matches("[0-9]")) {
@@ -111,123 +110,134 @@ public class NBTQuery {
                     } else {
                         throw new RuntimeException(plugin.translate("error_querynode", string));
                     }
-                    break;
                 }
             }
         }
-        NBTQuery q = new NBTQuery();
-        q.values = v;
-        return q;
+        return new NBTQuery(tokens.toArray());
     }
 
     public NBTQuery(Object... nodes) {
         for (Object node : nodes) {
-            if (node instanceof String || node instanceof Integer) {
-                values.add(node);
-            } else throw new RuntimeException("invalid node: " + node);
+            if (!(node instanceof String || node instanceof Integer)) {
+                throw new RuntimeException("invalid node: " + node);
+            }
         }
+        this.values = nodes;
     }
 
     public NBTQuery(List<Object> nodes) {
-        for (Object node : nodes) {
-            if (node instanceof String || node instanceof Integer) {
-                values.add(node);
-            } else throw new RuntimeException("invalid node: " + node);
-        }
+        this(nodes.toArray());
     }
 
     public Queue<Object> getQueue() {
-        return new LinkedList<Object>(values);
+        return new LinkedList<>(Arrays.asList(this.values));
     }
 
-    public NBTBase remove(NBTBase root) throws NBTTagNotFound {
+    public Object remove(Object root) throws NBTTagNotFound {
         if (root == null) return null;
-        root = root.clone();
-        if (this.isEmpty()) return root;
-        NBTBase current = root;
-        Queue<Object> queue = this.getQueue();
-        while (true) {
-            if (queue.size() == 1) {
-                Object t = queue.poll();
-                if (current instanceof NBTTagCompound && t instanceof String) {
-                    NBTTagCompound compound = (NBTTagCompound) current;
-                    String key = (String) t;
-                    boolean b = compound.remove(key);
-                    return root;
-                } else if (current instanceof NBTTagList && t instanceof Integer) {
-                    NBTTagList list = (NBTTagList) current;
-                    int index = (Integer) t;
-                    if (index == -1) index = list.size() - 1;
-                    boolean b = list.remove(index)!=null;
-                    return root;
-                } else if (current instanceof NBTTagNumericArray && t instanceof Integer) {
-                    NBTTagNumericArray array = (NBTTagNumericArray) current;
-                    int index = (Integer) t;
-                    if (index == -1) index = array.size() - 1;
-                    array.remove(index);
-                    return root;
-                } else throw new NBTTagNotFound(current,t);
+        return remove(root, getQueue());
+    }
+
+    private static Object remove(Object current, Queue<Object> queue) throws NBTTagNotFound {
+        if (queue.isEmpty()) return current;
+        Object qKey = queue.poll();
+        if (queue.isEmpty()) { // request to delete qKey from current, return current or modified
+            if (current instanceof NBTCompound compound && qKey instanceof String key) {
+                compound.remove(key);
+                return current;
             }
-            Object t = queue.poll();
-            if (current == null) throw new NBTTagNotFound(current,t);
-            if (current instanceof NBTTagCompound && t instanceof String) {
-                NBTTagCompound compound = (NBTTagCompound) current;
-                String key = (String) t;
-                if (!compound.has(key)) throw new NBTTagNotFound(compound,t);
-                current = compound.get(key);
-            } else if (current instanceof NBTTagList && t instanceof Integer) {
-                NBTTagList list = (NBTTagList) current;
-                int index = (Integer) t;
-                if (index == -1) index = list.size() - 1;
-                current = list.get(index);
-            } else throw new NBTTagNotFound(current,t);
+            if (qKey instanceof Number || qKey == null) {
+                if (current instanceof NBTList list) {
+                    int index = (qKey instanceof Number i) ? (int) i : list.size() - 1;
+                    list.remove(index);
+                    return current;
+                }
+                if (current instanceof byte[] arr){
+                    int index = (qKey instanceof Number i) ? (int) i : arr.length - 1;
+                    List<Byte> list = Arrays.asList(ArrayUtils.toObject(arr));
+                    list.remove(index);
+                    return ArrayUtils.toPrimitive(list.toArray(Byte[]::new));
+                }
+                if (current instanceof int[] arr){
+                    int index = (qKey instanceof Number i) ? (int) i : arr.length - 1;
+                    List<Integer> list = Arrays.asList(ArrayUtils.toObject(arr));
+                    list.remove(index);
+                    return ArrayUtils.toPrimitive(list.toArray(Integer[]::new));
+                }
+                if (current instanceof long[] arr){
+                    int index = (qKey instanceof Number i) ? (int) i : arr.length - 1;
+                    List<Long> list = Arrays.asList(ArrayUtils.toObject(arr));
+                    list.remove(index);
+                    return ArrayUtils.toPrimitive(list.toArray(Long[]::new));
+                }
+            }
+            throw new NBTTagNotFound(current, qKey);
         }
+
+        // chain, queue is not empty
+        if (current == null) throw new NBTTagNotFound(null, qKey);
+        if (current instanceof NBTCompound compound && qKey instanceof String key) {
+            if (!compound.containsKey(key)) throw new NBTTagNotFound(compound, key);
+            Object next = compound.get(key);
+            Object result = remove(next, queue);
+            if (next != result) compound.put(key, result);
+            return compound;
+        } else if (current instanceof NBTList list && qKey instanceof Integer index) {
+            int accessIndex = index;
+            if (index < 0) accessIndex = list.size() + index;
+            if (accessIndex < 0 || accessIndex >= list.size()) throw new NBTTagNotFound(list, index);
+            Object next = list.get(index);
+            Object result = remove(next, queue);
+            if (next != result) list.set(index, result);
+            return current;
+        } else throw new NBTTagNotFound(current, qKey);
     }
 
-
-    private NBTBase call(NBTBase root)throws NBTTagNotFound{
-        return get(root);
+    public Object get(Object root) throws NBTTagNotFound {
+        return get(root, getQueue());
     }
 
-    public NBTBase get(NBTBase root) throws NBTTagNotFound {
+    private static Object get(Object current, Queue<Object> queue) throws NBTTagNotFound {
+        if (queue.isEmpty()) return current;
+        Object qKey = queue.poll();
+        if (current instanceof NBTCompound compound && qKey instanceof String key) {
+            return get(compound.get(key), queue);
+        }
+        if (qKey instanceof Number || qKey == null) {
+            if (current instanceof NBTList list) {
+                int currentIndex = qKey == null ? list.size() - 1 : ((Number)qKey).intValue();
+                if (currentIndex < 0) currentIndex = list.size() - currentIndex;
+                return get(list.get(currentIndex), queue);
+            }
+            if (current instanceof byte[] arr) {
+                int currentIndex = qKey == null ? arr.length - 1 : ((Number)qKey).intValue();
+                if (currentIndex < 0) currentIndex = arr.length - currentIndex;
+                return get(arr[currentIndex], queue);
+            }
+            if (current instanceof int[] arr) {
+                int currentIndex = qKey == null ? arr.length - 1 : ((Number)qKey).intValue();
+                if (currentIndex < 0) currentIndex = arr.length - currentIndex;
+                return get(arr[currentIndex], queue);
+            }
+            if (current instanceof long[] arr) {
+                int currentIndex = qKey == null ? arr.length - 1 : ((Number)qKey).intValue();
+                if (currentIndex < 0) currentIndex = arr.length - currentIndex;
+                return get(arr[currentIndex], queue);
+            }
+        }
+        throw new NBTTagNotFound(current, qKey);
+    }
+
+    public Object set(Object root, Object value) throws RuntimeException, NBTTagNotFound, NBTTagUnexpectedType {
+        if (this.isEmpty()) return (value instanceof NBTBox box) ? box.clone() : value;
+
         Queue<Object> queue = this.getQueue();
-        NBTBase current = root;
-        while (true) {
-            Object t = queue.poll();
-            if (t == null || current == null) return current;
-            if (current instanceof NBTTagCompound && t instanceof String) {
-                NBTTagCompound compound = (NBTTagCompound) current;
-                String key = (String) t;
-                if (!compound.has(key)) return null;
-                current = compound.get(key);
-            } else if (current instanceof NBTTagList && t instanceof Integer) {
-                NBTTagList list = (NBTTagList) current;
-                int index = (Integer) t;
-                if (index == -1) index = list.size() - 1;
-                current = list.get(index);
-            } else if (current instanceof NBTTagNumericArray && t instanceof Integer) {
-                NBTTagNumericArray array = (NBTTagNumericArray) current;
-                int index = (Integer) t;
-                if (index == -1) index = array.size() - 1;
-                current = NBTBase.getByValue(array.get(index));
-            } else throw new NBTTagNotFound(current,t);
-        }
-    }
 
-    private NBTBase call(NBTBase root,NBTBase value)throws RuntimeException, NBTTagNotFound, NBTTagUnexpectedType{
-        return set(root, value);
-    }
+        Object firstKey = queue.peek();
+        if (firstKey instanceof String) root = new NBTCompound();
+        else if (firstKey instanceof Integer || firstKey == null) root = new NBTList();
+        root = root instanceof NBTBox box ? box.clone() : root;
 
-    public NBTBase set(NBTBase root, NBTBase value) throws RuntimeException, NBTTagNotFound, NBTTagUnexpectedType {
-        if (this.isEmpty()) return root.clone();
-        Queue<Object> queue = this.getQueue();
-        if (root == null) {
-            Object z = queue.peek();
-            if (z instanceof String) root = new NBTTagCompound();
-            else if (z instanceof Integer) root = new NBTTagList();
-        } else {
-            root = root.clone();
-        }
         NBTBase current = root;
         while (true) {
             if (queue.size() == 1) {
@@ -283,6 +293,49 @@ public class NBTQuery {
                 }
                 current = list.get(index);
             } else throw new NBTTagNotFound(current,t);
+        }
+    }
+
+    private static Object set(Object current, Queue<Object> queue, Object value){
+        Object qKey = queue.poll();
+        if (queue.isEmpty()) { // set value
+            if (current instanceof NBTCompound compound && qKey instanceof String key) {
+                compound.put(key, value);
+                return compound;
+            }
+            if (qKey instanceof Number || qKey == null) {
+                if (current instanceof NBTList list) {
+                    int currentIndex = qKey == null ? list.size() : ((Number)qKey).intValue();
+                    if (currentIndex < 0) currentIndex = list.size() - currentIndex;
+
+                    return get(list.get(currentIndex), queue);
+                }
+                if (current instanceof byte[] arr) {
+                    int currentIndex = qKey == null ? arr.length - 1 : ((Number)qKey).intValue();
+                    if (currentIndex < 0) currentIndex = arr.length - currentIndex;
+                    return get(arr[currentIndex], queue);
+                }
+                if (current instanceof int[] arr) {
+                    int currentIndex = qKey == null ? arr.length - 1 : ((Number)qKey).intValue();
+                    if (currentIndex < 0) currentIndex = arr.length - currentIndex;
+                    return get(arr[currentIndex], queue);
+                }
+                if (current instanceof long[] arr) {
+                    int currentIndex = qKey == null ? arr.length - 1 : ((Number)qKey).intValue();
+                    if (currentIndex < 0) currentIndex = arr.length - currentIndex;
+                    return get(arr[currentIndex], queue);
+                }
+            }
+        }
+    }
+
+    private static <T, L extends List<T>> L putToFreeIndex(L list, Number keyIndex, T value) throws NBTTagNotFound {
+        int index = keyIndex == null ? list.size() : keyIndex.intValue();
+        if (index < 0) index = list.size() - index;
+        if (index < 0) throw new NBTTagNotFound(list, keyIndex);
+        if (index < list.size()) {
+            list.set(index, value);
+            return list;
         }
     }
 

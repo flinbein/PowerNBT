@@ -42,6 +42,7 @@ public class ActionAddAll extends Action {
             if (base2 instanceof NBTTagList) base1 = new NBTTagList();
             if (base2 instanceof NBTTagByteArray) base1 = new NBTTagByteArray();
             if (base2 instanceof NBTTagIntArray) base1 = new NBTTagIntArray();
+            if (base2 instanceof NBTTagLongArray) base1 = new NBTTagLongArray();
             if (base2 instanceof NBTTagNumeric) {
                 base1 = base2.clone();
                 ((NBTTagNumeric)base1).setNumber(0);

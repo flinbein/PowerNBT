@@ -3,30 +3,31 @@ package me.dpohvar.powernbt.nbt;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NBTContainerBase extends NBTContainer<NBTBase> {
+public class NBTContainerValue extends NBTContainer<Object> {
 
-    private NBTBase base;
+    private Object base;
 
-    public NBTContainerBase(NBTBase base) {
+    public NBTContainerValue(Object base) {
         this.base = base;
     }
 
-    public NBTBase getObject() {
-        return this.base;
+    @Override
+    public Object getObject() {
+        return base;
     }
 
     @Override
     public List<String> getTypes() {
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     @Override
-    public NBTBase readTag() {
+    public Object readTag() {
         return this.base;
     }
 
     @Override
-    public void writeTag(NBTBase base) {
+    public void writeTag(Object base) {
         this.base = base;
     }
 
@@ -36,12 +37,12 @@ public class NBTContainerBase extends NBTContainer<NBTBase> {
     }
 
     @Override
-    protected Class<NBTBase> getContainerClass() {
-        return NBTBase.class;
+    protected Class<Object> getContainerClass() {
+        return Object.class;
     }
 
     @Override
     public String toString(){
-        return base.getType().name;
+        return NBTType.fromValue(base).name;
     }
 }

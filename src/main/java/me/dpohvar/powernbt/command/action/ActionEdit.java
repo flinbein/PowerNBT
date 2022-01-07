@@ -1,12 +1,9 @@
 package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.PowerNBT;
-import me.dpohvar.powernbt.exception.NBTTagNotFound;
-import me.dpohvar.powernbt.exception.NBTTagUnexpectedType;
-import me.dpohvar.powernbt.nbt.NBTBase;
 import me.dpohvar.powernbt.nbt.NBTContainer;
-import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.NBTViewer;
 
 public class ActionEdit extends Action {
@@ -33,7 +30,7 @@ public class ActionEdit extends Action {
             arg2.prepare(this, container, query);
             return;
         }
-        NBTBase base = arg2.getContainer().getCustomTag(arg2.getQuery());
+        Object base = arg2.getContainer().getCustomTag(arg2.getQuery());
         if (base == null) throw new RuntimeException(PowerNBT.plugin.translate("error_null"));
         try{
             container.setCustomTag(query, base);

@@ -1,6 +1,5 @@
 package me.dpohvar.powernbt.command.action;
 
-import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.utils.Caller;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;

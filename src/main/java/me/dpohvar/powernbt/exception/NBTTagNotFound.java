@@ -1,7 +1,5 @@
 package me.dpohvar.powernbt.exception;
 
-import me.dpohvar.powernbt.nbt.NBTBase;
-
 /**
  * Created with IntelliJ IDEA.
  * User: DPOH-VAR
@@ -9,12 +7,12 @@ import me.dpohvar.powernbt.nbt.NBTBase;
  * Time: 14:16
  */
 public class NBTTagNotFound extends NBTQueryException{
-    private final NBTBase tag;
-    public NBTTagNotFound(NBTBase tag,Object tagName){
+    private final Object tag;
+    public NBTTagNotFound(Object tag,Object tagName){
         super("tag "+tagName+" not found");
         this.tag = tag;
     }
-    public NBTBase getTag(){
+    public Object getTag(){
         return tag;
     }
 }

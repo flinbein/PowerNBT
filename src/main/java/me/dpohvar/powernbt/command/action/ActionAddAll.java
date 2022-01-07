@@ -2,12 +2,16 @@ package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.api.NBTCompound;
-import me.dpohvar.powernbt.exception.NBTTagNotFound;
-import me.dpohvar.powernbt.exception.NBTTagUnexpectedType;
-import me.dpohvar.powernbt.nbt.*;
+import me.dpohvar.powernbt.api.NBTList;
+import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.nbt.NBTContainer;
+import me.dpohvar.powernbt.nbt.NBTType;
 import me.dpohvar.powernbt.utils.Caller;
 import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.NBTViewer;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class ActionAddAll extends Action {
 
@@ -33,59 +37,46 @@ public class ActionAddAll extends Action {
             arg2.prepare(this, container1, query1);
             return;
         }
-        NBTBase base1 = container1.getCustomTag(query1);
+        Object base1 = container1.getCustomTag(query1);
         NBTContainer container2 = arg2.getContainer();
         NBTQuery query2 = arg2.getQuery();
-        NBTBase base2 = container2.getCustomTag(query2);
+        Object base2 = container2.getCustomTag(query2);
         if (base1 == null) {
-            if (base2 instanceof NBTTagCompound) base1 = new NBTTagCompound();
-            if (base2 instanceof NBTTagList) base1 = new NBTTagList();
-            if (base2 instanceof NBTTagByteArray) base1 = new NBTTagByteArray();
-            if (base2 instanceof NBTTagIntArray) base1 = new NBTTagIntArray();
-            if (base2 instanceof NBTTagNumeric) {
-                base1 = base2.clone();
-                ((NBTTagNumeric)base1).setNumber(0);
-            }
+            base1 = NBTType.fromValue(base2).getDefault();
         }
-        if (base1 instanceof NBTTagCompound && base2 instanceof NBTTagCompound){
-            NBTTagCompound tag1 = (NBTTagCompound) base1;
-            NBTTagCompound tag2 = (NBTTagCompound) base2;
-            NBTCompound cmp1 = NBTCompound.forNBT(base1.getHandle());
-            NBTCompound cmp2 = NBTCompound.forNBT(base2.getHandle());
+        if (base1 instanceof NBTCompound cmp1 && base2 instanceof NBTCompound cmp2){
             cmp1.merge(cmp2);
-            container1.setCustomTag(query1,tag1);
-            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(tag2, false));
-        } else if (base1 instanceof NBTTagList && base2 instanceof NBTTagList){
-            NBTTagList list1 = (NBTTagList) base1;
-            NBTTagList list2 = (NBTTagList) base2;
+            container1.setCustomTag(query1,cmp1);
+            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(cmp2, false));
+        } else if (base1 instanceof NBTList list1 && base2 instanceof NBTList list2){
             list1.addAll(list2);
             container1.setCustomTag(query1,list1);
             caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(list2,false));
-        } else if (base1 instanceof NBTTagNumericArray && base2 instanceof NBTTagNumericArray){
-            NBTTagNumericArray list1 = (NBTTagNumericArray) base1;
-            NBTTagNumericArray list2 = (NBTTagNumericArray) base2;
-            list1.addAll(list2);
-            container1.setCustomTag(query1,list1);
-            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(list2,false));
-        } else if (base1 instanceof NBTTagString && base2 instanceof NBTTagString){
-            NBTTagString s1 = (NBTTagString) base1;
-            NBTTagString s2 = (NBTTagString) base2;
-            s1.set(s1.get().concat(s2.get()));
+        } else if (base1 instanceof String s1 && base2 instanceof String s2){
+            s1 += s2;
             container1.setCustomTag(query1,s1);
             caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(s2,false));
-        } else if (base1 instanceof NBTTagNumeric && base2 instanceof NBTTagNumeric){
-            NBTTagNumeric n1 = (NBTTagNumeric) base1.clone();
-            NBTTagNumeric n2 = (NBTTagNumeric) base2;
-            Number x1 = (Number)n1.get();
-            Number x2 = (Number)n2.get();
+        } else if (base1 instanceof Number x1 && base2 instanceof Number x2){
+            NBTType x1Type = NBTType.fromValue(x1);
             if(x1 instanceof Float || x1 instanceof Double){
                 x1 = x1.doubleValue()+x2.doubleValue();
             } else {
                 x1 = x1.longValue()+x2.longValue();
             }
-            n1.setNumber(x1);
-            container1.setCustomTag(query1, n1);
-            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(n2,false));
+            x1 = (Number) NBTManager.convertValue(x1, x1Type.type);
+            container1.setCustomTag(query1, x1);
+            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(x2,false));
+        } else if (base1.getClass().isArray() && base2.getClass().isArray()){
+            NBTType baseType = NBTType.fromValue(base1).getBaseType();
+            Object[] array1 = NBTManager.convertToObjectArrayOrNull(base1);
+            Object[] array2 = NBTManager.convertToObjectArrayOrNull(base2);
+            List<Object> list1 = Arrays.asList(array1);
+            for (Object val : array2) {
+                list1.add(NBTManager.convertValue(val, baseType.type));
+            }
+            Object result = NBTManager.convertValue(list1, baseType.type);
+            container1.setCustomTag(query1,result);
+            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(base2,false));
         } else {
             caller.send(PowerNBT.plugin.translate("fail_add"));
         }

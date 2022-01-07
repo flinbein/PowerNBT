@@ -1,11 +1,10 @@
 package me.dpohvar.powernbt.command.action;
 
-import me.dpohvar.powernbt.nbt.NBTBase;
+import me.dpohvar.powernbt.api.NBTCompound;
+import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.EntityUtils;
 import me.dpohvar.powernbt.utils.NBTQuery;
-import me.dpohvar.powernbt.utils.NBTViewer;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.BlockCommandSender;
@@ -13,7 +12,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
-import static me.dpohvar.powernbt.utils.EntityUtils.*;
 
 public class ActionSpawn extends Action {
 
@@ -49,10 +47,15 @@ public class ActionSpawn extends Action {
             world = Bukkit.getWorld(worldParam);
             if (world == null) throw new RuntimeException(plugin.translate("error_noworld", worldParam));
         }
-        NBTBase base = container.getCustomTag(query);
-        Entity entity = entityUtils.spawnEntity(base.getHandle(), world);
-        if (entity == null) caller.send(plugin.translate("success_spawn", entity));
-        caller.send(plugin.translate("success_spawn", entity));
+        Object base = container.getCustomTag(query);
+        if (base instanceof NBTCompound compound) {
+            Entity entity = NBTManager.getInstance().spawnEntity(compound, world);
+            if (entity != null) {
+                caller.send(plugin.translate("success_spawn", entity.getName()));
+                return;
+            }
+        }
+        caller.send(plugin.translate("error_parsevalue", ""));
     }
 }
 

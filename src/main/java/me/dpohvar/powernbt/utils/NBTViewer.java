@@ -1,17 +1,18 @@
 package me.dpohvar.powernbt.utils;
 
 import me.dpohvar.powernbt.PowerNBT;
-import me.dpohvar.powernbt.nbt.*;
+import me.dpohvar.powernbt.api.NBTCompound;
+import me.dpohvar.powernbt.api.NBTList;
+import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.nbt.NBTType;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 /**
  * User: DPOH-VAR
@@ -29,304 +30,291 @@ public class NBTViewer {
     }
 
     @Deprecated
-    public static String getShortValueWithPrefix(NBTBase base, boolean hex){
+    public static String getShortValueWithPrefix(Object base, boolean hex){
         return getShortValueWithPrefix(base, hex, false);
     }
-    public static String getShortValueWithPrefix(NBTBase base, boolean hex, boolean bin){
+    public static String getShortValueWithPrefix(Object base, boolean hex, boolean bin){
         if (base==null) return ChatColor.RESET + PowerNBT.plugin.translate("error_null");
-        NBTType type = base.getType();
-        return String.valueOf(type.color) + type.name + ':' + ' ' + ChatColor.RESET + getShortValue(base, hex, bin);
+        NBTType type = NBTType.fromValue(base);
+        return (type.color) + type.name + ':' + ' ' + ChatColor.RESET + getShortValue(base, hex, bin);
     }
     @Deprecated
-    public static String getShortValue(NBTBase base, boolean hex){
+    public static String getShortValue(Object base, boolean hex){
         return getShortValue(base, hex, false);
     }
-    public static String getShortValue(NBTBase base, boolean hex, boolean bin){
+    public static String getShortValue(Object base, boolean hex, boolean bin){
         String value = "";
-        switch (base.getTypeId()){
-            case 1:{ // byte
-                byte v = ((NBTTagByte) base).get();
-                if (hex) value = "#"+Integer.toHexString(v&0xFF);
-                else if (bin) value = "b"+Integer.toBinaryString(v & 0xFF);
-                else value = String.valueOf(v);
-                break;
+
+        switch (NBTType.fromValue(base)) {
+            case END -> { // null
+                value = PowerNBT.plugin.translate("data_null");
             }
-            case 2:{ // short
-                short v = ((NBTTagShort) base).get();
-                if (hex) value = "#"+Integer.toHexString(v&0xFFFF);
-                else if (bin) value = "b"+Integer.toBinaryString(v&0xFFFF);
+            case BYTE -> { // byte
+                byte v = (byte) base;
+                if (hex) value = "#" + Integer.toHexString(v & 0xFF);
+                else if (bin) value = "b" + Integer.toBinaryString(v & 0xFF);
                 else value = String.valueOf(v);
-                break;
             }
-            case 3:{ // int
-                int v = ((NBTTagInt) base).get();
-                if (hex) value = "#"+Long.toHexString(v&0xFFFFFFFFL);
-                else if (bin) value = "b"+Long.toBinaryString(v&0xFFFFFFFFL);
+            case SHORT -> { // short
+                short v = (short) base;
+                if (hex) value = "#" + Integer.toHexString(v & 0xFFFF);
+                else if (bin) value = "b" + Integer.toBinaryString(v & 0xFFFF);
                 else value = String.valueOf(v);
-                break;
             }
-            case 4:{ // long
-                long v = ((NBTTagLong) base).get();
-                if (hex) value = "#"+Long.toHexString(v);
-                else if (bin) value = "b"+Long.toBinaryString(v);
+            case INT -> { // int
+                int v = (int) base;
+                if (hex) value = "#" + Long.toHexString(v & 0xFFFFFFFFL);
+                else if (bin) value = "b" + Long.toBinaryString(v & 0xFFFFFFFFL);
                 else value = String.valueOf(v);
-                break;
             }
-            case 5:{ // float
-                float v = ((NBTTagFloat) base).get();
-                if (hex) value = "#"+Float.toHexString(v);
+            case LONG -> { // long
+                long v = (long) base;
+                if (hex) value = "#" + Long.toHexString(v);
+                else if (bin) value = "b" + Long.toBinaryString(v);
                 else value = String.valueOf(v);
-                break;
             }
-            case 6:{ // double
-                double v = ((NBTTagDouble) base).get();
-                if (hex) value = "#"+Double.toHexString(v);
+            case FLOAT -> { // float
+                float v = (float) base;
+                if (hex) value = "#" + Float.toHexString(v);
                 else value = String.valueOf(v);
-                break;
             }
-            case 7:{ // bytearray
-                NBTTagByteArray v = ((NBTTagByteArray) base);
-                if (v.size()==0) value = PowerNBT.plugin.translate("data_emptyarray");
+            case DOUBLE -> { // double
+                double v = (double) base;
+                if (hex) value = "#" + Double.toHexString(v);
+                else value = String.valueOf(v);
+            }
+            case BYTEARRAY -> { // bytearray
+                byte[] v = (byte[]) base;
+                if (v.length == 0) value = PowerNBT.plugin.translate("data_emptyarray");
                 else {
-                    value=v.size()+": [";
+                    value = v.length + ": [";
                     if (hex) {
-                        ArrayList<String> h = new ArrayList<String>(v.size());
-                        for(byte b:v.get()) h.add(Integer.toHexString(b&0xFF));
-                        value += "#"+StringUtils.join(h,',');
+                        ArrayList<String> h = new ArrayList<>(v.length);
+                        for (byte b : v) h.add(Integer.toHexString(b & 0xFF));
+                        value += "#" + StringUtils.join(h, ',');
                     } else if (bin) {
-                        ArrayList<String> h = new ArrayList<String>(v.size());
-                        for(byte b:v.get()) h.add(Integer.toBinaryString(b&0xFF));
-                        value += "b"+StringUtils.join(h,',');
+                        ArrayList<String> h = new ArrayList<>(v.length);
+                        for (byte b : v) h.add(Integer.toBinaryString(b & 0xFF));
+                        value += "b" + StringUtils.join(h, ',');
                     } else {
-                        value += StringUtils.join(v.iterator(),',');
+                        value += StringUtils.join(ArrayUtils.toObject(v), ',');
                     }
-                    value+="]";
+                    value += "]";
                 }
-                break;
             }
-            case 8:{ //string
-                value = ((NBTTagString)base).get();
+            case STRING -> { //string
+                value = (String) base;
                 if (hex) {
-                    try{
-                        ArrayList<String> h = new ArrayList<String>();
-                        for(byte b:value.getBytes("UTF8")) h.add(Integer.toHexString(b&0xFF));
-                        value = StringUtils.join(h,' ');
-                    } catch (UnsupportedEncodingException e) {
-                        Bukkit.getLogger().log(Level.WARNING, "UTF-8 unsupported. Rly? O_o", e);
-                    }
+                    ArrayList<String> h = new ArrayList<>();
+                    for (byte b : value.getBytes(StandardCharsets.UTF_8)) h.add(Integer.toHexString(b & 0xFF));
+                    value = StringUtils.join(h, ' ');
                 }
-                break;
             }
-            case 9:{ // list
-                NBTTagList list = ((NBTTagList)base);
-                NBTType listType = NBTType.fromByte(list.getSubTypeId());
-                if (list.size()==0){
+            case LIST -> { // list
+                NBTList list = (NBTList) base;
+                NBTType listType = NBTType.fromByte(list.getType());
+                if (list.size() == 0) {
                     value = PowerNBT.plugin.translate("data_emptylist");
                 } else {
-                    value = PowerNBT.plugin.translate("data_elements",list.size())
+                    value = PowerNBT.plugin.translate("data_elements", list.size())
                             + " " + listType.color + listType.name + ChatColor.RESET;
                 }
-                break;
             }
-            case 10:{ // compound
-                NBTTagCompound tag = ((NBTTagCompound)base);
-                if (tag.size()==0){
+            case COMPOUND -> { // compound
+                NBTCompound tag = (NBTCompound) base;
+                if (tag.size() == 0) {
                     value = PowerNBT.plugin.translate("data_emptycompound");
                 } else {
-                    ArrayList<String> h = new ArrayList<String>();
-                    for(Map.Entry<String, NBTBase> b: tag.entrySet()){
-                        h.add(b.getValue().getType().color+b.getKey());
+                    ArrayList<String> h = new ArrayList<>();
+                    for (Map.Entry<String, Object> b : tag.entrySet()) {
+                        h.add(NBTType.fromValue(b.getValue()).color + b.getKey());
                     }
-                    value=tag.size()+": "+StringUtils.join(h,ChatColor.RESET+",");
+                    value = tag.size() + ": " + StringUtils.join(h, ChatColor.RESET + ",");
                 }
-                break;
             }
-            case 11:{ // intarray
-                NBTTagIntArray v = ((NBTTagIntArray) base);
-                if(v.size()==0) value = PowerNBT.plugin.translate("data_emptyarray");
+            case INTARRAY -> { // intarray
+                int[] v = (int[]) base;
+                if (v.length == 0) value = PowerNBT.plugin.translate("data_emptyarray");
                 else {
-                    value=v.size()+": [";
+                    value = v.length + ": [";
                     if (hex) {
-                        ArrayList<String> h = new ArrayList<String>(v.size());
-                        for(int b:v.get()) h.add(Long.toHexString(b&0xFFFFFFFFL));
-                        value += "#"+StringUtils.join(h,',');
+                        ArrayList<String> h = new ArrayList<String>(v.length);
+                        for (int b : v) h.add(Long.toHexString(b & 0xFFFFFFFFL));
+                        value += "#" + StringUtils.join(h, ',');
                     } else if (bin) {
-                        ArrayList<String> h = new ArrayList<String>(v.size());
-                        for(int b:v.get()) h.add(Long.toBinaryString(b&0xFFFFFFFFL));
-                        value += "b"+StringUtils.join(h,',');
+                        ArrayList<String> h = new ArrayList<String>(v.length);
+                        for (int b : v) h.add(Long.toBinaryString(b & 0xFFFFFFFFL));
+                        value += "b" + StringUtils.join(h, ',');
                     } else {
-                        value += StringUtils.join(v.iterator(),',');
+                        value += StringUtils.join(ArrayUtils.toObject(v), ',');
                     }
-                    value+="]";
+                    value += "]";
                 }
-                break;
             }
+            case LONGARRAY -> { // longarray
+                long[] v = (long[]) base;
+                if (v.length == 0) value = PowerNBT.plugin.translate("data_emptyarray");
+                else {
+                    value = v.length + ": [";
+                    if (hex) {
+                        ArrayList<String> h = new ArrayList<>(v.length);
+                        for (long b : v) h.add(Long.toHexString(b & 0xFFFFFFFFL));
+                        value += "#" + StringUtils.join(h, ',');
+                    } else if (bin) {
+                        ArrayList<String> h = new ArrayList<>(v.length);
+                        for (long b : v) h.add(Long.toBinaryString(b & 0xFFFFFFFFL));
+                        value += "b" + StringUtils.join(h, ',');
+                    } else {
+                        value += StringUtils.join(ArrayUtils.toObject(v), ',');
+                    }
+                    value += "]";
+                }
+            }
+
         }
-        int overtext = Math.max(ChatColor.stripColor(value).length()-v_limit,value.length()-v_limit*2);
-        String reretPattern = ChatColor.RESET.toString();
-        if ( value.endsWith(reretPattern) ) {
-            value = value.substring(0,value.length()-reretPattern.length());
+        int overText = Math.max(ChatColor.stripColor(value).length()-v_limit,value.length()-v_limit*2);
+        String resetPattern = ChatColor.RESET.toString();
+        if ( value.endsWith(resetPattern) ) {
+            value = value.substring(0,value.length()-resetPattern.length());
         }
-        if (overtext>0){
+        if (overText>0){
             value=value.substring(0,v_limit-1).concat("\u2026");
         }
         return value;
     }
 
-    @Deprecated
-    public static String getFullValue(NBTBase base,int start, int end, boolean hex){
-        return getFullValue(base, start, end, false);
-    }
-
-    public static String getFullValue(NBTBase base,int start, int end, boolean hex, boolean bin){
+    public static String getFullValue(Object base, int start, int end, boolean hex, boolean bin){
         if(base==null) return PowerNBT.plugin.translate("error_null");
         if(start>end) { int t=start; start=end; end=t; }
-        String name = base.getName();
-        NBTType type = base.getType();
+        String name = "";
+        NBTType type = NBTType.fromValue(base);
         ChatColor color = type.color;
         String prefix;
         String value = "";
-        switch (base.getTypeId()){
-            case 1:{ // byte
-                byte v = ((NBTTagByte) base).get();
-                if (hex) value = "#"+Integer.toHexString(v&0xFF);
-                else if (bin) value = "b"+Integer.toBinaryString(v & 0xFF);
+        switch (type) {
+            case BYTE -> { // byte
+                byte v = (byte) base;
+                if (hex) value = "#" + Integer.toHexString(v & 0xFF);
+                else if (bin) value = "b" + Integer.toBinaryString(v & 0xFF);
                 else value = String.valueOf(v);
-                break;
             }
-            case 2:{ // short
-                short v = ((NBTTagShort) base).get();
-                if (hex) value = "#"+Integer.toHexString(v&0xFFFF);
-                else if (bin) value = "b"+Integer.toBinaryString(v & 0xFFFF);
+            case SHORT -> { // short
+                short v = (short) base;
+                if (hex) value = "#" + Integer.toHexString(v & 0xFFFF);
+                else if (bin) value = "b" + Integer.toBinaryString(v & 0xFFFF);
                 else value = String.valueOf(v);
-                break;
             }
-            case 3:{ // int
-                int v = ((NBTTagInt) base).get();
-                if (hex) value = "#"+Long.toHexString(v&0xFFFFFFFFL);
-                else if (bin) value = "b"+Long.toBinaryString(v & 0xFFFFFFFFL);
+            case INT -> { // int
+                int v = (int) base;
+                if (hex) value = "#" + Long.toHexString(v & 0xFFFFFFFFL);
+                else if (bin) value = "b" + Long.toBinaryString(v & 0xFFFFFFFFL);
                 else value = String.valueOf(v);
-                break;
             }
-            case 4:{ // long
-                long v = ((NBTTagLong) base).get();
-                if (hex) value = "#"+Long.toHexString(v);
-                else if (bin) value = "b"+Long.toBinaryString(v);
+            case LONG -> { // long
+                long v = (long) base;
+                if (hex) value = "#" + Long.toHexString(v);
+                else if (bin) value = "b" + Long.toBinaryString(v);
                 else value = String.valueOf(v);
-                break;
             }
-            case 5:{ // float
-                float v = ((NBTTagFloat) base).get();
-                if (hex) value = "#"+Float.toHexString(v);
+            case FLOAT -> { // float
+                float v = (float) base;
+                if (hex) value = "#" + Float.toHexString(v);
                 else value = String.valueOf(v);
-                break;
             }
-            case 6:{ // double
-                double v = ((NBTTagDouble) base).get();
-                if (hex) value = "#"+Double.toHexString(v);
+            case DOUBLE -> { // double
+                double v = (double) base;
+                if (hex) value = "#" + Double.toHexString(v);
                 else value = String.valueOf(v);
-                break;
             }
-            case 7:{ // bytearray
-                if(start==0 && end==0) end = h_limit;
-                NBTTagByteArray v = ((NBTTagByteArray) base);
-                if (v.size()==0) {
+            case BYTEARRAY -> { // bytearray
+                if (start == 0 && end == 0) end = h_limit;
+                byte[] v = (byte[]) base;
+                if (v.length == 0) {
                     value = PowerNBT.plugin.translate("data_emptyarray");
-                    break;
-                } else if (start>v.size()) {
-                    value = "\n"+PowerNBT.plugin.translate("data_outofrange");
-                    break;
+                } else if (start > v.length) {
+                    value = "\n" + PowerNBT.plugin.translate("data_outofrange");
                 } else {
                     StringBuilder buffer = new StringBuilder();
-                    for(int i=start; i<end; i++){
-                        if(i>=v.size()) break;
+                    for (int i = start; i < end; i++) {
+                        if (i >= v.length) break;
                         buffer.append("\n").append(type.color).append("[").append(i).append("] ").append(ChatColor.RESET);
-                        if (hex) buffer.append("#").append(Integer.toHexString(v.get(i)&0xFF));
-                        else if (bin) buffer.append("b").append(Integer.toBinaryString(v.get(i) & 0xFF));
-                        else buffer.append(v.get(i) & 0xFF);
+                        if (hex) buffer.append("#").append(Integer.toHexString(v[i] & 0xFF));
+                        else if (bin) buffer.append("b").append(Integer.toBinaryString(v[i] & 0xFF));
+                        else buffer.append(v[i] & 0xFF);
                     }
-                    value = PowerNBT.plugin.translate("data_elements",v.size()) + buffer.toString();
+                    value = PowerNBT.plugin.translate("data_elements", v.length) + buffer;
                 }
-                break;
             }
-            case 8:{ //string
+            case STRING -> { //string
                 boolean postfix = false;//
-                if(start==0 && end==0) {
-                    end = v_limit*h_limit;
+                if (start == 0 && end == 0) {
+                    end = v_limit * h_limit;
                     postfix = true;
                 }
-                value = ((NBTTagString)base).get();
-                if (start>value.length()) {
+                value = (String) base;
+                if (start > value.length()) {
                     value = PowerNBT.plugin.translate("data_outofrange");
                     break;
                 } else {
-                    if (end>value.length()) {
-                        end=value.length();
+                    if (end > value.length()) {
+                        end = value.length();
                         postfix = false;
                     }
-                    value = value.substring(start,end);
+                    value = value.substring(start, end);
                 }
                 if (hex) {
-                    try{
-                        ArrayList<String> h = new ArrayList<String>();
-                        for(byte b:value.getBytes("UTF8")) h.add(Integer.toHexString(b&0xFF));
-                        value = StringUtils.join(h,' ');
-                    } catch (UnsupportedEncodingException e) {
-                        Bukkit.getLogger().log(Level.WARNING, "UTF-8 unsupported. Rly? O_o", e);
-                    }
+                    ArrayList<String> h = new ArrayList<>();
+                    for (byte b : value.getBytes(StandardCharsets.UTF_8)) h.add(Integer.toHexString(b & 0xFF));
+                    value = StringUtils.join(h, ' ');
                 }
                 if (postfix) value += '\u2026';
-                break;
             }
-            case 9:{ // list
-                if(start==0 && end==0) end = h_limit;
-                NBTType listType = NBTType.fromByte(((NBTTagList)base).getSubTypeId());
-                NBTTagList list = ((NBTTagList)base);
-                if (list.size()==0){
+            case LIST -> { // list
+                if (start == 0 && end == 0) end = h_limit;
+                NBTList list = ((NBTList) base);
+                NBTType listType = NBTType.fromByte(list.getType());
+                if (list.size() == 0) {
                     value = PowerNBT.plugin.translate("data_emptylist");
                     break;
                 }
                 StringBuilder buffer = new StringBuilder();
-                for(int i=start; i<end; i++){
-                    if(i>=list.size()) break;
-                    NBTBase b = list.get(i);
-                    buffer  .append('\n')
+                for (int i = start; i < end; i++) {
+                    if (i >= list.size()) break;
+                    Object b = list.get(i);
+                    buffer.append('\n')
                             .append(listType.color)
                             .append(ChatColor.BOLD)
                             .append("[")
                             .append(i)
                             .append("] ")
                             .append(ChatColor.RESET)
-                            .append(getShortValue(b,hex,bin));
+                            .append(getShortValue(b, hex, bin));
                 }
-                value = PowerNBT.plugin.translate("data_elements",list.size())
-                        + " " + listType.color + listType.name
-                        + buffer.toString();
-                break;
+                value = PowerNBT.plugin.translate("data_elements", list.size())
+                        + " " + listType.color + listType.name + buffer;
             }
-            case 10:{ // compound
-                if(start==0 && end==0) end = h_limit;
-                List<Map.Entry<String,NBTBase>> list = new ArrayList<Map.Entry<String,NBTBase>>(((NBTTagCompound)base).entrySet());
-                if (list.size()==0){
+            case COMPOUND -> { // compound
+                if (start == 0 && end == 0) end = h_limit;
+                NBTCompound compound = (NBTCompound) base;
+                ArrayList<Map.Entry<String, Object>> entries = new ArrayList<>(compound.entrySet());
+                if (entries.size() == 0) {
                     value = PowerNBT.plugin.translate("data_emptycompound");
                     break;
                 }
                 StringBuilder buffer = new StringBuilder();
-                for(int i=start; i<end; i++){
-                    if(i>=list.size()) break;
-                    NBTBase b = list.get(i).getValue();
-                    String currentName = list.get(i).getKey();
-                    NBTType t = b.getType();
+                for (int i = start; i < end; i++) {
+                    if (i >= entries.size()) break;
+                    Object b = entries.get(i).getValue();
+                    String currentName = entries.get(i).getKey();
+                    NBTType t = NBTType.fromValue(b);
                     ChatColor c;
-                    if (b instanceof NBTTagList) c=NBTType.fromByte(((NBTTagList)b).getSubTypeId()).color;
+                    if (b instanceof NBTList nbtListEntry) c = NBTType.fromByte(nbtListEntry.getType()).color;
                     else c = t.color;
-                    String bolder = "";
-                    switch (t){
-                        case LIST:
-                        case COMPOUND:
-                        bolder = ChatColor.BOLD.toString();
-                    }
-                    buffer  .append('\n')
+                    String bolder = switch (t) {
+                        case LIST, COMPOUND -> ChatColor.BOLD.toString();
+                        default -> "";
+                    };
+                    buffer.append('\n')
                             .append(c)
                             .append(t.prefix)
                             .append(' ')
@@ -335,36 +323,50 @@ public class NBTViewer {
                             .append(':')
                             .append(ChatColor.RESET)
                             .append(' ')
-                            .append(getShortValue(b,hex, bin));
+                            .append(getShortValue(b, hex, bin));
                 }
-                value = PowerNBT.plugin.translate("data_elements",list.size()) + buffer.toString();
-                break;
+                value = PowerNBT.plugin.translate("data_elements", entries.size()) + buffer;
             }
-            case 11:{ // intarray
-                if(start==0 && end==0) end = h_limit;
-                NBTTagIntArray v = ((NBTTagIntArray) base);
-                if (v.size()==0) {
+            case INTARRAY -> { // intarray
+                if (start == 0 && end == 0) end = h_limit;
+                int[] v = ((int[]) base);
+                if (v.length == 0) {
                     value = PowerNBT.plugin.translate("data_emptyarray");
-                    break;
-                } else if (start>v.size()) {
-                    value = "\n"+PowerNBT.plugin.translate("data_outofrange");
-                    break;
+                } else if (start > v.length) {
+                    value = "\n" + PowerNBT.plugin.translate("data_outofrange");
                 } else {
                     StringBuilder buffer = new StringBuilder();
-                    for(int i=start; i<end; i++){
-                        if(i>=v.size()) break;
+                    for (int i = start; i < end; i++) {
+                        if (i >= v.length) break;
                         buffer.append("\n").append(type.color).append("[").append(i).append("] ").append(ChatColor.RESET);
-                        if (hex) buffer.append("#").append(Long.toHexString(v.get(i)&0xFFFFFFFFL));
-                        else if (bin) buffer.append("b").append(Long.toBinaryString(v.get(i) & 0xFFFFFFFFL));
-                        else buffer.append(v.get(i));
+                        if (hex) buffer.append("#").append(Long.toHexString(v[i] & 0xFFFFFFFFL));
+                        else if (bin) buffer.append("b").append(Long.toBinaryString(v[i] & 0xFFFFFFFFL));
+                        else buffer.append(v[i]);
                     }
-                    value = PowerNBT.plugin.translate("data_elements",v.size()) + buffer.toString();
+                    value = PowerNBT.plugin.translate("data_elements", v.length) + buffer.toString();
                 }
-                break;
             }
+            case LONGARRAY -> { // longarray
+                if (start == 0 && end == 0) end = h_limit;
+                long[] v = ((long[]) base);
+                if (v.length == 0) {
+                    value = PowerNBT.plugin.translate("data_emptyarray");
+                } else if (start > v.length) {
+                    value = "\n" + PowerNBT.plugin.translate("data_outofrange");
+                } else {
+                    StringBuilder buffer = new StringBuilder();
+                    for (int i = start; i < end; i++) {
+                        if (i >= v.length) break;
+                        buffer.append("\n").append(type.color).append("[").append(i).append("] ").append(ChatColor.RESET);
+                        if (hex) buffer.append("#").append(Long.toHexString(v[i] & 0xFFFFFFFFL));
+                        else if (bin) buffer.append("b").append(Long.toBinaryString(v[i] & 0xFFFFFFFFL));
+                        else buffer.append(v[i]);
+                    }
+                    value = PowerNBT.plugin.translate("data_elements", v.length) + buffer.toString();
+                }
+            }
+
         }
-        if(name.isEmpty()) prefix = color + type.name + ChatColor.RESET + ":";
-        else prefix = color + type.name + " " + ChatColor.BOLD + name + ChatColor.RESET + ":";
-        return prefix+" "+value;
+        return color + type.name + ChatColor.RESET + ": " + value;
     }
 }

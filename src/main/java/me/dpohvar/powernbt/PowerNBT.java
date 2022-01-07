@@ -6,28 +6,55 @@ import me.dpohvar.powernbt.completer.CompleterNBT;
 import me.dpohvar.powernbt.completer.TypeCompleter;
 import me.dpohvar.powernbt.listener.SelectListener;
 import me.dpohvar.powernbt.utils.*;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 
 public class PowerNBT extends JavaPlugin {
 
     private static final boolean SILENT = true;
     public static PowerNBT plugin;
-    public static final Charset charset = Charset.forName("UTF8");
+    public static final Charset charset = StandardCharsets.UTF_8;
     private final HashMap<String, Caller> callers = new HashMap<String, Caller>();
     private Translator translator;
     private static final Tokenizer tokenizer = new Tokenizer(
-            null, null, null, Arrays.asList('\"'), null, Arrays.asList(' ')
+            null, null, null, List.of('\"'), null, List.of(' ')
     );
     private final String prefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[" + ChatColor.YELLOW + "PowerNBT" + ChatColor.GOLD + ChatColor.BOLD + "] " + ChatColor.RESET;
     private final String errorPrefix = ChatColor.DARK_RED.toString() + ChatColor.BOLD + "[" + ChatColor.RED + "PowerNBT" + ChatColor.DARK_RED + ChatColor.BOLD + "] " + ChatColor.RESET;
     private TypeCompleter typeCompleter;
+
+    public PowerNBT() {
+        super();
+
+        try {
+            loadExtensions();
+        } catch (Error e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void loadExtensions(){
+        try {
+            Plugin varScript = Bukkit.getPluginManager().getPlugin("VarScript");
+            if (varScript != null) {
+                Class<?> bootHelperClazz = varScript.getClass().getClassLoader().loadClass("ru.dpohvar.varscript.boot.BootHelper");
+                ReflectionUtils.RefClass<?> bootHelperFefClazz = ReflectionUtils.getRefClass(bootHelperClazz);
+                ReflectionUtils.RefMethod<?> loadExtensionsMethod = bootHelperFefClazz.getMethod("loadExtensions", ClassLoader.class);
+                loadExtensionsMethod.call(PowerNBT.class.getClassLoader());
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Get the folder where are stored saved files
@@ -121,24 +148,10 @@ public class PowerNBT extends JavaPlugin {
         getCommand("powernbt.").setExecutor(new CommandNBT(SILENT));
         getCommand("powernbt").setTabCompleter(new CompleterNBT());
         getCommand("powernbt.").setTabCompleter(new CompleterNBT());
-
-        initializeUtils();
     }
 
     public TypeCompleter getTypeCompleter() {
         return typeCompleter;
-    }
-
-    private void initializeUtils() {
-        printDebug(EntityUtils.entityUtils);
-        printDebug(ItemStackUtils.itemStackUtils);
-        printDebug(NBTBlockUtils.nbtBlockUtils);
-        printDebug(NBTCompressedUtils.nbtCompressedUtils);
-        if (getConfig().getBoolean("utils.chunk", false)) {
-            printDebug(ChunkUtils.chunkUtils);
-        }
-        printDebug(NBTUtils.nbtUtils);
-        printDebug(PacketUtils.packetUtils);
     }
 
     private void printDebug(Object t){

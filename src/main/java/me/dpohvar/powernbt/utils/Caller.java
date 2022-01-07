@@ -2,7 +2,6 @@ package me.dpohvar.powernbt.utils;
 
 import me.dpohvar.powernbt.command.action.Action;
 import me.dpohvar.powernbt.command.action.Argument;
-import me.dpohvar.powernbt.nbt.NBTBase;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -18,10 +17,10 @@ import static me.dpohvar.powernbt.PowerNBT.plugin;
 public class Caller extends NBTContainer<Caller> {
     private CommandSender owner;
     private boolean silent;
-    private NBTBase base;
+    private Object base;
     private Argument argument;
     private Action action;
-    private final HashMap<String, NBTContainer> variables = new HashMap<String, NBTContainer>();
+    private final HashMap<String, NBTContainer<?>> variables = new HashMap<>();
 
     public Argument getArgument() {
         return argument;
@@ -52,15 +51,15 @@ public class Caller extends NBTContainer<Caller> {
         this.owner = owner;
     }
 
-    public HashMap<String, NBTContainer> getVariables() {
+    public HashMap<String, NBTContainer<?>> getVariables() {
         return variables;
     }
 
-    public NBTContainer getVariable(String name) {
+    public NBTContainer<?> getVariable(String name) {
         return variables.get(name);
     }
 
-    public void setVariable(String name, NBTContainer value) {
+    public void setVariable(String name, NBTContainer<?> value) {
         variables.put(name, value);
     }
 
@@ -82,7 +81,7 @@ public class Caller extends NBTContainer<Caller> {
 
         } else {
             message = plugin.getErrorPrefix() +
-                    ChatColor.RED.toString() + ChatColor.BOLD +
+                    ChatColor.RED + ChatColor.BOLD +
                     o.getClass().getSimpleName() + ": " + ChatColor.RESET+ o.getMessage();
         }
         if (message.length()>32743) message = message.substring(0,32743);
@@ -107,12 +106,12 @@ public class Caller extends NBTContainer<Caller> {
     }
 
     @Override
-    public NBTBase readTag() {
+    public Object readTag() {
         return this.base;
     }
 
     @Override
-    public void writeTag(NBTBase base) {
+    public void writeTag(Object base) {
         this.base = base;
     }
 

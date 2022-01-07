@@ -9,14 +9,16 @@ import me.dpohvar.powernbt.utils.NBTViewer;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
-public class ActionBitInverse extends Action {
+public abstract class ActionBiLong extends Action {
 
     private final Caller caller;
     private final Argument arg1;
+    private final Argument arg2;
 
-    public ActionBitInverse(Caller caller, String o1, String q1) {
+    public ActionBiLong(Caller caller, String o1, String q1, String o2, String q2) {
         this.caller = caller;
         this.arg1 = new Argument(caller, o1, q1);
+        this.arg2 = new Argument(caller, o2, q2);
     }
 
     @Override
@@ -27,14 +29,27 @@ public class ActionBitInverse extends Action {
         }
         NBTContainer container1 = arg1.getContainer();
         NBTQuery query1 = arg1.getQuery();
+        if (arg2.needPrepare()) {
+            arg2.prepare(this, container1, query1);
+            return;
+        }
         Object base1 = container1.getCustomTag(query1);
-        if (!(base1 instanceof Number)){
+        NBTContainer container2 = arg2.getContainer();
+        NBTQuery query2 = arg2.getQuery();
+        Object base2 = container2.getCustomTag(query2);
+        if (!(base2 instanceof Number)){
             throw new RuntimeException(plugin.translate("error_null"));
         }
+        if (base1 == null) {
+            base1 = NBTType.fromValue(base2).getDefault();
+        }
         long baseValue = ((Number)base1).longValue();
-        Object result = NBTManager.convertValue(~baseValue, NBTType.fromValue(base1).type);
+        long argValue = ((Number)base2).longValue();
+        Object result = NBTManager.convertValue(operation(baseValue, argValue), NBTType.fromValue(base1).type);
         container1.setCustomTag(query1, result);
         caller.send(plugin.translate("success_edit") + NBTViewer.getShortValueWithPrefix(result,false));
 
     }
+
+    abstract long operation(long arg1, long arg2);
 }

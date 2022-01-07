@@ -1,10 +1,16 @@
 package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.PowerNBT;
-import me.dpohvar.powernbt.nbt.*;
+import me.dpohvar.powernbt.api.NBTList;
+import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.nbt.NBTContainer;
+import me.dpohvar.powernbt.nbt.NBTType;
 import me.dpohvar.powernbt.utils.Caller;
 import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.NBTViewer;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class ActionInsert extends Action {
 
@@ -33,20 +39,21 @@ public class ActionInsert extends Action {
             arg2.prepare(this, container1, query1);
             return;
         }
-        NBTBase base1 = container1.getCustomTag(query1);
+        Object base1 = container1.getCustomTag(query1);
         NBTContainer container2 = arg2.getContainer();
         NBTQuery query2 = arg2.getQuery();
-        NBTBase base2 = container2.getCustomTag(query2);
-        if (base1 instanceof NBTTagList){
-            NBTTagList tag1 = (NBTTagList) base1;
-            tag1.add(pos,base2);
-            container1.setCustomTag(query1,tag1);
+        Object base2 = container2.getCustomTag(query2);
+        if (base1 instanceof NBTList list){
+            list.add(pos,base2);
+            container1.setCustomTag(query1,list);
             caller.send(PowerNBT.plugin.translate("success_insert") + NBTViewer.getShortValueWithPrefix(base2, false));
-        } else if (base1 instanceof NBTTagNumericArray && base2 instanceof NBTTagNumeric){
-            NBTTagNumericArray list1 = (NBTTagNumericArray) base1;
-            NBTTagNumeric num = (NBTTagNumeric) base2;
-            list1.add(pos,(Number)num.get());
-            container1.setCustomTag(query1,list1);
+        } else if (base1 != null && base1.getClass().isArray() && base2 instanceof Number num){
+            byte type = NBTType.fromValue(base1).type;
+            Object[] array = NBTManager.convertToObjectArrayOrNull(base1);
+            List<Object> list = Arrays.asList(array);
+            list.add(pos, num);
+            Object result = NBTManager.convertValue(list, type);
+            container1.setCustomTag(query1, result);
             caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(num, false));
         } else {
             caller.send(PowerNBT.plugin.translate("fail_insert"));

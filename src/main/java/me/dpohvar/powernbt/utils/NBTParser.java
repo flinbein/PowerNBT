@@ -4,8 +4,11 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.api.NBTList;
+import me.dpohvar.powernbt.api.NBTManager;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import static java.lang.Byte.parseByte;
@@ -14,7 +17,6 @@ import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
 import static java.lang.Short.parseShort;
-import static me.dpohvar.powernbt.utils.NBTUtils.nbtUtils;
 
 public class NBTParser {
     private static final Pattern b = Pattern.compile("\\[[-+\\d|,\\s]+\\]");
@@ -279,34 +281,34 @@ public class NBTParser {
 
         public Object parse() throws RuntimeException {
             if (patDouble.matcher(value).matches()) {
-                return nbtUtils.createTagDouble(parseDouble(value.substring(0, value.length() - 1)));
+                return NBTManager.getInstance().getTagOfValue(parseDouble(value.substring(0, value.length() - 1)));
             } else if (patFloat.matcher(value).matches()) {
-                return nbtUtils.createTagFloat(parseFloat(value.substring(0, value.length() - 1)));
+                return NBTManager.getInstance().getTagOfValue(parseFloat(value.substring(0, value.length() - 1)));
             } else if (patByte.matcher(value).matches()) {
-                return nbtUtils.createTagByte(parseByte(value.substring(0, value.length() - 1)));
+                return NBTManager.getInstance().getTagOfValue(parseByte(value.substring(0, value.length() - 1)));
             } else if (patLong.matcher(value).matches()) {
-                return nbtUtils.createTagLong(parseLong(value.substring(0, value.length() - 1)));
+                return NBTManager.getInstance().getTagOfValue(parseLong(value.substring(0, value.length() - 1)));
             } else if (patShort.matcher(value).matches()) {
-                return nbtUtils.createTagShort(parseShort(value.substring(0, value.length() - 1)));
+                return NBTManager.getInstance().getTagOfValue(parseShort(value.substring(0, value.length() - 1)));
             } else if (patInt.matcher(value).matches()) {
-                return nbtUtils.createTagInt(parseInt(value.substring(0, value.length() - 1)));
+                return NBTManager.getInstance().getTagOfValue(parseInt(value.substring(0, value.length() - 1)));
             } else if (patIntDef.matcher(value).matches()) {
-                return nbtUtils.createTagInt(parseInt(value));
+                return NBTManager.getInstance().getTagOfValue(parseInt(value));
             } else if (patDoubleDef.matcher(value).matches()) {
-                return nbtUtils.createTagDouble(parseDouble(value));
+                return NBTManager.getInstance().getTagOfValue(parseDouble(value));
             } else if (value.equalsIgnoreCase("true")) {
-                return nbtUtils.createTagByte((byte)1);
+                return NBTManager.getInstance().getTagOfValue((byte)1);
             } else if (value.equalsIgnoreCase("false")) {
-                return nbtUtils.createTagByte((byte)0);
+                return NBTManager.getInstance().getTagOfValue(((byte)0));
             } else if(this.value.startsWith("[") && this.value.endsWith("]i")) {
                 String token = value.substring(1, this.value.length() - 2);
-                List<Integer> tempResult = new ArrayList<Integer>();
+                List<Integer> tempResult = new ArrayList<>();
                 for (String s : splitter.split(token)) {
                     tempResult.add(parseInt(s.trim()));
                 }
                 int[] result = new int[tempResult.size()];
                 for (int i=0; i<result.length; i++) result[i] = tempResult.get(i);
-                return nbtUtils.createTagIntArray(result);
+                return NBTManager.getInstance().getTagOfValue(result);
             } else if(this.value.startsWith("[") && this.value.endsWith("]b")) {
                 String token = value.substring(1, this.value.length() - 2);
                 List<Byte> tempResult = new ArrayList<Byte>();
@@ -315,7 +317,7 @@ public class NBTParser {
                 }
                 byte[] result = new byte[tempResult.size()];
                 for (int i=0; i<result.length; i++) result[i] = tempResult.get(i);
-                return nbtUtils.createTagByteArray(result);
+                return NBTManager.getInstance().getTagOfValue(result);
             } else if (this.value.startsWith("[") && this.value.endsWith("]")) {
                 String token = this.value.substring(1, this.value.length() - 1);
                 String[] tokens = Iterables.toArray(splitter.split(token), String.class);
@@ -323,11 +325,11 @@ public class NBTParser {
                 for(int i = 0; i < tokens.length; ++i) {
                     result[i] = parseInt(tokens[i].trim());
                 }
-                return nbtUtils.createTagIntArray(result);
+                return NBTManager.getInstance().getTagOfValue(result);
             } else {
                 if(value.startsWith("\"") && value.endsWith("\"")) {
                     String parseValue = value.substring(1, value.length()-1);
-                    return nbtUtils.createTagString(StringParser.parse(parseValue));
+                    return NBTManager.getInstance().getTagOfValue(StringParser.parse(parseValue));
                 }
 
                 value = value.replaceAll("\\\\\"", "\"");
@@ -341,13 +343,13 @@ public class NBTParser {
                         builder.append(value.charAt(i));
                     }
                 }
-                return nbtUtils.createTagString(builder);
+                return NBTManager.getInstance().getTagOfValue(builder.toString());
             }
         }
     }
 
     static class ListParser extends TypeParser {
-        protected List<TypeParser> parsers = new ArrayList<TypeParser>();
+        protected List<TypeParser> parsers = new ArrayList<>();
 
         public ListParser(String name) {
             this.name = name;
@@ -356,14 +358,14 @@ public class NBTParser {
         public Object parse() throws RuntimeException {
             NBTList list = new NBTList();
             for (TypeParser var2 : parsers) {
-                list.add(nbtUtils.getValue(var2.parse()));
+                list.add(NBTManager.getInstance().getValueOfTag(var2.parse()));
             }
             return list.getHandle();
         }
     }
 
     static class CompoundParser extends TypeParser {
-        protected List<TypeParser> parsers = new ArrayList<TypeParser>();
+        protected List<TypeParser> parsers = new ArrayList<>();
 
         public CompoundParser(String name) {
             this.name = name;
@@ -376,7 +378,7 @@ public class NBTParser {
                 if (key.startsWith("\"") && key.endsWith("\"")) {
                     key = StringParser.parse(key.substring(1, key.length()-1));
                 }
-                result.put(key, (nbtUtils.getValue(parser.parse())));
+                result.put(key, (NBTManager.getInstance().getValueOfTag(parser.parse())));
             }
             return result.getHandle();
         }

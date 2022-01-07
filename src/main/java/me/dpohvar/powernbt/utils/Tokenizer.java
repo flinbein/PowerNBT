@@ -10,9 +10,9 @@ public class Tokenizer {
         OPERAND, LINE_COMMENT, FULL_COMMENT, TEXT,
     }
 
-    private String lineComment;
-    private String openComment;
-    private String closeComment;
+    private final String lineComment;
+    private final String openComment;
+    private final String closeComment;
     private HashSet<Character> quotes = new HashSet<Character>();
     private HashSet<Character> singleChars = new HashSet<Character>();
     private HashSet<Character> delimiters = new HashSet<Character>();
@@ -80,7 +80,7 @@ public class Tokenizer {
             int position = input.getPosition();
             Character c = input.read();
             switch (mode) {
-                case OPERAND: {
+                case OPERAND -> {
                     if (c == null) {
                         if (buffer.hasSome()) tokens.put(position - buffer.length(), buffer.toString());
                         break tokenizer;
@@ -104,9 +104,8 @@ public class Tokenizer {
                     } else {
                         buffer.append(c);
                     }
-                    break;
                 }
-                case TEXT: {
+                case TEXT -> {
                     if (c == null) {
                         throw new RuntimeException("missing " + quote + " : " + buffer.toString());
                     }
@@ -119,9 +118,8 @@ public class Tokenizer {
                     } else {
                         buffer.append(c);
                     }
-                    break;
                 }
-                case FULL_COMMENT: {
+                case FULL_COMMENT -> {
                     VarStringBuffer buf = new VarStringBuffer();
                     while (true) {
                         Character t = input.read();
@@ -135,9 +133,8 @@ public class Tokenizer {
                         }
                     }
                     mode = Mode.OPERAND;
-                    break;
                 }
-                case LINE_COMMENT: {
+                case LINE_COMMENT -> {
                     while (true) {
                         Character t = input.read();
                         if (t == null || t == '\n') {
@@ -145,7 +142,6 @@ public class Tokenizer {
                             break;
                         }
                     }
-                    break;
                 }
             }
         }
@@ -153,8 +149,8 @@ public class Tokenizer {
     }
 
 
-    private class VarCharInputStream {
-        private char[] c;
+    private static class VarCharInputStream {
+        private final char[] c;
         private int p = 0;
 
         public VarCharInputStream(String s) {
@@ -173,8 +169,8 @@ public class Tokenizer {
         }
     }
 
-    private class VarStringBuffer {
-        private ArrayList<Character> a = new ArrayList<Character>();
+    private static class VarStringBuffer {
+        private final ArrayList<Character> a = new ArrayList<Character>();
 
         public void append(Character c) {
             a.add(c);

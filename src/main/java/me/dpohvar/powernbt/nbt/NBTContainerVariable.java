@@ -44,14 +44,14 @@ public class NBTContainerVariable extends NBTContainer<Caller> {
     }
 
     @Override
-    public NBTBase readTag() {
+    public Object readTag() {
         NBTContainer t = getContainer();
         if (t != null) return t.readTag();
         return null;
     }
 
     @Override
-    public void writeTag(NBTBase base) {
+    public void writeTag(Object base) {
         NBTContainer t = getContainer();
         if (t != null) t.writeTag(base);
     }
@@ -63,14 +63,14 @@ public class NBTContainerVariable extends NBTContainer<Caller> {
     }
 
     @Override
-    protected NBTBase readCustomTag() {
+    protected Object readCustomTag() {
         NBTContainer t = getContainer();
         if (t != null) return t.readCustomTag();
         return null;
     }
 
     @Override
-    protected void writeCustomTag(NBTBase base) {
+    protected void writeCustomTag(Object base) {
         NBTContainer t = getContainer();
         if (t != null) t.writeCustomTag(base);
     }

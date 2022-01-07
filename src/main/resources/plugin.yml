@@ -1,9 +1,11 @@
-name: ${project.artifactId}
+name: PowerNBT
 description: ${plugin-description}
 author: ${plugin-author}
 main: me.dpohvar.powernbt.PowerNBT
 website: ${plugin-website}
 version: ${project.version}
+softdepend:
+    - VarScript
 commands:
     powernbt:
         description: use nbt commands

@@ -1,11 +1,11 @@
 package me.dpohvar.powernbt.nbt;
 
+import me.dpohvar.powernbt.api.NBTCompound;
+import me.dpohvar.powernbt.api.NBTManager;
 import org.bukkit.Chunk;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static me.dpohvar.powernbt.utils.ChunkUtils.chunkUtils;
 
 public class NBTContainerChunk extends NBTContainer<Chunk> {
 
@@ -21,21 +21,21 @@ public class NBTContainerChunk extends NBTContainer<Chunk> {
 
     @Override
     public List<String> getTypes() {
-        List<String> s = new ArrayList<String>();
+        List<String> s = new ArrayList<>();
         s.add("chunk");
         return s;
     }
 
     @Override
-    public NBTTagCompound readTag() {
-        NBTTagCompound tag = new NBTTagCompound();
-        chunkUtils.readChunk(chunk, tag.getHandle());
-        return tag;
+    public NBTCompound readTag() {
+        return NBTManager.getInstance().read(chunk);
     }
 
     @Override
-    public void writeTag(NBTBase base) {
-        chunkUtils.writeChunk(chunk, base.getHandle());
+    public void writeTag(Object value) {
+        if (value instanceof NBTCompound compound) {
+            NBTManager.getInstance().write(chunk, compound);
+        }
     }
 
     @Override

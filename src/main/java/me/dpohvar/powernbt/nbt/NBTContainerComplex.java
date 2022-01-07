@@ -27,12 +27,12 @@ public class NBTContainerComplex extends NBTContainer<NBTContainer> {
         return new ArrayList<String>();
     }
 
-    public NBTQuery getQuery() {
+    public Object getQuery() {
         return this.query;
     }
 
     @Override
-    public NBTBase readTag() {
+    public Object readTag() {
         try {
             return query.get(container.getTag());
         } catch (NBTTagNotFound nbtTagNotFound) {
@@ -41,7 +41,7 @@ public class NBTContainerComplex extends NBTContainer<NBTContainer> {
     }
 
     @Override
-    public NBTBase readCustomTag() {
+    public Object readCustomTag() {
         try {
             return query.get(container.getCustomTag());
         } catch (NBTTagNotFound nbtTagNotFound) {
@@ -50,9 +50,9 @@ public class NBTContainerComplex extends NBTContainer<NBTContainer> {
     }
 
     @Override
-    public void writeTag(NBTBase base) {
+    public void writeTag(Object base) {
         try {
-            NBTBase res = query.set(container.getTag(),base);
+            Object res = query.set(container.getTag(),base);
             container.writeTag(res);
         } catch (NBTQueryException exception) {
             throw new RuntimeException(exception.getMessage(),exception);
@@ -60,9 +60,9 @@ public class NBTContainerComplex extends NBTContainer<NBTContainer> {
     }
 
     @Override
-    public void writeCustomTag(NBTBase base) {
+    public void writeCustomTag(Object base) {
         try {
-            NBTBase res = query.set(container.getCustomTag(),base);
+            Object res = query.set(container.getCustomTag(),base);
             container.setCustomTag(res);
         } catch (NBTQueryException exception) {
             throw new RuntimeException(exception.getMessage(),exception);
@@ -72,7 +72,7 @@ public class NBTContainerComplex extends NBTContainer<NBTContainer> {
     @Override
     public void eraseTag() {
         try {
-            NBTBase res = query.remove(container.getTag());
+            Object res = query.remove(container.getTag());
             container.setTag(res);
         } catch (NBTTagNotFound exception) {
             throw new RuntimeException(exception.getMessage(),exception);
@@ -82,7 +82,7 @@ public class NBTContainerComplex extends NBTContainer<NBTContainer> {
     @Override
     public void eraseCustomTag() {
         try {
-            NBTBase res = query.remove(container.getCustomTag());
+            Object res = query.remove(container.getCustomTag());
             container.setCustomTag(res);
         } catch (NBTTagNotFound exception) {
             throw new RuntimeException(exception.getMessage(),exception);
@@ -97,6 +97,6 @@ public class NBTContainerComplex extends NBTContainer<NBTContainer> {
     @Override
     public String toString(){
         if (query==null || query.toString().isEmpty()) return "<"+container.toString()+">";
-        else return "<"+container.toString()+" "+query.toString()+">";
+        else return "<"+container.toString()+" "+query+">";
     }
 }

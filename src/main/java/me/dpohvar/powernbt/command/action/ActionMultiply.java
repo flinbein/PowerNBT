@@ -1,8 +1,8 @@
 package me.dpohvar.powernbt.command.action;
 
-import me.dpohvar.powernbt.nbt.NBTBase;
+import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.nbt.NBTContainer;
-import me.dpohvar.powernbt.nbt.NBTTagNumeric;
+import me.dpohvar.powernbt.nbt.NBTType;
 import me.dpohvar.powernbt.utils.Caller;
 import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.NBTViewer;
@@ -33,29 +33,25 @@ public class ActionMultiply extends Action {
             arg2.prepare(this, container1, query1);
             return;
         }
-        NBTBase base1 = container1.getCustomTag(query1);
+        Object base1 = container1.getCustomTag(query1);
         NBTContainer container2 = arg2.getContainer();
         NBTQuery query2 = arg2.getQuery();
-        NBTBase base2 = container2.getCustomTag(query2);
-        if (!(base2 instanceof NBTTagNumeric)){
+        Object base2 = container2.getCustomTag(query2);
+        if (!(base2 instanceof Number number2)){
             throw new RuntimeException(plugin.translate("error_null"));
         }
-        if (base1 == null) {
-            base1 = base2.clone();
-            ((NBTTagNumeric)base1).setNumber(0);
-        }
-        Number result;
-        Number number1 = (Number)((NBTTagNumeric)base1).get();
-        Number number2 = (Number)((NBTTagNumeric)base2).get();
+        if (base1 == null) base1 = NBTType.fromValue(base2).getDefault();
+        Number mathResult;
+        Number number1 = (Number) base1;
         if (number1 instanceof Float || number1 instanceof Double || number2 instanceof Float || number2 instanceof Double){
-            result = number1.doubleValue() * number2.doubleValue();
+            mathResult = number1.doubleValue() * number2.doubleValue();
         } else {
-            result = number1.longValue() * number2.longValue();
+            mathResult = number1.longValue() * number2.longValue();
         }
-
-        ((NBTTagNumeric)base1).setNumber( result );
-        container1.setCustomTag(query1, base1);
-        caller.send(plugin.translate("success_edit") + NBTViewer.getShortValueWithPrefix(base1,false));
+        byte base1Type = NBTType.fromValue(base1).type;
+        Object result = NBTManager.convertValue(mathResult, base1Type);
+        container1.setCustomTag(query1, result);
+        caller.send(plugin.translate("success_edit") + NBTViewer.getShortValueWithPrefix(result,false));
 
     }
 }

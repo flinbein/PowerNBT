@@ -1,7 +1,6 @@
 package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.PowerNBT;
-import me.dpohvar.powernbt.nbt.NBTBase;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.utils.Caller;
 import me.dpohvar.powernbt.utils.NBTQuery;
@@ -33,7 +32,7 @@ public class ActionMoveLast extends Action {
         }
         NBTQuery query2 = arg2.getQuery();
         NBTContainer container2 = arg2.getContainer();
-        NBTBase base = arg1.getContainer().getCustomTag(arg1.getQuery());
+        Object base = arg1.getContainer().getCustomTag(arg1.getQuery());
         if (base == null) throw new RuntimeException(PowerNBT.plugin.translate("error_null"));
 
         try{

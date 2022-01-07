@@ -1,14 +1,15 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.utils.NBTUtils;
+import me.dpohvar.powernbt.api.NBTCompound;
+import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.utils.ReflectionUtils;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import static me.dpohvar.powernbt.utils.EntityUtils.entityUtils;
+import java.util.Objects;
 
 public class NBTContainerEntity extends NBTContainer<Entity> {
 
@@ -33,34 +34,24 @@ public class NBTContainerEntity extends NBTContainer<Entity> {
     }
 
     @Override
-    public NBTTagCompound readTag() {
-        NBTTagCompound tag = new NBTTagCompound();
-        entityUtils.readEntity(entity, tag.getHandle());
+    public NBTCompound readTag() {
+        NBTCompound tag = NBTManager.getInstance().read(entity);
         if (ReflectionUtils.isForge()) {
-            Object t = entityUtils.getForgeData(entity);
-            if (t != null) {
-                NBTTagCompound forgeData = new NBTTagCompound(false,t);
-                tag.put("ForgeData", forgeData);
-            } else {
-                tag.put("ForgeData", new NBTTagCompound());
-            }
+            NBTCompound nbtCompound = NBTManager.getInstance().readForgeData(entity);
+            tag.put("ForgeData", Objects.requireNonNullElseGet(nbtCompound, NBTCompound::new));
         }
         return tag;
     }
 
     @Override
-    public void writeTag(NBTBase base) {
-        entityUtils.writeEntity(entity, base.getHandle());
+    public void writeTag(Object base) {
+        if (!(base instanceof NBTCompound compound)) return;
+        NBTManager.getInstance().write(entity, compound);
         if (ReflectionUtils.isForge()){
-            Object forgeData = ((NBTTagCompound)base).get("ForgeData");
-            if (forgeData instanceof NBTTagCompound) {
-                Object data = base.getHandle();
-                entityUtils.writeEntity(entity, NBTUtils.nbtUtils.cloneTag(data));
-            } else {
-                entityUtils.setForgeData(entity, NBTUtils.nbtUtils.createTagCompound());
-            }
+            Object forgeData = compound.get("ForgeData");
+            if (forgeData instanceof NBTCompound forgeCompound)
+            NBTManager.getInstance().writeForgeData(entity, forgeCompound);
         }
-
     }
 
     @Override

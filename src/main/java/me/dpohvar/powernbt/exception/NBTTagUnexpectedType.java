@@ -1,7 +1,5 @@
 package me.dpohvar.powernbt.exception;
 
-import me.dpohvar.powernbt.nbt.NBTBase;
-
 /**
  * Created with IntelliJ IDEA.
  * User: DPOH-VAR
@@ -9,12 +7,12 @@ import me.dpohvar.powernbt.nbt.NBTBase;
  * Time: 14:16
  */
 public class NBTTagUnexpectedType extends NBTQueryException{
-    private final NBTBase tag;
-    public NBTTagUnexpectedType(NBTBase tag, Class<? extends NBTBase> expected){
+    private final Object tag;
+    public NBTTagUnexpectedType(Object tag, Class<?> expected){
         super("tag has wrong type "+tag.getClass().getSimpleName()+" but expected "+expected.getSimpleName());
         this.tag = tag;
     }
-    public NBTBase getTag(){
+    public Object getTag(){
         return tag;
     }
 }

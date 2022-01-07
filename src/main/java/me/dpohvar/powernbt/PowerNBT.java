@@ -6,8 +6,10 @@ import me.dpohvar.powernbt.completer.CompleterNBT;
 import me.dpohvar.powernbt.completer.TypeCompleter;
 import me.dpohvar.powernbt.listener.SelectListener;
 import me.dpohvar.powernbt.utils.*;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -29,6 +31,30 @@ public class PowerNBT extends JavaPlugin {
     private final String prefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[" + ChatColor.YELLOW + "PowerNBT" + ChatColor.GOLD + ChatColor.BOLD + "] " + ChatColor.RESET;
     private final String errorPrefix = ChatColor.DARK_RED.toString() + ChatColor.BOLD + "[" + ChatColor.RED + "PowerNBT" + ChatColor.DARK_RED + ChatColor.BOLD + "] " + ChatColor.RESET;
     private TypeCompleter typeCompleter;
+
+    public PowerNBT() {
+        super();
+
+        try {
+            loadExtensions();
+        } catch (Error e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void loadExtensions(){
+        try {
+            Plugin varScript = Bukkit.getPluginManager().getPlugin("VarScript");
+            if (varScript != null) {
+                Class<?> bootHelperClazz = varScript.getClass().getClassLoader().loadClass("ru.dpohvar.varscript.boot.BootHelper");
+                ReflectionUtils.RefClass<?> bootHelperFefClazz = ReflectionUtils.getRefClass(bootHelperClazz);
+                ReflectionUtils.RefMethod<?> loadExtensionsMethod = bootHelperFefClazz.getMethod("loadExtensions", ClassLoader.class);
+                loadExtensionsMethod.call(PowerNBT.class.getClassLoader());
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Get the folder where are stored saved files

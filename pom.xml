@@ -15,6 +15,7 @@
 
         <bukkit-version>1.15.2-R0.1-SNAPSHOT</bukkit-version>
         <spigot-version>1.17.1-R0.1-SNAPSHOT</spigot-version>
+        <groovy-version>3.0.9</groovy-version>
 
         <github.global.server>github</github.global.server>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -30,7 +31,7 @@
 
     <groupId>me.dpohvar.powernbt</groupId>
     <artifactId>powernbt</artifactId>
-    <version>0.9.1</version>
+    <version>0.9.2</version>
     <packaging>jar</packaging>
 
     <description>Powerful NBT editor for CraftBukkit 1.5 and later</description>
@@ -73,6 +74,13 @@
             <artifactId>annotations</artifactId>
             <version>RELEASE</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>${groovy-version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

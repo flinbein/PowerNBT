@@ -1,8 +1,5 @@
 package me.dpohvar.powernbt.api;
 
-import org.apache.commons.lang.ArrayUtils;
-
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -161,122 +158,9 @@ public class NBTList implements List<Object>, NBTBox {
             setType(type);
             return tag;
         }
-        else return createTagOfType(type, value); // CREATE TAG AND CONVERT FOR TYPE
+        else return nbt.getTagOfValue(NBTManager.convertValue(value, type)); // CREATE TAG AND CONVERT FOR TYPE
     }
 
-    private static Object createTagOfType(byte type, Object value) {
-        return switch (type) {
-            case 0 /*end*/ -> null;
-            case 1 /*byte*/ -> {
-                if (value instanceof Byte current) yield current;
-                if (value == null) yield (byte) 0;
-                if (value instanceof Boolean b) yield (byte) (b ? 1 : 0);
-                if (value instanceof Number n) yield n.byteValue();
-                if (value instanceof CharSequence) yield Byte.valueOf(value.toString());
-                if (value instanceof Character n) yield (byte) (char) n;
-                throw new RuntimeException("Wrong value of type "+type);
-            }
-            case 2 /*short*/ -> {
-                if (value instanceof Short current) yield current;
-                if (value == null) yield (short) 0;
-                if (value instanceof Boolean b) yield (short) (b ? 1 : 0);
-                if (value instanceof Number n) yield n.shortValue();
-                if (value instanceof CharSequence) yield Short.valueOf(value.toString());
-                if (value instanceof Character n) yield (short) (char) n;
-                throw new RuntimeException("Wrong value of type "+type);
-            }
-            case 3 /*int*/ -> {
-                if (value instanceof Integer current) yield current;
-                if (value == null) yield (int) 0;
-                if (value instanceof Boolean b) yield (int) (b ? 1 : 0);
-                if (value instanceof Number n) yield n.intValue();
-                if (value instanceof CharSequence) yield Integer.valueOf(value.toString());
-                if (value instanceof Character n) yield (int) (char) n;
-                throw new RuntimeException("Wrong value of type "+type);
-            }
-            case 4 /*long*/ -> {
-                if (value instanceof Long current) yield current;
-                if (value == null) yield (long) 0;
-                if (value instanceof Boolean b) yield (long) (b ? 1 : 0);
-                if (value instanceof Number n) yield n.longValue();
-                if (value instanceof CharSequence) yield Long.valueOf(value.toString());
-                if (value instanceof Character n) yield (long) (char) n;
-                throw new RuntimeException("Wrong value of type "+type);
-            }
-            case 5 /*float*/ -> {
-                if (value instanceof Float current) yield current;
-                if (value == null) yield (float) 0;
-                if (value instanceof Boolean b) yield (float) (b ? 1 : 0);
-                if (value instanceof Number n) yield n.floatValue();
-                if (value instanceof CharSequence) yield Float.valueOf(value.toString());
-                if (value instanceof Character n) yield (float) (char) n;
-                throw new RuntimeException("Wrong value of type "+type);
-            }
-            case 6 /*double*/ -> {
-                if (value instanceof Double current) yield current;
-                if (value == null) yield (double) 0;
-                if (value instanceof Boolean b) yield (double) (b ? 1 : 0);
-                if (value instanceof Number n) yield n.doubleValue();
-                if (value instanceof CharSequence) yield Double.valueOf(value.toString());
-                if (value instanceof Character n) yield (double) (char) n;
-                throw new RuntimeException("Wrong value of type "+type);
-            }
-            case 7 /*byte[]*/ -> {
-                if (value instanceof byte[] current) yield current;
-                if (value == null) yield new byte[0];
-                Object[] arr = convertToObjectArrayOrNull(value);
-                if (arr != null) yield ArrayUtils.toPrimitive(Arrays.stream(arr).map(val -> (Byte) createTagOfType((byte) 1, val)).toArray(Byte[]::new));
-                if (value instanceof CharSequence cs) yield cs.toString().getBytes(StandardCharsets.UTF_8);
-                throw new RuntimeException("Wrong value of type "+type);
-            }
-            case 8 /*String*/ -> {
-                if (value instanceof String s) yield s;
-                if (value instanceof CharSequence) yield value.toString();
-                if (value instanceof char[] c) yield String.copyValueOf(c);
-                if (value instanceof byte[] c) yield new String(c, StandardCharsets.UTF_8);
-                throw new RuntimeException("Wrong value of type "+type);
-            }
-            case 9 /*List*/ -> {
-                if (value instanceof CharSequence s) yield Arrays.stream(s.toString().split("")).toList();
-                if (value instanceof Collection a) yield a;
-                Object[] arr = convertToObjectArrayOrNull(value);
-                if (arr != null) yield Arrays.stream(arr).toList();
-                throw new RuntimeException("Wrong value of type "+type);
-            }
-            case 10 /*Compound*/ -> {
-                if (value instanceof Map s) yield s;
-                throw new RuntimeException("Wrong value of type "+type);
-            }
-            case 11 /*int[]*/ -> {
-                if (value instanceof int[] current) yield current;
-                if (value == null) yield new int[0];
-                Object[] arr = convertToObjectArrayOrNull(value);
-                if (arr != null) yield ArrayUtils.toPrimitive(Arrays.stream(arr).map(val -> (Integer) createTagOfType((byte) 3, val)).toArray(Integer[]::new));
-                throw new RuntimeException("Wrong value of type "+type);
-            }
-            case 12 /*long[]*/ -> {
-                if (value instanceof long[] current) yield current;
-                if (value == null) yield new long[0];
-                Object[] arr = convertToObjectArrayOrNull(value);
-                if (arr != null) yield ArrayUtils.toPrimitive(Arrays.stream(arr).map(val -> (Long) createTagOfType((byte) 4, val)).toArray(Long[]::new));
-                throw new RuntimeException("Wrong value of type "+type);
-            }
-            default -> throw new RuntimeException("unknown tag type:"+type);
-        };
-    }
-
-    private static Object[] convertToObjectArrayOrNull(Object someArray){
-        if (someArray instanceof Object[] res) return res;
-        if (someArray instanceof boolean[] a) return ArrayUtils.toObject(a);
-        if (someArray instanceof byte[] a) return ArrayUtils.toObject(a);
-        if (someArray instanceof short[] a) return ArrayUtils.toObject(a);
-        if (someArray instanceof int[] a) return ArrayUtils.toObject(a);
-        if (someArray instanceof long[] a) return ArrayUtils.toObject(a);
-        if (someArray instanceof float[] a) return ArrayUtils.toObject(a);
-        if (someArray instanceof char[] a) return ArrayUtils.toObject(a);
-        if (someArray instanceof Collection a) return a.toArray();
-        return null;
-    }
 
     /**
      * Convert NBTList to java {@link java.util.List}
@@ -403,9 +287,9 @@ public class NBTList implements List<Object>, NBTBox {
     }
 
     @Override
-    public boolean addAll(@SuppressWarnings("NullableProblems") Collection<?> c) {
+    public boolean addAll(@SuppressWarnings("NullableProblems") Collection<?> primCollection) {
         boolean modified = false;
-        for (Object t: c) {
+        for (Object t: primCollection) {
             Object tag = convertToCurrentTypeTag(t);
             modified |= handleList.add(tag);
         }
@@ -633,8 +517,8 @@ public class NBTList implements List<Object>, NBTBox {
         }
 
         @Override
-        public boolean addAll(Collection<?> c) {
-            return addAll(size, c);
+        public boolean addAll(Collection<?> primCollection) {
+            return addAll(size, primCollection);
         }
 
         @Override

@@ -1,10 +1,5 @@
 package me.dpohvar.powernbt.api;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.util.*;
-
-
 public interface NBTBox extends Cloneable {
 
     /**

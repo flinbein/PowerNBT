@@ -6,8 +6,10 @@ import me.dpohvar.powernbt.utils.ReflectionUtils;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class NBTContainerEntity extends NBTContainer<Entity> {
 
@@ -32,26 +34,23 @@ public class NBTContainerEntity extends NBTContainer<Entity> {
     }
 
     @Override
-    public NBTTagCompound readTag() {
-        NBTTagCompound tag = new NBTTagCompound(false, NBTManager.getInstance().read(entity).getHandle());
+    public NBTCompound readTag() {
+        NBTCompound tag = NBTManager.getInstance().read(entity);
         if (ReflectionUtils.isForge()) {
             NBTCompound nbtCompound = NBTManager.getInstance().readForgeData(entity);
-            if (nbtCompound != null) {
-                NBTTagCompound forgeData = new NBTTagCompound(false,nbtCompound.getHandle());
-                tag.put("ForgeData", forgeData);
-            } else {
-                tag.put("ForgeData", new NBTTagCompound());
-            }
+            tag.put("ForgeData", Objects.requireNonNullElseGet(nbtCompound, NBTCompound::new));
         }
         return tag;
     }
 
     @Override
-    public void writeTag(NBTBase base) {
-        NBTManager.getInstance().write(entity, NBTCompound.forNBT(base.getHandle()));
-        if (ReflectionUtils.isForge() && base instanceof NBTTagCompound nbtTagCompound){
-            NBTBase forgeData = nbtTagCompound.get("ForgeData");
-            NBTManager.getInstance().writeForgeData(entity, NBTCompound.forNBT(forgeData.getHandle()));
+    public void writeTag(Object base) {
+        if (!(base instanceof NBTCompound compound)) return;
+        NBTManager.getInstance().write(entity, compound);
+        if (ReflectionUtils.isForge()){
+            Object forgeData = compound.get("ForgeData");
+            if (forgeData instanceof NBTCompound forgeCompound)
+            NBTManager.getInstance().writeForgeData(entity, forgeCompound);
         }
     }
 

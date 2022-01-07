@@ -4,6 +4,8 @@ import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.exception.NBTTagNotFound;
 import me.dpohvar.powernbt.exception.NBTTagUnexpectedType;
 import me.dpohvar.powernbt.utils.NBTQuery;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
@@ -39,7 +41,9 @@ public abstract class NBTContainer<T> {
         return getContainerClass().getSimpleName();
     }
 
-    public abstract List<String> getTypes();
+    public List<String> getTypes() {
+        return new ArrayList<>();
+    };
 
     // ########################## PowerNBT API ##########################
 

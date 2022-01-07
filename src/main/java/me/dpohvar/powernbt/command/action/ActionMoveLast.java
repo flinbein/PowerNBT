@@ -32,7 +32,7 @@ public class ActionMoveLast extends Action {
         }
         NBTQuery query2 = arg2.getQuery();
         NBTContainer container2 = arg2.getContainer();
-        NBTBase base = arg1.getContainer().getCustomTag(arg1.getQuery());
+        Object base = arg1.getContainer().getCustomTag(arg1.getQuery());
         if (base == null) throw new RuntimeException(PowerNBT.plugin.translate("error_null"));
 
         try{

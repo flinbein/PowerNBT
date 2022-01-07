@@ -1,17 +1,16 @@
 package me.dpohvar.powernbt.nbt;
 
 import me.dpohvar.powernbt.api.NBTManager;
-import net.minecraft.nbt.NBTTagTypes;
-import org.bukkit.Bukkit;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 public class NBTContainerFile extends NBTContainer<File> {
 
-    private File file;
+    private final File file;
 
     public NBTContainerFile(File file) {
         this.file = file;
@@ -22,9 +21,9 @@ public class NBTContainerFile extends NBTContainer<File> {
     }
 
     @Override
-    public NBTBase readTag() {
+    public Object readTag() {
         try {
-            return NBTType.createFromJavaValue(NBTManager.getInstance().read(file));
+            return NBTManager.getInstance().read(file);
         } catch (FileNotFoundException e) {
             return null;
         } catch (IOException e) {
@@ -35,10 +34,9 @@ public class NBTContainerFile extends NBTContainer<File> {
     }
 
     @Override
-    public void writeTag(NBTBase base) {
+    public void writeTag(Object base) {
         try {
-            Object tag = base.getHandle();
-            NBTManager.getInstance().write(file, NBTManager.getInstance().getValueOfTag(tag));
+            NBTManager.getInstance().write(file, base);
         } catch (FileNotFoundException e) {
             throw new RuntimeException("file "+file+" not found", e);
         } catch (Exception e) {

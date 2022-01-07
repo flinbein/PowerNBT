@@ -1,6 +1,8 @@
 package me.dpohvar.powernbt.nbt;
 
-import java.io.*;
+import me.dpohvar.powernbt.api.NBTCompound;
+
+import java.io.File;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
@@ -21,15 +23,17 @@ public class NBTContainerFileCustom extends NBTContainerFileGZip {
     }
 
     @Override
-    public NBTBase readTag() {
-        NBTTagCompound compound = (NBTTagCompound) super.readTag();
-        if (compound == null) return null;
-        return compound.get("Data");
+    public Object readTag() {
+        Object value = super.readTag();
+        if (value instanceof NBTCompound compound) {
+            return compound.get("Data");
+        }
+        return null;
     }
 
     @Override
-    public void writeTag(NBTBase data) {
-        NBTTagCompound compound = new NBTTagCompound();
+    public void writeTag(Object data) {
+        NBTCompound compound = new NBTCompound();
         compound.put("Data", data);
         super.writeTag(compound);
     }

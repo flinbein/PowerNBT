@@ -5,9 +5,6 @@ import me.dpohvar.powernbt.api.NBTList;
 import me.dpohvar.powernbt.api.NBTManager;
 import org.bukkit.ChatColor;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
@@ -62,6 +59,24 @@ public enum NBTType {
         for (NBTType t : values()) if (s.equalsIgnoreCase(t.name)) return t;
         for (NBTType t : values()) if (t.name.toLowerCase().startsWith(s)) return t;
         return END;
+    }
+
+    public NBTType getBaseType(){
+        return switch (this) {
+            case BYTEARRAY -> BYTE;
+            case INTARRAY -> INT;
+            case LONGARRAY -> LONG;
+            default -> null;
+        };
+    }
+
+    public NBTType getArrayType(){
+        return switch (this) {
+            case BYTE -> BYTEARRAY;
+            case INT -> INTARRAY;
+            case LONG -> LONGARRAY;
+            default -> null;
+        };
     }
 
     public Object getDefault() {

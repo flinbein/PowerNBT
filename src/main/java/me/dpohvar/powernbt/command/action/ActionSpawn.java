@@ -47,10 +47,15 @@ public class ActionSpawn extends Action {
             world = Bukkit.getWorld(worldParam);
             if (world == null) throw new RuntimeException(plugin.translate("error_noworld", worldParam));
         }
-        NBTBase base = container.getCustomTag(query);
-        Entity entity = NBTManager.getInstance().spawnEntity(NBTCompound.forNBT(base.getHandle()), world);
-        if (entity == null) caller.send(plugin.translate("success_spawn", entity));
-        caller.send(plugin.translate("success_spawn", entity));
+        Object base = container.getCustomTag(query);
+        if (base instanceof NBTCompound compound) {
+            Entity entity = NBTManager.getInstance().spawnEntity(compound, world);
+            if (entity != null) {
+                caller.send(plugin.translate("success_spawn", entity.getName()));
+                return;
+            }
+        }
+        caller.send(plugin.translate("error_parsevalue", ""));
     }
 }
 

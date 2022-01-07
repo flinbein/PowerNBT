@@ -1,13 +1,10 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.api.NBTManager;
 
-import java.io.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import static me.dpohvar.powernbt.PowerNBT.plugin;
 
 public class NBTContainerFileGZip extends NBTContainer<File> {
 
@@ -27,26 +24,14 @@ public class NBTContainerFileGZip extends NBTContainer<File> {
     }
 
     @Override
-    public NBTBase readTag() {
-        try {
-            NBTCompound nbtCompound = NBTManager.getInstance().readCompressed(file);
-            return new NBTTagCompound(false, nbtCompound.getHandle());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public Object readTag() {
+        return NBTManager.getInstance().readCompressed(file);
     }
 
     @Override
-    public void writeTag(NBTBase data) {
+    public void writeTag(Object data) {
         try {
-            if (!file.exists()) {
-                new File(file.getParent()).mkdirs();
-                file.createNewFile();
-            }
-            NBTCompound nbtCompound = NBTCompound.forNBT(data.getHandle());
-            NBTManager.getInstance().writeCompressed(file, nbtCompound);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(plugin.translate("error_nofile", file.getName()), e);
+            NBTManager.getInstance().writeCompressed(file, data);
         } catch (Exception e) {
             throw new RuntimeException("IO error", e);
         }

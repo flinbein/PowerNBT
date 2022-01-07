@@ -13,7 +13,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 
 /**
@@ -317,13 +316,15 @@ public class ReflectionUtils {
          * @throws RuntimeException if method not found
          */
         public RefMethod<?> findMethod(MethodCondition... condition) {
+            RuntimeException lastException = null;
             for (MethodCondition c : condition)
                 try {
                     if (c == null) continue;
                     return c.find(this);
-                } catch (Exception ignored) {
+                } catch (RuntimeException e) {
+                    lastException = e;
                 }
-            throw new RuntimeException("no such method: " + Arrays.toString(condition) + " for class " + this.getRealClass.getName());
+            throw lastException != null ? lastException : new RuntimeException("no such method: " + Arrays.toString(condition) + " for class " + this.getRealClass.getName());
         }
         /**
          * find method by conditions
@@ -488,9 +489,21 @@ public class ReflectionUtils {
         public <P> RefField<P> findField(Class<P> type) {
             if (type == null) type = (Class<P>) void.class;
             List<Field> fields = new ArrayList<>();
-            Collections.addAll(fields, getRealClass.getFields());
             Collections.addAll(fields, getRealClass.getDeclaredFields());
             for (Field f : fields) {
+                if (type.equals(f.getType())) {
+                    return new RefField<>(f);
+                }
+            }
+            throw new RuntimeException("no such field");
+        }
+
+        public <P> RefField<P> findField(Class<P> type, boolean isStatic) {
+            if (type == null) type = (Class<P>) void.class;
+            List<Field> fields = new ArrayList<>();
+            Collections.addAll(fields, getRealClass.getDeclaredFields());
+            for (Field f : fields) {
+                if (Modifier.isStatic(f.getModifiers()) != isStatic) continue;
                 if (type.equals(f.getType())) {
                     return new RefField<>(f);
                 }
@@ -514,6 +527,14 @@ public class ReflectionUtils {
         private boolean modFinal;
         private boolean checkStatic = false;
         private boolean modStatic;
+        private boolean checkPublic = false;
+        private boolean modPublic;
+        private boolean checkPrivate = false;
+        private boolean modPrivate;
+        private boolean checkProtected = false;
+        private boolean modProtected;
+        private boolean checkDeclared = false;
+        private boolean modDeclared;
 
         @Override
         public String toString() {
@@ -527,6 +548,11 @@ public class ReflectionUtils {
             if (checkAbstract) b.append("abstract:").append(modAbstract).append(",");
             if (checkFinal) b.append("final:").append(modFinal).append(",");
             if (checkStatic) b.append("modStatic:").append(modStatic).append(",");
+            if (checkPublic) b.append("public:").append(modPublic).append(",");
+            if (checkPrivate) b.append("private:").append(modPrivate).append(",");
+            if (checkProtected) b.append("protected:").append(modProtected).append(",");
+            if (checkDeclared) b.append("declared:").append(modDeclared).append(",");
+            if (returnType != null) b.append("returnType:").append(returnType).append(",");
             return b.substring(0,b.length()-1);
         }
 
@@ -583,6 +609,30 @@ public class ReflectionUtils {
         public MethodCondition withFinal(boolean modFinal){
             this.checkFinal = true;
             this.modFinal = modFinal;
+            return this;
+        }
+
+        public MethodCondition withPublic(boolean modPublic){
+            this.checkPublic = true;
+            this.modPublic = modPublic;
+            return this;
+        }
+
+        public MethodCondition withPrivate(boolean modPrivate){
+            this.checkPrivate = true;
+            this.modPrivate = modPrivate;
+            return this;
+        }
+
+        public MethodCondition withProtected(boolean modProtected){
+            this.checkProtected = true;
+            this.modProtected = modProtected;
+            return this;
+        }
+
+        public MethodCondition withDeclared(boolean modDeclared){
+            this.checkDeclared = true;
+            this.modDeclared = modDeclared;
             return this;
         }
 
@@ -649,6 +699,18 @@ public class ReflectionUtils {
             }
             if (checkStatic) {
                 methods.removeIf(method -> Modifier.isStatic(method.getModifiers()) != modStatic);
+            }
+            if (checkPublic) {
+                methods.removeIf(method -> Modifier.isPublic(method.getModifiers()) != modPublic);
+            }
+            if (checkProtected) {
+                methods.removeIf(method -> Modifier.isProtected(method.getModifiers()) != modProtected);
+            }
+            if (checkPrivate) {
+                methods.removeIf(method -> Modifier.isPrivate(method.getModifiers()) != modPrivate);
+            }
+            if (checkDeclared) {
+                methods.removeIf(method -> method.getDeclaringClass() == clazz != modDeclared);
             }
             if (types != null) {
                 Iterator<Method> itr = methods.iterator();
@@ -782,18 +844,23 @@ public class ReflectionUtils {
             var split1 = string.strip().split("\\s+", 2);
             RefClass<?> refClass = ReflectionUtils.getRefClass(split1[0]); // {cb}.entity.CraftEntity
             String methodDescription = split1[1]; // public !static final testName*(String, Number): net.minecraft.nbt.NBTTagCompound
-            var split2 = methodDescription.strip().split("[:]+", 2);
+            var split2 = methodDescription.strip().split(" *: *", 2);
             String methodAttrsAndNameAndArgs = split2[0]; // // public !static final testName*(String, Number) | public !static final testName*
             String methodReturnTypePattern = split2.length > 1 ? split2[1] : null; // net.minecraft.nbt.NBTTagCompound | null
 
-            String[] split3 = methodAttrsAndNameAndArgs.split("[(]", 2);
+            String[] split3 = methodAttrsAndNameAndArgs.split(" *\\( *", 2);
             String methodAttrsAndNamePattern = split3[0].replaceAll("[:()]+",""); // public !static final testName*
-            String methodParamsPattern = split3.length >= 2 ? split3[1].replaceAll("[:()]+","") : null; // String, Number) | null
+            String methodParamsPattern = split3.length >= 2 ? split3[1].replaceAll("^ *|[:()]+| *$","") : null; // String, Number) | null
 
-            String name = split3[split3.length - 1]; // testName*
-            String[] methodAttrs = Arrays.copyOfRange(split3, 0, split3.length - 1); // public !static final
+            String[] split4 = methodAttrsAndNamePattern.replaceAll("^ *| *$", "").split(" +");
 
-            String[] methodParams = methodParamsPattern == null ? null : methodParamsPattern.replace(")", "").strip().split("[(), ]+");
+            String name = split4[split4.length - 1]; // testName*
+            String[] methodAttrs = Arrays.copyOfRange(split4, 0, split4.length - 1); // public !static final
+
+            String[] methodParams;
+            if (methodParamsPattern == null) methodParams = null;
+            else if (methodParamsPattern.isEmpty()) methodParams = new String[0];
+            else methodParams = methodParamsPattern.split("[(), ]+");
 
             var condition = new MethodCondition();
 
@@ -802,11 +869,15 @@ public class ReflectionUtils {
                     case "abstract", "!abstract" -> condition.withAbstract(methodAttr.equals("abstract"));
                     case "final", "!final" -> condition.withFinal(methodAttr.equals("final"));
                     case "static", "!static" -> condition.withStatic(methodAttr.equals("static"));
+                    case "public", "!public" -> condition.withPublic(methodAttr.equals("public"));
+                    case "private", "!private" -> condition.withPrivate(methodAttr.equals("private"));
+                    case "protected", "!protected" -> condition.withProtected(methodAttr.equals("protected"));
+                    case "declared", "!declared" -> condition.withDeclared(methodAttr.equals("declared"));
                     default -> throw new RuntimeException("Wrong method attribute " + methodAttr + ": " + string);
                 };
             }
 
-            if (!name.equals("*")) {
+            if (name != null && !name.equals("*")) {
                 if (name.startsWith("*")) {
                     condition = condition.withPrefix(name.substring(1));
                 } else if (name.endsWith("*")) {
@@ -815,6 +886,8 @@ public class ReflectionUtils {
                     var index = name.indexOf("*");
                     condition = condition.withPrefix(name.substring(0, index-1));
                     condition = condition.withSuffix(name.substring(index));
+                } else {
+                    condition = condition.withName(name);
                 }
             }
 

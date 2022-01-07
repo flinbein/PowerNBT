@@ -1,7 +1,5 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.api.NBTManager;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +9,11 @@ public class NBTContainerValue extends NBTContainer<Object> {
 
     public NBTContainerValue(Object base) {
         this.base = base;
+    }
+
+    @Override
+    public Object getObject() {
+        return base;
     }
 
     @Override

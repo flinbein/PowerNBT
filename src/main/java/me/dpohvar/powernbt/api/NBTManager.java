@@ -1,6 +1,7 @@
 package me.dpohvar.powernbt.api;
 
-import me.dpohvar.powernbt.utils.*;
+import me.dpohvar.powernbt.utils.NBTParser;
+import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -11,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -200,9 +202,9 @@ public class NBTManager {
      * @param inputStream InputStream to read
      * @return Nbt rag
      */
-    public NBTCompound readCompressed(InputStream inputStream) throws IOException {
+    public Object readCompressed(InputStream inputStream) throws IOException {
         var dis = new DataInputStream(new BufferedInputStream(new GZIPInputStream(inputStream)));
-        return NBTCompound.forNBT(nbtBridge.readNBTData(dis));
+        return getValueOfTag(nbtBridge.readNBTData(dis));
     }
 
     /**
@@ -210,10 +212,15 @@ public class NBTManager {
      *
      * @param outputStream outputStream to write
      * @param value value
+     * @deprecated use {@link NBTManager#writeCompressed(OutputStream, Object)}
      */
     public void writeCompressed(OutputStream outputStream, NBTCompound value) throws IOException {
+        writeCompressed(outputStream, (Object) value);
+    }
+
+    public void writeCompressed(OutputStream outputStream, Object value) throws IOException {
         DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(outputStream)));
-        nbtBridge.writeNBTData(dos, value.getHandle());
+        nbtBridge.writeNBTData(dos, getTagOfValue(value));
     }
 
     /**
@@ -265,6 +272,11 @@ public class NBTManager {
      * @throws IOException it happens
      */
     public void write(File file, Object value) throws IOException {
+        if (!file.exists()) {
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        }
+        if (file.isDirectory()) throw new RuntimeException(new FileNotFoundException(file.getPath()));
         try (var outputStream = new FileOutputStream(file)){
             write(outputStream, value);
         }
@@ -354,7 +366,7 @@ public class NBTManager {
      * @param file file to read
      * @return nbt data converted to java types
      */
-    public NBTCompound readCompressed(File file) {
+    public Object readCompressed(File file) {
         try (var inputStream = new FileInputStream(file)){
             return readCompressed(inputStream);
         } catch (IOException e) {
@@ -368,7 +380,13 @@ public class NBTManager {
      * @param file file to write
      * @param value value to be written
      */
-    public void writeCompressed(File file, NBTCompound value) {
+    public void writeCompressed(File file, Object value) {
+        if (!file.exists()) try {
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         try (var outputStream = new FileOutputStream(file)){
             writeCompressed(outputStream, value);
         } catch (IOException e) {
@@ -383,7 +401,7 @@ public class NBTManager {
      * @return nbt data read from a file
      */
     public NBTCompound readOfflinePlayer(OfflinePlayer player){
-        return readCompressed(getPlayerFile(player));
+        return (NBTCompound) readCompressed(getPlayerFile(player));
     }
 
     /**
@@ -508,7 +526,9 @@ public class NBTManager {
      */
     public Entity spawnEntity(NBTCompound compound, World world){
         if (compound == null) return null;
-        var entity = nbtBridge.spawnEntity(compound, world);
+        compound = compound.clone();
+        compound.remove("UUID");
+        var entity = nbtBridge.spawnEntity(compound.getHandle(), world);
         var passengers = compound.getList("Passengers");
 
         if (passengers != null) {
@@ -583,6 +603,142 @@ public class NBTManager {
         LinkedList<Object> list = new LinkedList<>();
         list.push(collection);
         return checkCrossReferences(list, Arrays.asList(collection));
+    }
+
+    public static Object convertValue(Object value, byte type) {
+        return switch (type) {
+            case 0 /*end*/ -> null;
+            case 1 /*byte*/ -> {
+                if (value instanceof Byte current) yield current;
+                if (value == null) yield (byte) 0;
+                if (value instanceof Boolean b) yield (byte) (b ? 1 : 0);
+                if (value instanceof Number n) yield n.byteValue();
+                if (value instanceof CharSequence) yield Byte.valueOf(value.toString());
+                if (value instanceof Character n) yield (byte) (char) n;
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 2 /*short*/ -> {
+                if (value instanceof Short current) yield current;
+                if (value == null) yield (short) 0;
+                if (value instanceof Boolean b) yield (short) (b ? 1 : 0);
+                if (value instanceof Number n) yield n.shortValue();
+                if (value instanceof CharSequence) yield Short.valueOf(value.toString());
+                if (value instanceof Character n) yield (short) (char) n;
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 3 /*int*/ -> {
+                if (value instanceof Integer current) yield current;
+                if (value == null) yield (int) 0;
+                if (value instanceof Boolean b) yield (int) (b ? 1 : 0);
+                if (value instanceof Number n) yield n.intValue();
+                if (value instanceof CharSequence) yield Integer.valueOf(value.toString());
+                if (value instanceof Character n) yield (int) (char) n;
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 4 /*long*/ -> {
+                if (value instanceof Long current) yield current;
+                if (value == null) yield (long) 0;
+                if (value instanceof Boolean b) yield (long) (b ? 1 : 0);
+                if (value instanceof Number n) yield n.longValue();
+                if (value instanceof CharSequence) yield Long.valueOf(value.toString());
+                if (value instanceof Character n) yield (long) (char) n;
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 5 /*float*/ -> {
+                if (value instanceof Float current) yield current;
+                if (value == null) yield (float) 0;
+                if (value instanceof Boolean b) yield (float) (b ? 1 : 0);
+                if (value instanceof Number n) yield n.floatValue();
+                if (value instanceof CharSequence) yield Float.valueOf(value.toString());
+                if (value instanceof Character n) yield (float) (char) n;
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 6 /*double*/ -> {
+                if (value instanceof Double current) yield current;
+                if (value == null) yield (double) 0;
+                if (value instanceof Boolean b) yield (double) (b ? 1 : 0);
+                if (value instanceof Number n) yield n.doubleValue();
+                if (value instanceof CharSequence) yield Double.valueOf(value.toString());
+                if (value instanceof Character n) yield (double) (char) n;
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 7 /*byte[]*/ -> {
+                if (value instanceof byte[] current) yield current;
+                if (value == null) yield new byte[0];
+                Object[] arr = convertToObjectArrayOrNull(value);
+                if (arr != null) {
+                    Byte[] array = Arrays.stream(arr).map(val -> (Byte) convertValue(val, (byte) 1)).toArray(Byte[]::new);
+                    yield ArrayUtils.toPrimitive(array);
+                }
+                if (value instanceof CharSequence cs) yield cs.toString().getBytes(StandardCharsets.UTF_8);
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 8 /*String*/ -> {
+                if (value instanceof String s) yield s;
+                if (value instanceof CharSequence) yield value.toString();
+                if (value instanceof char[] c) yield String.copyValueOf(c);
+                if (value instanceof byte[] c) yield new String(c, StandardCharsets.UTF_8);
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 9 /*List*/ -> {
+                if (value instanceof CharSequence s) yield Arrays.stream(s.toString().split("")).toList();
+                if (value instanceof Collection a) yield a;
+                Object[] arr = convertToObjectArrayOrNull(value);
+                if (arr != null) yield Arrays.stream(arr).toList();
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 10 /*Compound*/ -> {
+                if (value instanceof Map s) yield s;
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 11 /*int[]*/ -> {
+                if (value instanceof int[] current) yield current;
+                if (value == null) yield new int[0];
+                Object[] arr = convertToObjectArrayOrNull(value);
+                if (arr != null) {
+                    Integer[] array = Arrays.stream(arr).map(val -> (Integer) convertValue(val, (byte) 3)).toArray(Integer[]::new);
+                    yield ArrayUtils.toPrimitive(array);
+                }
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            case 12 /*long[]*/ -> {
+                if (value instanceof long[] current) yield current;
+                if (value == null) yield new long[0];
+                Object[] arr = convertToObjectArrayOrNull(value);
+                if (arr != null) {
+                    Long[] array = Arrays.stream(arr).map(val -> (Long) convertValue(val, (byte) 4)).toArray(Long[]::new);
+                    yield ArrayUtils.toPrimitive(array);
+                }
+                throw new RuntimeException("Wrong value of type "+type);
+            }
+            default -> throw new RuntimeException("unknown tag type:"+type);
+        };
+    }
+
+    public static Object[] convertToObjectArrayOrNull(Object someArray){
+        if (someArray instanceof Object[] res) return res;
+        if (someArray instanceof boolean[] a) return ArrayUtils.toObject(a);
+        if (someArray instanceof byte[] a) return ArrayUtils.toObject(a);
+        if (someArray instanceof short[] a) return ArrayUtils.toObject(a);
+        if (someArray instanceof int[] a) return ArrayUtils.toObject(a);
+        if (someArray instanceof long[] a) return ArrayUtils.toObject(a);
+        if (someArray instanceof float[] a) return ArrayUtils.toObject(a);
+        if (someArray instanceof double[] a) return ArrayUtils.toObject(a);
+        if (someArray instanceof char[] a) return ArrayUtils.toObject(a);
+        if (someArray instanceof Collection a) return a.toArray();
+        return null;
+    }
+
+    public static Object convertToPrimitiveArrayOrNull(Object[] objArray){
+        if (objArray instanceof Boolean[] a) return ArrayUtils.toPrimitive(a);
+        if (objArray instanceof Byte[] a) return ArrayUtils.toPrimitive(a);
+        if (objArray instanceof Short[] a) return ArrayUtils.toPrimitive(a);
+        if (objArray instanceof Integer[] a) return ArrayUtils.toPrimitive(a);
+        if (objArray instanceof Long[] a) return ArrayUtils.toPrimitive(a);
+        if (objArray instanceof Float[] a) return ArrayUtils.toPrimitive(a);
+        if (objArray instanceof Double[] a) return ArrayUtils.toPrimitive(a);
+        if (objArray instanceof Character[] a) return ArrayUtils.toPrimitive(a);
+        return null;
     }
 
 }

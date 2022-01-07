@@ -30,7 +30,7 @@
 
     <groupId>me.dpohvar.powernbt</groupId>
     <artifactId>powernbt</artifactId>
-    <version>0.8.9.2</version>
+    <version>0.9.1</version>
     <packaging>jar</packaging>
 
     <description>Powerful NBT editor for CraftBukkit 1.5 and later</description>

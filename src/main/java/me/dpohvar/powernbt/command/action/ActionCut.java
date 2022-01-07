@@ -2,8 +2,8 @@ package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.nbt.NBTContainer;
-import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.NBTViewer;
 
 public class ActionCut extends Action {
@@ -24,7 +24,7 @@ public class ActionCut extends Action {
         }
         NBTContainer container = arg.getContainer();
         NBTQuery query = arg.getQuery();
-        NBTBase base = container.getCustomTag(query);
+        Object base = container.getCustomTag(query);
         if (base == null) throw new RuntimeException(PowerNBT.plugin.translate("error_null"));
         caller.setCustomTag(base);
         caller.send(PowerNBT.plugin.translate("success_cut") + NBTViewer.getShortValueWithPrefix(base, false));

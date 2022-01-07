@@ -2,8 +2,8 @@ package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.nbt.NBTContainer;
-import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.NBTQuery;
 
 public class ActionSwap extends Action {
 
@@ -31,8 +31,8 @@ public class ActionSwap extends Action {
         }
         NBTContainer container2 = arg2.getContainer();
         NBTQuery query2 = arg2.getQuery();
-        NBTBase base1 = container1.getCustomTag(query1);
-        NBTBase base2 = container2.getCustomTag(query2);
+        Object base1 = container1.getCustomTag(query1);
+        Object base2 = container2.getCustomTag(query2);
         if (base1 == null && base2 == null) {
             caller.send(PowerNBT.plugin.translate("success_swap_null"));
             return;

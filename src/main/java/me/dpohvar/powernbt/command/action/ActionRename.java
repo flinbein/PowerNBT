@@ -2,8 +2,8 @@ package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.nbt.NBTContainer;
-import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.utils.NBTViewer;
 
 import java.util.List;
@@ -33,8 +33,8 @@ public class ActionRename extends Action {
         List<Object> v = query.getParent().getValues();
         v.addAll(query2.getValues());
         NBTQuery newQuery = new NBTQuery(v);
-        NBTBase root = container.getTag();
-        NBTBase base = query.get(root);
+        Object root = container.getTag();
+        Object base = query.get(root);
         if (base == null) {
             caller.send(PowerNBT.plugin.translate("fail_rename"));
         } else {

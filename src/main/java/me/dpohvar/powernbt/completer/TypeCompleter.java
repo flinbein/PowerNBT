@@ -1,7 +1,7 @@
 package me.dpohvar.powernbt.completer;
 
-import me.dpohvar.powernbt.utils.NBTQuery;
 import me.dpohvar.powernbt.nbt.NBTType;
+import me.dpohvar.powernbt.utils.NBTQuery;
 import org.bukkit.Bukkit;
 import org.yaml.snakeyaml.Yaml;
 

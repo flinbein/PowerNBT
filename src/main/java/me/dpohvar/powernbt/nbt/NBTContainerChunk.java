@@ -21,19 +21,21 @@ public class NBTContainerChunk extends NBTContainer<Chunk> {
 
     @Override
     public List<String> getTypes() {
-        List<String> s = new ArrayList<String>();
+        List<String> s = new ArrayList<>();
         s.add("chunk");
         return s;
     }
 
     @Override
-    public NBTTagCompound readTag() {
-        return new NBTTagCompound(false, NBTManager.getInstance().read(chunk).getHandle());
+    public NBTCompound readTag() {
+        return NBTManager.getInstance().read(chunk);
     }
 
     @Override
-    public void writeTag(NBTBase base) {
-        NBTManager.getInstance().write(chunk, NBTCompound.forNBT(base.getHandle()));
+    public void writeTag(Object value) {
+        if (value instanceof NBTCompound compound) {
+            NBTManager.getInstance().write(chunk, compound);
+        }
     }
 
     @Override

@@ -2,23 +2,28 @@ package me.dpohvar.powernbt.api;
 
 import com.google.common.base.Charsets;
 import me.dpohvar.powernbt.PowerNBT;
-import me.dpohvar.powernbt.utils.ReflectionUtils.*;
-
-import static me.dpohvar.powernbt.utils.ReflectionUtils.getRefClass;
-
-import org.bukkit.entity.Entity;
-import org.bukkit.*;
+import me.dpohvar.powernbt.utils.ReflectionUtils.RefClass;
+import me.dpohvar.powernbt.utils.ReflectionUtils.RefConstructor;
+import me.dpohvar.powernbt.utils.ReflectionUtils.RefField;
+import me.dpohvar.powernbt.utils.ReflectionUtils.RefMethod;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static me.dpohvar.powernbt.utils.ReflectionUtils.getRefClass;
 
 class NBTBridgeSpigot extends NBTBridge {
 
@@ -26,7 +31,7 @@ class NBTBridgeSpigot extends NBTBridge {
     private final RefConstructor<?> nbtTagEndCon = getRefClass("net.minecraft.nbt.NBTTagEnd").getConstructor();//
     private final RefConstructor<?> nbtTagByteCon = getRefClass("net.minecraft.nbt.NBTTagByte").getConstructor(byte.class);//
     private final RefConstructor<?> nbtTagShortCon = getRefClass("net.minecraft.nbt.NBTTagShort").getConstructor(short.class);//
-    private final RefConstructor<?> nbtTagIntCon = getRefClass("net.minecraft.nbt.NBTTagInt").getConstructor(short.class);//
+    private final RefConstructor<?> nbtTagIntCon = getRefClass("net.minecraft.nbt.NBTTagInt").getConstructor(int.class);//
     private final RefConstructor<?> nbtTagLongCon = getRefClass("net.minecraft.nbt.NBTTagLong").getConstructor(long.class);//
     private final RefConstructor<?> nbtTagFloatCon = getRefClass("net.minecraft.nbt.NBTTagFloat").getConstructor(float.class);//
     private final RefConstructor<?> nbtTagDoubleCon = getRefClass("net.minecraft.nbt.NBTTagDouble").getConstructor(double.class);//
@@ -45,7 +50,7 @@ class NBTBridgeSpigot extends NBTBridge {
     private final RefConstructor<?> nbtTagCompoundCon = nbtTagCompoundClazz.getConstructor();
     private final RefField<?> nmCompoundMapField = nbtTagCompoundClazz.findField(Map.class);
     private final RefConstructor<?> nmCompoundCon = nbtTagCompoundClazz.getConstructor();
-    private final RefField<Byte> nmListTypeField = nbtTagListClazz.findField(byte.class);
+    private final RefField<Byte> nmListTypeField = nbtTagListClazz.findField(byte.class, false);
     private final RefField<List> nmListListField = nbtTagListClazz.findField(List.class);
     private final RefMethod<?> nmNBTTagGetTypeMethod = RefMethod.parse("net.minecraft.nbt.NBTTagTypes static *(int): net.minecraft.nbt.NBTTagType");
     private final RefMethod<?> nmNBTTagParseTypeMethod = RefMethod.parse("net.minecraft.nbt.NBTTagType !static *(java.io.DataInput, int, net.minecraft.nbt.NBTReadLimiter)");
@@ -59,11 +64,12 @@ class NBTBridgeSpigot extends NBTBridge {
     private final RefMethod<?> nbtBaseWriteDataMethod = RefMethod.parse("net.minecraft.nbt.NBTBase *(java.io.DataOutput): void");
     private final RefMethod<?> nbtBaseGetTypeMethod = RefMethod.parse("net.minecraft.nbt.NBTBase *(): byte");
     private final RefMethod<?> nbtBaseCloneMethod = RefMethod.parse("net.minecraft.nbt.NBTBase *(): net.minecraft.nbt.NBTBase");
-    private final RefMethod<?> toolsReadDataInput = RefMethod.parse("net.minecraft.nbt.NBTBase *(): net.minecraft.nbt.NBTBase");
+    private final RefMethod<?> toolsReadDataInput = RefMethod.parse("net.minecraft.nbt.NBTCompressedStreamTools *(java.io.DataInput): net.minecraft.nbt.NBTTagCompound");
 
     // Entity:
     private final RefMethod<?> cEntityGetHandleMethod; // getHandle()
     private final RefMethod<?> cEntityGetNBTMethod; // NBTTagCompound getNBT(NBTTagCompound tag)
+    private final RefMethod<?> cEntityGetNBTSimpleMethod; // NBTTagCompound getNBTSimple(NBTTagCompound tag)
     private final RefMethod<?> cEntitySetNBTMethod; // void setNBT(NBTTagCompound tag)
     private final RefMethod<?> cEntityTypesCreateMethod; // void setNBT(NBTTagCompound tag)
     private final RefMethod<?> nEntityGetBukkitMethod; // void setNBT(NBTTagCompound tag)
@@ -87,7 +93,8 @@ class NBTBridgeSpigot extends NBTBridge {
         FileConfiguration config = YamlConfiguration.loadConfiguration(new File("plugins/PowerNBT/config.yml"));
         final InputStream defConfigStream = PowerNBT.class.getClassLoader().getResourceAsStream("config.yml");
         if (defConfigStream != null) {
-            config.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(defConfigStream, Charsets.UTF_8)));
+            YamlConfiguration defaults = YamlConfiguration.loadConfiguration(new InputStreamReader(defConfigStream, Charsets.UTF_8));
+            config.setDefaults(defaults);
         }
         var bukkitVersionKey = Bukkit.getBukkitVersion().replace('.','_');
 
@@ -95,6 +102,7 @@ class NBTBridgeSpigot extends NBTBridge {
         ConfigurationSection defSection = config.getConfigurationSection("hooks.default");
 
         cEntityGetNBTMethod = RefMethod.parse(getConfString("entity.getNBT", section, defSection));
+        cEntityGetNBTSimpleMethod = RefMethod.parse(getConfString("entity.getNBTSimple", section, defSection));
         cEntitySetNBTMethod = RefMethod.parse(getConfString("entity.setNBT", section, defSection));
         cEntityGetHandleMethod = RefMethod.parse(getConfString("entity.getHandle", section, defSection));
         cEntityTypesCreateMethod = RefMethod.parse(getConfString("entity.createType", section, defSection));
@@ -116,10 +124,10 @@ class NBTBridgeSpigot extends NBTBridge {
 
     private static String getConfString(String path, ConfigurationSection section, ConfigurationSection defSection){
         if (section != null) {
-            String value = section.getString(path, "");
-            if (!value.isEmpty()) return value;
+            String value = section.getString(path);
+            if (value != null) return value;
         }
-        return defSection.getString(path, "");
+        return defSection.getString(path);
     }
 
     @Override
@@ -144,7 +152,9 @@ class NBTBridgeSpigot extends NBTBridge {
     public Object getEntityNBTTag(Entity entity) {
         Object nmEntity = cEntityGetHandleMethod.of(entity).call();
         Object tag = nmCompoundCon.create();
-        return cEntityGetNBTMethod.of(nmEntity).call(tag);
+        boolean readCompleted = (boolean) cEntityGetNBTMethod.of(nmEntity).call(tag);
+        if (!readCompleted) tag = cEntityGetNBTSimpleMethod.of(nmEntity).call(tag);
+        return tag;
     }
 
     @Override
@@ -195,9 +205,7 @@ class NBTBridgeSpigot extends NBTBridge {
         if (type == 0) return null;
         dataInput.skipBytes(dataInput.readUnsignedShort());
         var nbtTagType = nmNBTTagGetTypeMethod.call(type);
-        nmNBTTagParseTypeMethod.of(nbtTagType).call(dataInput, (int)type, readLimiter);
-        return toolsReadDataInput.call(dataInput);
-
+        return nmNBTTagParseTypeMethod.of(nbtTagType).call(dataInput, (int)type, readLimiter);
     }
 
     @Override
@@ -239,7 +247,7 @@ class NBTBridgeSpigot extends NBTBridge {
         Optional<?> optNmsEntity = (Optional<?>) cEntityTypesCreateMethod.call(entityTag,nWorldServer);
         Object nmsEntity = optNmsEntity.orElse(null);
         if (nmsEntity == null) return null;
-        cWorldAddEntityMethod.call(nmsEntity, CreatureSpawnEvent.SpawnReason.CUSTOM);
+        cWorldAddEntityMethod.of(nWorldServer).call(nmsEntity, CreatureSpawnEvent.SpawnReason.CUSTOM);
         return (Entity) nEntityGetBukkitMethod.of(nmsEntity).call();
     }
 

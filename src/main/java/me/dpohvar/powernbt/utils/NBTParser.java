@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
+import static java.util.stream.Collectors.toCollection;
 
 import static java.lang.Byte.parseByte;
 import static java.lang.Double.parseDouble;
@@ -24,11 +25,11 @@ public class NBTParser {
     static int getType(String var) throws RuntimeException {
         int type = 0;
         boolean useQuote = false;
-        LinkedList<Character> chars = new LinkedList<Character>();
+        LinkedList<Character> chars = new LinkedList<>();
 
         for(int i = 0; i < var.length(); ++i) {
             char c = var.charAt(i);
-            if(c == 34) {
+            if(c == '"') {
                 if(b(var, i)) {
                     if(!useQuote) {
                         throw new RuntimeException("Illegal use of \\\": " + var);
@@ -37,12 +38,12 @@ public class NBTParser {
                     useQuote = !useQuote;
                 }
             } else if(!useQuote) {
-                if(c != 123 && c != 91) {
-                    if(c == 125 && (chars.isEmpty() || chars.pop() != 123)) {
+                if(c != '{' && c != '[') {
+                    if(c == '}' && (chars.isEmpty() || chars.pop() != '{')) {
                         throw new RuntimeException("Unbalanced curly brackets {}: " + var);
                     }
 
-                    if(c == 93 && (chars.isEmpty() || chars.pop() != 91)) {
+                    if(c == ']' && (chars.isEmpty() || chars.pop() != '[')) {
                         throw new RuntimeException("Unbalanced square brackets []: " + var);
                     }
                 } else {
@@ -118,10 +119,10 @@ public class NBTParser {
         }
     }
 
-    private static TypeParser a(String var, boolean var1) throws RuntimeException {
-        String var2 = parseString(var, var1);
-        String var3 = d(var, var1);
-        return parser(var2, var3);
+    private static TypeParser a(String var, boolean flag) throws RuntimeException {
+        String name = parseString(var, flag);
+        String value = d(var, flag);
+        return parser(name, value);
     }
 
     private static String b(String var, boolean var1) throws RuntimeException {
@@ -279,72 +280,73 @@ public class NBTParser {
             this.value = value;
         }
 
+        /* returns java value */
         public Object parse() throws RuntimeException {
-            if (patDouble.matcher(value).matches()) {
-                return NBTManager.getInstance().getTagOfValue(parseDouble(value.substring(0, value.length() - 1)));
-            } else if (patFloat.matcher(value).matches()) {
-                return NBTManager.getInstance().getTagOfValue(parseFloat(value.substring(0, value.length() - 1)));
-            } else if (patByte.matcher(value).matches()) {
-                return NBTManager.getInstance().getTagOfValue(parseByte(value.substring(0, value.length() - 1)));
-            } else if (patLong.matcher(value).matches()) {
-                return NBTManager.getInstance().getTagOfValue(parseLong(value.substring(0, value.length() - 1)));
-            } else if (patShort.matcher(value).matches()) {
-                return NBTManager.getInstance().getTagOfValue(parseShort(value.substring(0, value.length() - 1)));
-            } else if (patInt.matcher(value).matches()) {
-                return NBTManager.getInstance().getTagOfValue(parseInt(value.substring(0, value.length() - 1)));
-            } else if (patIntDef.matcher(value).matches()) {
-                return NBTManager.getInstance().getTagOfValue(parseInt(value));
-            } else if (patDoubleDef.matcher(value).matches()) {
-                return NBTManager.getInstance().getTagOfValue(parseDouble(value));
-            } else if (value.equalsIgnoreCase("true")) {
-                return NBTManager.getInstance().getTagOfValue((byte)1);
-            } else if (value.equalsIgnoreCase("false")) {
-                return NBTManager.getInstance().getTagOfValue(((byte)0));
-            } else if(this.value.startsWith("[") && this.value.endsWith("]i")) {
+            if (patDouble.matcher(value).matches()) return parseDouble(value.substring(0, value.length() - 1));
+            if (patFloat.matcher(value).matches()) return parseFloat(value.substring(0, value.length() - 1));
+            if (patByte.matcher(value).matches()) return parseByte(value.substring(0, value.length() - 1));
+            if (patLong.matcher(value).matches()) return parseLong(value.substring(0, value.length() - 1));
+            if (patShort.matcher(value).matches()) return parseShort(value.substring(0, value.length() - 1));
+            if (patInt.matcher(value).matches()) return parseInt(value.substring(0, value.length() - 1));
+            if (patIntDef.matcher(value).matches()) return parseInt(value);
+            if (patDoubleDef.matcher(value).matches()) return parseDouble(value);
+            if (value.equalsIgnoreCase("true")) return (byte)1;
+            if (value.equalsIgnoreCase("false")) return (byte)0;
+            if(this.value.startsWith("[") && (this.value.endsWith("]i") || this.value.endsWith("]I"))) {
                 String token = value.substring(1, this.value.length() - 2);
                 List<Integer> tempResult = new ArrayList<>();
                 for (String s : splitter.split(token)) {
                     tempResult.add(parseInt(s.trim()));
                 }
                 int[] result = new int[tempResult.size()];
-                for (int i=0; i<result.length; i++) result[i] = tempResult.get(i);
+                for (int i = 0; i < result.length; i++) result[i] = tempResult.get(i);
                 return NBTManager.getInstance().getTagOfValue(result);
-            } else if(this.value.startsWith("[") && this.value.endsWith("]b")) {
+            }
+            if (this.value.startsWith("[") && (this.value.endsWith("]b")||this.value.endsWith("]B"))) {
                 String token = value.substring(1, this.value.length() - 2);
-                List<Byte> tempResult = new ArrayList<Byte>();
+                List<Byte> tempResult = new ArrayList<>();
                 for (String s : splitter.split(token)) {
                     tempResult.add(parseByte(s.trim()));
                 }
                 byte[] result = new byte[tempResult.size()];
                 for (int i=0; i<result.length; i++) result[i] = tempResult.get(i);
-                return NBTManager.getInstance().getTagOfValue(result);
-            } else if (this.value.startsWith("[") && this.value.endsWith("]")) {
+                return result;
+            }
+            if (this.value.startsWith("[") && (this.value.endsWith("]l")||this.value.endsWith("]L"))) {
+                String token = value.substring(1, this.value.length() - 2);
+                List<Long> tempResult = new ArrayList<>();
+                for (String s : splitter.split(token)) {
+                    tempResult.add(parseLong(s.trim()));
+                }
+                long[] result = new long[tempResult.size()];
+                for (int i=0; i<result.length; i++) result[i] = tempResult.get(i);
+                return result;
+            }
+            if (value.startsWith("[") && value.endsWith("]")) {
                 String token = this.value.substring(1, this.value.length() - 1);
                 String[] tokens = Iterables.toArray(splitter.split(token), String.class);
                 int[] result = new int[tokens.length];
                 for(int i = 0; i < tokens.length; ++i) {
                     result[i] = parseInt(tokens[i].trim());
                 }
-                return NBTManager.getInstance().getTagOfValue(result);
-            } else {
-                if(value.startsWith("\"") && value.endsWith("\"")) {
-                    String parseValue = value.substring(1, value.length()-1);
-                    return NBTManager.getInstance().getTagOfValue(StringParser.parse(parseValue));
-                }
-
-                value = value.replaceAll("\\\\\"", "\"");
-                StringBuilder builder = new StringBuilder();
-
-                for(int i = 0; i < value.length(); ++i) {
-                    if(i < value.length() - 1 && value.charAt(i) == 92 && value.charAt(i + 1) == 92) {
-                        builder.append('\\');
-                        ++i;
-                    } else {
-                        builder.append(value.charAt(i));
-                    }
-                }
-                return NBTManager.getInstance().getTagOfValue(builder.toString());
+                return result;
             }
+            if(value.startsWith("\"") && value.endsWith("\"")) {
+                return value.substring(1, value.length()-1);
+            }
+
+            value = value.replaceAll("\\\\\"", "\"");
+            StringBuilder builder = new StringBuilder();
+
+            for(int i = 0; i < value.length(); ++i) {
+                if(i < value.length() - 1 && value.charAt(i) == '\\' && value.charAt(i + 1) == '\\') {
+                    builder.append('\\');
+                    ++i;
+                } else {
+                    builder.append(value.charAt(i));
+                }
+            }
+            return builder.toString();
         }
     }
 
@@ -355,12 +357,8 @@ public class NBTParser {
             this.name = name;
         }
 
-        public Object parse() throws RuntimeException {
-            NBTList list = new NBTList();
-            for (TypeParser var2 : parsers) {
-                list.add(NBTManager.getInstance().getValueOfTag(var2.parse()));
-            }
-            return list.getHandle();
+        public NBTList parse() throws RuntimeException {
+            return parsers.stream().map(TypeParser::parse).collect(toCollection(NBTList::new));
         }
     }
 
@@ -371,16 +369,16 @@ public class NBTParser {
             this.name = name;
         }
 
-        public Object parse() throws RuntimeException {
+        public NBTCompound parse() throws RuntimeException {
             NBTCompound result = new NBTCompound();
             for (TypeParser parser : this.parsers) {
                 String key = parser.name;
                 if (key.startsWith("\"") && key.endsWith("\"")) {
                     key = StringParser.parse(key.substring(1, key.length()-1));
                 }
-                result.put(key, (NBTManager.getInstance().getValueOfTag(parser.parse())));
+                result.put(key, parser.parse());
             }
-            return result.getHandle();
+            return result;
         }
     }
 

@@ -12,8 +12,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -184,6 +187,10 @@ public class NBTManager {
         return read((DataInput) new DataInputStream(inputStream));
     }
 
+    public Object read(InputStream inputStream, byte type) throws IOException {
+        return read((DataInput) new DataInputStream(inputStream), type);
+    }
+
     /**
      * Convert java object to nbt and write to outputStream.<br>
      * Allowed all primitive types, collections and maps.
@@ -204,7 +211,12 @@ public class NBTManager {
      */
     public Object readCompressed(InputStream inputStream) throws IOException {
         var dis = new DataInputStream(new BufferedInputStream(new GZIPInputStream(inputStream)));
-        return getValueOfTag(nbtBridge.readNBTData(dis));
+        return getValueOfTag(nbtBridge.readNBTData(dis, dis.readByte()));
+    }
+
+    public Object readCompressed(InputStream inputStream, byte type) throws IOException {
+        var dis = new DataInputStream(new BufferedInputStream(new GZIPInputStream(inputStream)));
+        return getValueOfTag(nbtBridge.readNBTData(dis, type));
     }
 
     /**
@@ -231,7 +243,11 @@ public class NBTManager {
      * @throws IOException it happens
      */
     public Object read(DataInput dataInput) throws IOException {
-        Object tag = nbtBridge.readNBTData(dataInput);
+        return read(dataInput, dataInput.readByte());
+    }
+
+    public Object read(DataInput dataInput, byte type) throws IOException {
+        Object tag = nbtBridge.readNBTData(dataInput, type);
         return getValueOfTag(tag);
     }
 
@@ -739,6 +755,23 @@ public class NBTManager {
         if (objArray instanceof Double[] a) return ArrayUtils.toPrimitive(a);
         if (objArray instanceof Character[] a) return ArrayUtils.toPrimitive(a);
         return null;
+    }
+
+    public static Object modifyArray(Object array, Consumer<List<Object>> consumer){
+        if (array == null) return null;
+        Class<?> baseClass = array.getClass().getComponentType();
+        if (baseClass == null) return null;
+        Object[] objectArray = convertToObjectArrayOrNull(array);
+        List<Object> list = List.of(objectArray);
+        consumer.accept(list);
+        if (baseClass.isPrimitive()) {
+            Object[] copyArray = (Object[]) Array.newInstance(objectArray.getClass().getComponentType(), list.size());
+            Object[] resultArray = list.toArray(copyArray);
+            return convertToPrimitiveArrayOrNull(resultArray);
+        } else {
+            Object[] copyArray = (Object[]) Array.newInstance(objectArray.getClass().getComponentType(), list.size());
+            return list.toArray(copyArray);
+        }
     }
 
 }

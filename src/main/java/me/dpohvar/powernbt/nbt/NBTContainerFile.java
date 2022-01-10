@@ -1,12 +1,14 @@
 package me.dpohvar.powernbt.nbt;
 
+import me.dpohvar.powernbt.api.NBTBox;
 import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.utils.PowerJSONParser;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class NBTContainerFile extends NBTContainer<File> {
 
@@ -22,8 +24,21 @@ public class NBTContainerFile extends NBTContainer<File> {
 
     @Override
     public Object readTag() {
+
+        boolean isNBT;
+        try (var input = new DataInputStream(new FileInputStream(file))) {
+            byte b = input.readByte();
+            NBTType nbtType = NBTType.fromByte(b);
+            isNBT = (nbtType != null);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("no file",e);
+        } catch (IOException e) {
+            throw new RuntimeException("can't read file",e);
+        }
+
         try {
-            return NBTManager.getInstance().read(file);
+            if (isNBT) return NBTManager.getInstance().read(file);
+            else return PowerJSONParser.read(file);
         } catch (FileNotFoundException e) {
             return null;
         } catch (IOException e) {
@@ -35,8 +50,13 @@ public class NBTContainerFile extends NBTContainer<File> {
 
     @Override
     public void writeTag(Object base) {
+
         try {
-            NBTManager.getInstance().write(file, base);
+            if ((base instanceof Map || base instanceof Collection || base instanceof Object[] || base instanceof Boolean) && !(base instanceof NBTBox)) { // json
+                PowerJSONParser.write(base, file);
+            } else {
+                NBTManager.getInstance().write(file, base);
+            }
         } catch (FileNotFoundException e) {
             throw new RuntimeException("file "+file+" not found", e);
         } catch (Exception e) {

@@ -7,18 +7,17 @@ import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.exception.NBTTagNotFound;
 import me.dpohvar.powernbt.exception.NBTTagUnexpectedType;
 import me.dpohvar.powernbt.nbt.NBTType;
-import org.apache.commons.lang.ArrayUtils;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
 public class NBTQuery {
 
-    private final Object[] values; // String, Number, null
+    public static final Object jsonSelector = new Object();
+    public static final Float anyIndexSelector = Float.NaN;
+
+    private final Object[] values; // String, Number (Integer or Float.NaN), jsonSelector
     private static final NBTManager nbt = NBTManager.getInstance();
 
     public List<Object> getValues() {
@@ -40,7 +39,9 @@ public class NBTQuery {
         StringBuilder s = new StringBuilder();
         for (Object node : values) {
             if (node == null) s.append("[]");
-            if (node instanceof Integer) s.append("[").append(node).append("]");
+            else if (node == anyIndexSelector) s.append("[]");
+            else if (node == jsonSelector) s.append("#");
+            else if (node instanceof Number) s.append("[").append(node).append("]");
             else s.append(".").append(node);
         }
         if (s.toString().startsWith(".")) s = new StringBuilder(s.substring(1));
@@ -48,18 +49,20 @@ public class NBTQuery {
         return s.toString();
     }
 
+    private enum ParseMode { DEFAULT, TEXT, INDEX }
+
     public static NBTQuery fromString(String string) {
         if (string == null || string.isEmpty()) return new NBTQuery();
         LinkedList<Object> tokens = new LinkedList<>();
         Queue<Character> chars = new LinkedList<>();
         StringBuilder buffer = new StringBuilder();
         for (char c : string.toCharArray()) chars.add(c);
-        byte mode = 0; // 0 = default text;  1 = text in ""; 2 = text in []
+        ParseMode mode = ParseMode.DEFAULT; // 0 = default text;  1 = text in ""; 2 = text in []
         tokenizer:
         while (true) {
             Character c = chars.poll();
             switch (mode) {
-                case 0 -> {
+                case DEFAULT -> {
                     if (c == null) {
                         if (buffer.length() != 0) tokens.add(buffer.toString());
                         break tokenizer;
@@ -68,21 +71,27 @@ public class NBTQuery {
                             tokens.add(buffer.toString());
                             buffer = new StringBuilder();
                         }
+                    } else if (c == '#') {
+                        if (buffer.length() != 0) {
+                            tokens.add(buffer.toString());
+                            buffer = new StringBuilder();
+                        }
+                        tokens.add(jsonSelector);
                     } else if (c == '\"') {
-                        mode = 1;
+                        mode = ParseMode.TEXT;
                     } else if (c == '[') {
                         if (buffer.length() != 0) {
                             tokens.add(buffer.toString());
                             buffer = new StringBuilder();
                         }
-                        mode = 2;
+                        mode = ParseMode.INDEX;
                     } else if (c == ']') {
                         throw new RuntimeException(plugin.translate("error_querynode", string));
                     } else {
                         buffer.append(c);
                     }
                 }
-                case 1 -> {
+                case TEXT -> {
                     if (c == null) {
                         throw new RuntimeException(plugin.translate("error_querynode", string));
                     }
@@ -96,21 +105,21 @@ public class NBTQuery {
                             tokens.add(StringParser.parse(buffer.toString()));
                             buffer = new StringBuilder();
                         }
-                        mode = 0;
+                        mode = ParseMode.DEFAULT;
                     } else {
                         buffer.append(c);
                     }
                 }
-                case 2 -> {
+                case INDEX -> {
                     if (c == null) {
                         throw new RuntimeException(plugin.translate("error_querynode", string));
                     } else if (c == ']') {
                         String t = buffer.toString();
-                        Integer r = null;
+                        Number r = anyIndexSelector;
                         if (!t.isEmpty()) r = Integer.parseInt(t);
                         tokens.add(r);
                         buffer = new StringBuilder();
-                        mode = 0;
+                        mode = ParseMode.DEFAULT;
                     } else if (c.toString().matches("[0-9]")) {
                         buffer.append(c);
                     } else {
@@ -124,7 +133,7 @@ public class NBTQuery {
 
     public NBTQuery(Object... nodes) {
         for (Object node : nodes) {
-            if (!(node instanceof String || node instanceof Integer || node == null)) {
+            if (!(node instanceof String || node instanceof Integer || node == jsonSelector || node == anyIndexSelector)) {
                 throw new RuntimeException("invalid node: " + node);
             }
         }
@@ -148,33 +157,26 @@ public class NBTQuery {
         if (queue.isEmpty()) return current;
         Object qKey = queue.poll();
         if (queue.isEmpty()) { // request to delete qKey from current, return current or modified
-            if (current instanceof NBTCompound compound && qKey instanceof String key) {
-                compound.remove(key);
-                return current;
+            if (current instanceof Map<?,?> map && qKey instanceof String key) {
+                if (!map.containsKey(key)) return map;
+                Map<?,?> resultMap = cloneMap(map);
+                resultMap.remove(key);
+                return resultMap;
             }
-            if (qKey instanceof Number || qKey == null) {
-                if (current instanceof NBTList list) {
-                    int index = (qKey instanceof Number i) ? (int) i : list.size() - 1;
+            if (current instanceof String && qKey == jsonSelector) {
+                return "";
+            }
+            if (qKey instanceof Number) {
+                if (current instanceof Collection<?> col) {
+                    List<?> list = cloneCollection(col);
+                    int index = (qKey == anyIndexSelector) ? list.size() - 1 : (int) qKey;
                     list.remove(index);
-                    return current;
+                    return list;
                 }
-                if (current instanceof byte[] arr){
-                    int index = (qKey instanceof Number i) ? (int) i : arr.length - 1;
-                    List<Byte> list = Arrays.asList(ArrayUtils.toObject(arr));
-                    list.remove(index);
-                    return ArrayUtils.toPrimitive(list.toArray(Byte[]::new));
-                }
-                if (current instanceof int[] arr){
-                    int index = (qKey instanceof Number i) ? (int) i : arr.length - 1;
-                    List<Integer> list = Arrays.asList(ArrayUtils.toObject(arr));
-                    list.remove(index);
-                    return ArrayUtils.toPrimitive(list.toArray(Integer[]::new));
-                }
-                if (current instanceof long[] arr){
-                    int index = (qKey instanceof Number i) ? (int) i : arr.length - 1;
-                    List<Long> list = Arrays.asList(ArrayUtils.toObject(arr));
-                    list.remove(index);
-                    return ArrayUtils.toPrimitive(list.toArray(Long[]::new));
+                Object[] array = NBTManager.convertToObjectArrayOrNull(current);
+                if (array != null) {
+                    int index = (qKey == anyIndexSelector) ? array.length - 1 : (int) qKey;
+                    return NBTManager.modifyArray(array, list -> list.remove(index));
                 }
             }
             throw new NBTTagNotFound(current, qKey);
@@ -182,21 +184,37 @@ public class NBTQuery {
 
         // chain, queue is not empty
         if (current == null) throw new NBTTagNotFound(null, qKey);
-        if (current instanceof NBTCompound compound && qKey instanceof String key) {
-            if (!compound.containsKey(key)) throw new NBTTagNotFound(compound, key);
-            Object next = compound.get(key);
+        if (current instanceof Map<?,?> map && qKey instanceof String key) {
+            if (!map.containsKey(key)) throw new NBTTagNotFound(map, key);
+            Object next = map.get(key);
             Object result = remove(next, queue);
-            if (next != result) compound.put(key, result);
-            return compound;
-        } else if (current instanceof NBTList list && qKey instanceof Integer index) {
+            if (next == result) return current;
+            Map resultMap = cloneMap(map);
+            resultMap.put(key, result);
+            return resultMap;
+        }
+        if (current instanceof Collection<?> col && qKey instanceof Number number) {
+            List<?> list = (col instanceof List<?> l) ? l : new ArrayList<>(col);
+            int index = (qKey == anyIndexSelector) ? list.size() - 1 : (int) qKey;
             int accessIndex = index;
             if (index < 0) accessIndex = list.size() + index;
-            if (accessIndex < 0 || accessIndex >= list.size()) throw new NBTTagNotFound(list, index);
+            if (accessIndex < 0 || accessIndex >= list.size()) throw new NBTTagNotFound(col, number);
             Object next = list.get(index);
             Object result = remove(next, queue);
-            if (next != result) list.set(index, result);
-            return current;
-        } else throw new NBTTagNotFound(current, qKey);
+            if (next == result) return current;
+            List<Object> resultList = cloneCollection(col);
+            resultList.set(index, result);
+            return resultList;
+        }
+        if (current instanceof String string && qKey == jsonSelector) {
+            if (string.isEmpty()) return null;
+            Object next = PowerJSONParser.parse(string);
+            Object nextClone = next instanceof NBTBox box ? box.clone() : next;
+            Object result = remove(nextClone, queue);
+            if (Objects.equals(next, result)) return string;
+            return PowerJSONParser.stringify(result);
+        }
+        throw new NBTTagNotFound(current, qKey);
     }
 
     public Object get(Object root) throws NBTTagNotFound {
@@ -206,103 +224,111 @@ public class NBTQuery {
     private static Object get(Object current, Queue<Object> queue) throws NBTTagNotFound {
         if (queue.isEmpty()) return current;
         Object qKey = queue.poll();
-        if (current instanceof NBTCompound compound && qKey instanceof String key) {
-            return get(compound.get(key), queue);
+        if (current instanceof Map map && qKey instanceof String key) {
+            if (!map.containsKey(key)) throw new NBTTagNotFound(current, qKey);
+            return get(map.get(key), queue);
         }
-        if (qKey instanceof Number || qKey == null) {
-            if (current instanceof NBTList list) {
-                int currentIndex = qKey == null ? list.size() - 1 : ((Number)qKey).intValue();
-                if (currentIndex < 0) currentIndex = list.size() - currentIndex;
-                return get(list.get(currentIndex), queue);
+        if (qKey instanceof Number) {
+            Object[] objects = NBTManager.convertToObjectArrayOrNull(current);
+            if (objects != null) {
+                int currentIndex = qKey == anyIndexSelector ? objects.length - 1 : ((Number)qKey).intValue();
+                if (currentIndex < 0) currentIndex = objects.length - currentIndex;
+                if (currentIndex < 0 || currentIndex >= objects.length) throw new NBTTagNotFound(current, qKey);
+                return objects[currentIndex];
             }
-            if (current instanceof byte[] arr) {
-                int currentIndex = qKey == null ? arr.length - 1 : ((Number)qKey).intValue();
-                if (currentIndex < 0) currentIndex = arr.length - currentIndex;
-                return get(arr[currentIndex], queue);
-            }
-            if (current instanceof int[] arr) {
-                int currentIndex = qKey == null ? arr.length - 1 : ((Number)qKey).intValue();
-                if (currentIndex < 0) currentIndex = arr.length - currentIndex;
-                return get(arr[currentIndex], queue);
-            }
-            if (current instanceof long[] arr) {
-                int currentIndex = qKey == null ? arr.length - 1 : ((Number)qKey).intValue();
-                if (currentIndex < 0) currentIndex = arr.length - currentIndex;
-                return get(arr[currentIndex], queue);
-            }
+            throw new NBTTagNotFound(current, qKey);
+        }
+        if (current instanceof String string && qKey == jsonSelector) {
+            if (string.isEmpty()) return null;
+            Object json = PowerJSONParser.parse(string);
+            return get(json, queue);
         }
         throw new NBTTagNotFound(current, qKey);
     }
 
     public Object set(Object root, Object value) throws RuntimeException, NBTTagNotFound, NBTTagUnexpectedType {
         if (this.isEmpty()) return (value instanceof NBTBox box) ? box.clone() : value;
-
         Queue<Object> queue = this.getQueue();
-        root = root instanceof NBTBox box ? box.clone() : root;
         return set(root, queue, value);
     }
 
     private static Object set(Object current, Queue<Object> queue, Object value) throws NBTTagNotFound {
         Object qKey = queue.poll();
+
+        if (current == null && qKey instanceof String) current = new HashMap<>();
+        if (current == null && qKey == jsonSelector) current = "";
+        else if (current == null && (qKey instanceof Number)) current = new ArrayList<>();
+
         if (queue.isEmpty()) { // set value
-            if (current instanceof NBTCompound compound && qKey instanceof String key) {
-                compound.put(key, value);
-                return compound;
+            if (current instanceof Map<?,?> map && qKey instanceof String key) {
+                Object currentValue = map.get(key);
+                if (currentValue == value) return current;
+                Map resultMap = cloneMap(map);
+                resultMap.put(key, value);
+                return resultMap;
             }
-            if (qKey instanceof Number || qKey == null) {
-                if (current instanceof NBTList list) {
-                    putToFreeIndex(list, qKey == null ? null : ((Number) qKey).intValue(), value);
-                    return list;
+            if (qKey instanceof Number key) {
+                if (current instanceof Collection<?> col) {
+                    List<Object> resultList = cloneCollection(col);
+                    putToFreeIndex(resultList, key, value);
+                    return resultList;
                 }
-                if (current instanceof byte[] arr){
-                    List<Byte> list = Arrays.asList(ArrayUtils.toObject(arr));
-                    putToFreeIndex(list, qKey == null ? null : ((Number) qKey).intValue(), NBTManager.convertValue(value, (byte)1));
-                    return ArrayUtils.toPrimitive(list.toArray(Byte[]::new));
-                }
-                if (current instanceof int[] arr){
-                    List<Integer> list = Arrays.asList(ArrayUtils.toObject(arr));
-                    putToFreeIndex(list, qKey == null ? null : ((Number) qKey).intValue(), NBTManager.convertValue(value, (byte)3));
-                    return ArrayUtils.toPrimitive(list.toArray(Integer[]::new));
-                }
-                if (current instanceof long[] arr){
-                    List<Long> list = Arrays.asList(ArrayUtils.toObject(arr));
-                    putToFreeIndex(list, qKey == null ? null : ((Number) qKey).intValue(), NBTManager.convertValue(value, (byte)4));
-                    return ArrayUtils.toPrimitive(list.toArray(Long[]::new));
-                }
+                Object array = NBTManager.modifyArray(current, list -> putToFreeIndex(list, key, value));
+                if (array != null) return array;
+                throw new NBTTagNotFound(current, qKey);
+            }
+            if (qKey == jsonSelector) {
+                return value == null ? "" : PowerJSONParser.stringify(value);
             }
             throw new NBTTagNotFound(current, qKey);
         }
 
-        if (current == null && qKey instanceof String) current = new NBTCompound();
-        else if (current == null && (qKey instanceof Integer || qKey == null)) current = new NBTList();
-
-        if (current instanceof NBTCompound compound && qKey instanceof String key) {
-            Object next = compound.get(key);
+        // traverse value
+        if (current instanceof Map<?,?> map && qKey instanceof String key) {
+            Object next = map.get(key);
             Object result = set(next, queue, value);
-            if (next != result) compound.put(key, result);
-            return compound;
+            if (next == result) return current;
+            Map resultMap = cloneMap(map);
+            resultMap.put(key, result);
+            return resultMap;
         }
-        if (current instanceof NBTList list && (qKey instanceof Number || qKey == null)) {
-            int index = qKey == null ? list.size()-1 : ((Number)qKey).intValue();
-            if (index < 0) index = list.size() - index;
-            if (index >= list.size()) {
+        if (current instanceof Collection<?> col && (qKey instanceof Number || qKey == null)) {
+            int index = qKey == null ? col.size()-1 : ((Number)qKey).intValue();
+            if (index < 0) index = col.size() - index;
+            if (index >= col.size()) {
                 Object nextKey = queue.peek();
-                byte type = list.getType();
-                if (type == 0) type = nextKey instanceof String ? (byte) 10 : (byte) 9;
-                putToFreeIndex(list, index, NBTType.fromByte(type).getDefault());
+                Object defaultValue = null;
+                if (col instanceof NBTList nbtList) {
+                    byte type = nbtList.getType();
+                    if (type == 0 && nextKey instanceof String) type = 10;
+                    if (type == 0 && nextKey instanceof Number) type = 9;
+                    if (type == 0 && nextKey == jsonSelector) type = 8;
+                    defaultValue = NBTType.fromByte(type).getDefaultValue();
+                }
+                List<Object> resultList = cloneCollection(col);
+                putToFreeIndex(resultList, index, defaultValue);
+                return resultList;
             }
-            Object next = list.get(index);
+            Object next = col instanceof List list ? list.get(index) : new ArrayList<>(col).get(index);
             Object result = set(next, queue, value);
-            if (next != result) list.set(index, result);
-            return list;
+            if (next == result) return current;
+            List<Object> resultList = cloneCollection(col);
+            resultList.set(index, result);
+            return resultList;
+        }
+        if (current instanceof String string && qKey == jsonSelector) {
+            Object next = (string.isEmpty()) ? null : PowerJSONParser.parse(string);
+            Object result = set(next, queue, value);
+            if (Objects.equals(next, result)) return string;
+            return PowerJSONParser.stringify(result);
         }
         throw new NBTTagNotFound(current, qKey);
     }
 
-    private static void putToFreeIndex(List list, Number keyIndex, Object value) throws NBTTagNotFound {
-        int index = keyIndex == null ? list.size() : keyIndex.intValue();
+    private static void putToFreeIndex(List<Object> list, Number keyIndex, Object value) {
+        int index = anyIndexSelector.equals(keyIndex) ? list.size() : keyIndex.intValue();
         if (index < 0) index = list.size() - index;
-        if (index < 0) throw new NBTTagNotFound(list, keyIndex);
+        if (index < 0) throw new IndexOutOfBoundsException(index);
         if (index < list.size()) {
             list.set(index, value);
             return;
@@ -310,9 +336,19 @@ public class NBTQuery {
         int addDefaultCount = index - list.size();
         if (addDefaultCount > 0) {
             NBTType type = NBTType.fromByte(nbt.getValueType(value));
-            while (addDefaultCount --> 0) list.add(type.getDefault());
+            while (addDefaultCount --> 0) list.add(type.getDefaultValue());
         }
         list.add(value);
+    }
+
+    private static Map<?,?> cloneMap(Map<?,?> map){
+        if (map instanceof NBTCompound c) return c.clone();
+        return new HashMap<>(map);
+    }
+
+    private static List<Object> cloneCollection(Collection<?> col){
+        if (col instanceof NBTList c) return c.clone();
+        return new ArrayList<>(col);
     }
 
 }

@@ -6,6 +6,7 @@ import org.bukkit.Chunk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class NBTContainerChunk extends NBTContainer<Chunk> {
 
@@ -33,9 +34,11 @@ public class NBTContainerChunk extends NBTContainer<Chunk> {
 
     @Override
     public void writeTag(Object value) {
-        if (value instanceof NBTCompound compound) {
-            NBTManager.getInstance().write(chunk, compound);
-        }
+        NBTCompound compound = null;
+        if (value instanceof NBTCompound c) compound = c;
+        else if (value instanceof Map map) compound = new NBTCompound(map);
+        if (compound == null) return;
+        NBTManager.getInstance().write(chunk, compound);
     }
 
     @Override

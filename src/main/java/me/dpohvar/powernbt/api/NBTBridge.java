@@ -38,7 +38,7 @@ abstract class NBTBridge {
 
     abstract ItemStack asCraftCopyItemStack(ItemStack itemStack);
 
-    abstract Object readNBTData(DataInput dataInput) throws IOException;
+    abstract Object readNBTData(DataInput dataInput, byte type) throws IOException;
 
     abstract void writeNBTData(DataOutput dataInput, Object tag) throws IOException;
 

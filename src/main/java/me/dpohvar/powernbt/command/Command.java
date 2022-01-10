@@ -23,7 +23,7 @@ public abstract class Command implements CommandExecutor {
         Caller caller = plugin.getCaller(sender);
         caller.setSilent(silent);
         try {
-            LinkedList<String> words = new LinkedList<String>();
+            LinkedList<String> words = new LinkedList<>();
             for (String s : plugin.getTokenizer().tokenize(StringUtils.join(args, ' ')).values()) {
                 words.add(s);
             }

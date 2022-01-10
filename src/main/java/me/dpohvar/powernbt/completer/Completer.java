@@ -39,7 +39,7 @@ public abstract class Completer implements TabCompleter {
         }
 
         public TabFormer(List<String> val) {
-            words = new LinkedList<String>(val);
+            words = new LinkedList<>(val);
             if (words.size() == 0) query = "";
             else query = words.pollLast();
         }
@@ -87,7 +87,7 @@ public abstract class Completer implements TabCompleter {
             LinkedList<String> words = new LinkedList<String>();
             for (String s : plugin.getTokenizer().tokenize(line).values()) {
                 if (s.startsWith("\"") && s.endsWith("\"")) {
-                    s = StringParser.parse(s.substring(1, s.length() - 1));
+                    s = "\""+StringParser.parse(s.substring(1, s.length() - 1))+"\"";
                 }
                 words.add(s);
             }

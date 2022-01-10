@@ -8,6 +8,7 @@ import org.bukkit.block.TileState;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
@@ -53,7 +54,10 @@ public class NBTContainerBlock extends NBTContainer<Block> {
 
     @Override
     public void writeCustomTag(Object value) {
-        if (!(value instanceof NBTCompound compound)) return;
+        NBTCompound compound = null;
+        if (value instanceof NBTCompound c) compound = c;
+        else if (value instanceof Map map) compound = new NBTCompound(map);
+        if (compound == null) return;
         compound = compound.clone();
         List<String> ignores = plugin.getConfig().getStringList("ignore_set.block");
         for (String s:ignores) compound.remove(s);

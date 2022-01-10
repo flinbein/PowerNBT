@@ -654,7 +654,7 @@ public class ReflectionUtils {
         private RefMethod<?> find(Class<?> clazz) {
             var refMethods = this.findAll(clazz);
             if (refMethods.length == 0) {
-                throw new RuntimeException("no such method");
+                throw new RuntimeException("no such method: "+clazz.getName()+": "+this);
             } else if (refMethods.length == 1){
                 return refMethods[0];
             } else if (index < 0) {
@@ -791,6 +791,18 @@ public class ReflectionUtils {
             }
         }
 
+        public Z callIfPossible(Object... params) {
+            try{
+                Object[] paramsToCall = new Object[method.getParameterCount()];
+                for (var i=0; i<params.length && i <paramsToCall.length; i++){
+                    paramsToCall[i] = params[i];
+                }
+                return (Z) method.invoke(null,paramsToCall);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         public class RefExecutor {
             Object e;
             public RefExecutor(Object e) {
@@ -807,6 +819,18 @@ public class ReflectionUtils {
             public Z call(Object... params) {
                 try{
                     return (Z) method.invoke(e,params);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            public Z callIfPossible(Object... params) {
+                try{
+                    Object[] paramsToCall = new Object[method.getParameterCount()];
+                    for (var i=0; i<params.length && i <paramsToCall.length; i++){
+                        paramsToCall[i] = params[i];
+                    }
+                    return (Z) method.invoke(e,paramsToCall);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

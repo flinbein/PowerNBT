@@ -5,6 +5,7 @@ import me.dpohvar.powernbt.api.NBTList;
 import me.dpohvar.powernbt.api.NBTManager;
 import org.bukkit.ChatColor;
 
+import java.util.Map;
 import java.util.function.Supplier;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
@@ -33,24 +34,52 @@ public enum NBTType {
     public final String prefix;
     public final byte type;
     public final ChatColor color;
-    private final Supplier<Object> getDefaultValue;
+    private final Supplier<Object> defaultValueGetter;
 
-    NBTType(byte type, String name, String prefix, ChatColor color, Supplier<Object> getDefaultValue) {
+    NBTType(byte type, String name, String prefix, ChatColor color, Supplier<Object> defaultValueGetter) {
         this.type = type;
         this.name = name;
         this.prefix = prefix;
         this.color = color;
-        this.getDefaultValue = getDefaultValue;
+        this.defaultValueGetter = defaultValueGetter;
     }
 
     public static NBTType fromByte(byte b) {
         for (NBTType t : values()) if (t.type == b) return t;
-        return END;
+        return null;
     }
 
     public static NBTType fromValue(Object value) {
         if (value == null) return END;
         return fromByte(nbt.getValueType(value));
+    }
+
+    public static NBTType fromValueOrNull(Object value) {
+        if (value == null) return null;
+        try {
+            return fromByte(nbt.getValueType(value));
+        } catch (Throwable ignored) {
+            return null;
+        }
+
+    }
+
+    public static ChatColor getTypeColorByValue(Object value){
+        if (value == null) return WHITE;
+        if (value instanceof Boolean) return GOLD;
+        if (value instanceof Byte) return RED;
+        if (value instanceof Short) return YELLOW;
+        if (value instanceof Integer) return BLUE;
+        if (value instanceof Long) return AQUA;
+        if (value instanceof Float) return DARK_PURPLE;
+        if (value instanceof Double) return LIGHT_PURPLE;
+        if (value instanceof byte[]) return DARK_RED;
+        if (value instanceof int[]) return DARK_BLUE;
+        if (value instanceof long[]) return DARK_AQUA;
+        if (value instanceof String) return GREEN;
+        if (value instanceof Map) return GRAY;
+        if (NBTManager.convertToObjectArrayOrNull(value) != null) return DARK_GRAY;
+        return MAGIC;
     }
 
     public static NBTType fromString(String name) {
@@ -79,8 +108,8 @@ public enum NBTType {
         };
     }
 
-    public Object getDefault() {
-        return this.getDefaultValue.get();
+    public Object getDefaultValue() {
+        return this.defaultValueGetter.get();
     }
 
     public Object parse(String s) {

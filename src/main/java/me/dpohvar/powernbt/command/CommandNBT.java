@@ -53,8 +53,8 @@ public class CommandNBT extends Command {
     @Override
     public boolean command(final Caller caller, LinkedList<String> words) throws Throwable {
         if (words.size() == 0) return false;
-        LinkedList<String> argsBefore = new LinkedList<String>();
-        LinkedList<String> argsAfter = new LinkedList<String>();
+        LinkedList<String> argsBefore = new LinkedList<>();
+        LinkedList<String> argsAfter = new LinkedList<>();
         String action = null;
         for (String t : words) {
             if (specialTokens.contains(t)) {
@@ -65,20 +65,20 @@ public class CommandNBT extends Command {
             }
         }
         RuntimeException exceptionTMArgs = new RuntimeException(plugin.translate("error_toomanyarguments"));
-        RuntimeException exceptioNEArgs = new RuntimeException(plugin.translate("error_notenougharguments"));
+        RuntimeException exceptionNEArgs = new RuntimeException(plugin.translate("error_notenougharguments"));
         if (action == null) {
             if (argsBefore.size() > 3) throw exceptionTMArgs;
             Action a = new ActionView(caller, argsBefore.poll(), argsBefore.poll(), argsBefore.poll());
             a.execute();
         } else if (action.equals("view") || action.equals("?")) {
             if (argsBefore.size() > 3) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 0) throw exceptionTMArgs;
             Action a = new ActionView(caller, argsBefore.poll(), argsBefore.poll(), argsBefore.poll());
             a.execute();
         } else if (action.equals("paste")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 1) throw exceptionTMArgs;
             Action a = new ActionEdit(caller, argsBefore.poll(), argsBefore.poll(), "buffer", argsAfter.poll());
             a.execute();
@@ -94,126 +94,126 @@ public class CommandNBT extends Command {
             a.execute();
         } else if (action.equals("=") || action.equals("<")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 2) throw exceptionTMArgs;
-            if (argsAfter.size() < 1) throw exceptioNEArgs;
+            if (argsAfter.size() < 1) throw exceptionNEArgs;
             Action a = new ActionEdit(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
             a.execute();
         } else if (action.equals(">")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 2) throw exceptionTMArgs;
-            if (argsAfter.size() < 1) throw exceptioNEArgs;
+            if (argsAfter.size() < 1) throw exceptionNEArgs;
             Action a = new ActionEditLast(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
             a.execute();
         } else if (action.equals(">>")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 2) throw exceptionTMArgs;
-            if (argsAfter.size() < 1) throw exceptioNEArgs;
+            if (argsAfter.size() < 1) throw exceptionNEArgs;
             Action a = new ActionMove(caller, argsAfter.poll(), argsAfter.poll(), argsBefore.poll(), argsBefore.poll());
             a.execute();
         } else if (action.equals("<<")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 2) throw exceptionTMArgs;
-            if (argsAfter.size() < 1) throw exceptioNEArgs;
+            if (argsAfter.size() < 1) throw exceptionNEArgs;
             Action a = new ActionMoveLast(caller, argsAfter.poll(), argsAfter.poll(), argsBefore.poll(), argsBefore.poll());
             a.execute();
         } else if (action.equals("cut")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 0) throw exceptionTMArgs;
             Action a = new ActionCut(caller, argsBefore.poll(), argsBefore.poll());
             a.execute();
         } else if (action.equals("rm") || action.equals("rem") || action.equals("remove")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 0) throw exceptionTMArgs;
             Action a = new ActionRemove(caller, argsBefore.poll(), argsBefore.poll());
             a.execute();
         } else if (action.equals("ren") || action.equals("rename")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 2) throw exceptioNEArgs;
+            if (argsBefore.size() < 2) throw exceptionNEArgs;
             if (argsAfter.size() != 1) throw exceptionTMArgs;
             Action a = new ActionRename(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll());
             a.execute();
         } else if (action.equals("copy")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 0) throw exceptionTMArgs;
             Action a = new ActionCopy(caller, argsBefore.poll(), argsBefore.poll());
             a.execute();
         } else if (action.equals("select") || action.equals("set")) {
             if (argsBefore.size() > 1) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 2) throw exceptionTMArgs;
             Action a = new ActionSet(caller, argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
             a.execute();
         } else if (action.equals("as")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 1) throw exceptionTMArgs;
             Action a = new ActionSet(caller, argsAfter.poll(), argsBefore.poll(), argsBefore.poll());
             a.execute();
         } else if (action.equals("swap") || action.equals("<>")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 2) throw exceptionTMArgs;
-            if (argsAfter.size() < 1) throw exceptioNEArgs;
+            if (argsAfter.size() < 1) throw exceptionNEArgs;
             Action a = new ActionSwap(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
             a.execute();
         } else if (action.equals("add") || action.equals("+=")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 2) throw exceptionTMArgs;
-            if (argsAfter.size() < 1) throw exceptioNEArgs;
+            if (argsAfter.size() < 1) throw exceptionNEArgs;
             Action a = new ActionAddAll(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
             a.execute();
         } else if (action.equals("insert") || action.equals("ins")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 3) throw exceptionTMArgs;
-            if (argsBefore.size() < 2) throw exceptioNEArgs;
+            if (argsBefore.size() < 2) throw exceptionNEArgs;
             Action a = new ActionInsert(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll(), argsAfter.poll());
             a.execute();
         } else if (action.equals("&=")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 2) throw exceptionTMArgs;
-            if (argsAfter.size() < 1) throw exceptioNEArgs;
+            if (argsAfter.size() < 1) throw exceptionNEArgs;
             Action a = new ActionBitAnd(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
             a.execute();
         } else if (action.equals("|=")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 2) throw exceptionTMArgs;
-            if (argsAfter.size() < 1) throw exceptioNEArgs;
+            if (argsAfter.size() < 1) throw exceptionNEArgs;
             Action a = new ActionBitOr(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
             a.execute();
         } else if (action.equals("^=")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 2) throw exceptionTMArgs;
-            if (argsAfter.size() < 1) throw exceptioNEArgs;
+            if (argsAfter.size() < 1) throw exceptionNEArgs;
             Action a = new ActionBitXor(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
             a.execute();
         } else if (action.equals("*=")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 2) throw exceptionTMArgs;
-            if (argsAfter.size() < 1) throw exceptioNEArgs;
+            if (argsAfter.size() < 1) throw exceptionNEArgs;
             Action a = new ActionMultiply(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll(), argsAfter.poll());
             a.execute();
         } else if (action.equals("~")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 0) throw exceptionTMArgs;
             Action a = new ActionBitInverse(caller, argsBefore.poll(), argsBefore.poll());
             a.execute();
         } else if (action.equals("spawn")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
-            if (argsBefore.size() < 1) throw exceptioNEArgs;
+            if (argsBefore.size() < 1) throw exceptionNEArgs;
             if (argsAfter.size() > 1) throw exceptionTMArgs;
             Action a = new ActionSpawn(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll());
             a.execute();

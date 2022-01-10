@@ -145,7 +145,8 @@ class NBTBridgeSpigot extends NBTBridge {
     public Object getBlockNBTTag(BlockState state) {
         if (!cBlockGetSnapshotMethod.getRefClass().isInstance(state)) return null;
         Object snapshot = cBlockGetSnapshotMethod.of(state).call();
-        return nBlockGetNBTMethod.of(snapshot).call();
+        Object tag = nmCompoundCon.create();
+        return nBlockGetNBTMethod.of(snapshot).callIfPossible(tag);
     }
 
     @Override
@@ -200,9 +201,7 @@ class NBTBridgeSpigot extends NBTBridge {
     }
 
     @Override
-    public @Nullable Object readNBTData(@NotNull DataInput dataInput) throws IOException {
-        byte type = dataInput.readByte();
-        if (type == 0) return null;
+    public @Nullable Object readNBTData(@NotNull DataInput dataInput, byte type) throws IOException {
         dataInput.skipBytes(dataInput.readUnsignedShort());
         var nbtTagType = nmNBTTagGetTypeMethod.call(type);
         return nmNBTTagParseTypeMethod.of(nbtTagType).call(dataInput, (int)type, readLimiter);
@@ -211,7 +210,9 @@ class NBTBridgeSpigot extends NBTBridge {
     @Override
     public Object getTagValueByPrimitive(Object javaValue){
         if (javaValue == null) return nbtTagEndCon.create();
+        if (javaValue instanceof Boolean bool) return nbtTagByteCon.create(bool ? (byte) 1 : (byte) 0);
         if (javaValue instanceof Byte) return nbtTagByteCon.create(javaValue);
+        if (javaValue instanceof Character character) return nbtTagByteCon.create((byte) character.charValue());
         if (javaValue instanceof Short) return nbtTagShortCon.create(javaValue);
         if (javaValue instanceof Integer) return nbtTagIntCon.create(javaValue);
         if (javaValue instanceof Long) return nbtTagLongCon.create(javaValue);

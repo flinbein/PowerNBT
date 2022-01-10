@@ -1,8 +1,13 @@
 package me.dpohvar.powernbt.nbt;
 
+import me.dpohvar.powernbt.api.NBTBox;
 import me.dpohvar.powernbt.api.NBTCompound;
+import me.dpohvar.powernbt.utils.PowerJSONParser;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
@@ -28,14 +33,19 @@ public class NBTContainerFileCustom extends NBTContainerFileGZip {
         if (value instanceof NBTCompound compound) {
             return compound.get("Data");
         }
-        return null;
+        return value;
     }
 
     @Override
-    public void writeTag(Object data) {
-        NBTCompound compound = new NBTCompound();
-        compound.put("Data", data);
-        super.writeTag(compound);
+    public void writeTag(Object base) {
+        if ((base instanceof Map || base instanceof Collection || base instanceof Object[] || base instanceof Boolean) && !(base instanceof NBTBox)) { // json
+            super.writeTag(base);
+        } else {
+            NBTCompound compound = new NBTCompound();
+            compound.put("Data", base);
+            super.writeTag(compound);
+        }
+
     }
 
     @Override

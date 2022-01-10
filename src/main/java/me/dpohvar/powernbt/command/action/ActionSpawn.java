@@ -11,6 +11,8 @@ import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 
+import java.util.Map;
+
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
 public class ActionSpawn extends Action {
@@ -48,7 +50,12 @@ public class ActionSpawn extends Action {
             if (world == null) throw new RuntimeException(plugin.translate("error_noworld", worldParam));
         }
         Object base = container.getCustomTag(query);
-        if (base instanceof NBTCompound compound) {
+
+        NBTCompound compound = null;
+        if (base instanceof NBTCompound c) compound = c;
+        else if (base instanceof Map map) compound = new NBTCompound(map);
+
+        if (compound != null) {
             Entity entity = NBTManager.getInstance().spawnEntity(compound, world);
             if (entity != null) {
                 caller.send(plugin.translate("success_spawn", entity.getName()));

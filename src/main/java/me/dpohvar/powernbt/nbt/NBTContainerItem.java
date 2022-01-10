@@ -4,6 +4,8 @@ import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.api.NBTManager;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Map;
+
 public class NBTContainerItem extends NBTContainer<ItemStack> {
 
     ItemStack item;
@@ -22,10 +24,12 @@ public class NBTContainerItem extends NBTContainer<ItemStack> {
     }
 
     @Override
-    public void writeTag(Object base) {
-        if (base instanceof NBTCompound compound) {
-            NBTManager.getInstance().write(item, compound.clone());
-        }
+    public void writeTag(Object value) {
+        NBTCompound compound = null;
+        if (value instanceof NBTCompound c) compound = c;
+        else if (value instanceof Map map) compound = new NBTCompound(map);
+        if (compound == null) return;
+        NBTManager.getInstance().write(item, compound.clone());
 
     }
 

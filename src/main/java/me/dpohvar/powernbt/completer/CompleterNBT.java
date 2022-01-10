@@ -2,11 +2,10 @@ package me.dpohvar.powernbt.completer;
 
 import com.google.common.base.Strings;
 import me.dpohvar.powernbt.PowerNBT;
-import me.dpohvar.powernbt.api.NBTCompound;
-import me.dpohvar.powernbt.api.NBTList;
 import me.dpohvar.powernbt.command.CommandNBT;
 import me.dpohvar.powernbt.command.action.Argument;
 import me.dpohvar.powernbt.nbt.NBTContainer;
+import me.dpohvar.powernbt.nbt.NBTContainerValue;
 import me.dpohvar.powernbt.nbt.NBTContainerVariable;
 import me.dpohvar.powernbt.nbt.NBTType;
 import me.dpohvar.powernbt.utils.Caller;
@@ -20,6 +19,9 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 import java.util.TreeSet;
 
 import static java.util.Comparator.comparingDouble;
@@ -101,34 +103,42 @@ public class CompleterNBT extends Completer {
         } catch (Throwable ignored) {
             future = false;
         }
-        String val1 = word;
+        String containerRequest = word;
         word = former.poll(); // query or type or command
         if (container == null && !future) return;
+        Object buffer = caller.readTag();
         if (word.isEmpty()) {
             if (container == null) {
-                if (val1.matches("#-?[0-9a-fA-F]+") || Argument.colors.containsKey(val1)) {
+                if (containerRequest.matches("#-?[0-9a-fA-F]+") || Argument.colors.containsKey(containerRequest)) {
                     former.addIfStarts("int", "byte", "short", "long");
-                } else if (val1.matches("-?[0-9]+(.[0-9]*)?")) {
+                } else if (containerRequest.matches("-?[0-9]+(.[0-9]*)?")) {
                     former.addIfStarts("int", "byte", "short", "long", "float", "double");
-                } else if (val1.matches("NaN|-?Infinity")) {
+                } else if (containerRequest.matches("NaN|-?Infinity")) {
                     former.addIfStarts("float", "double");
-                } else if (val1.matches("\\[((-?[0-9]+|#-?[0-9a-fA-F]+)(,(?!\\])|(?=\\])))*\\]")) {
+                } else if (containerRequest.matches("\\[((-?[0-9]+|#-?[0-9a-fA-F]+)(,(?!\\])|(?=\\])))*\\]")) {
                     former.addIfStarts("byte[]", "int[]");
                 }
             } else {
                 completeTag(container, former);
-                former.addIfStarts("rem", "ren");
-                former.addIfStarts("copy", "=", "as", "view", "swap","+=");
+                former.addIfStarts("rem");
+                former.addIfStarts("copy", "as", "view", "swap");
+                if (!(container instanceof NBTContainerValue)) former.addIfStarts( "=", "+=", "ren");
                 if (caller.readTag() != null) former.addIfStarts("paste");
             }
             if (container instanceof NBTContainerVariable) former.addIfStarts("set");
+            if (container instanceof NBTContainerValue ctValue && ctValue.getObject() instanceof String) {
+                former.addIfStarts("json");
+            }
+            if (containerRequest.startsWith("{") && containerRequest.endsWith("}") || containerRequest.startsWith("[") && containerRequest.endsWith("]")) {
+                former.addIfStarts("json", "mojangson");
+            }
             return;
         }
         NBTQuery query = null;
         Object base = null;
         if (!CommandNBT.specialTokens.contains(word)) {
             //* ~~~ word => query or type ~~~
-            container = Argument.getContainer(caller, val1, word);
+            container = Argument.getContainer(caller, containerRequest, word);
             query = NBTQuery.fromString(word);
             word = former.poll(); // command;
         }
@@ -139,16 +149,18 @@ public class CompleterNBT extends Completer {
         if (word.isEmpty()) {
             if (container == null) {
                 former.addIfStarts("=", "rem", "ren", "paste","+=", "cut", "set", "as", "view", "swap", ">", ">>", "<<");
-                if (caller.readTag() != null) former.addIfStarts("paste");
+                if (buffer != null) former.addIfStarts("paste");
             } else {
                 if (container instanceof NBTContainerVariable) former.addIfStarts("set");
                 if (base != null) {
-                    former.addIfStarts("rem","+=", "copy", "cut", "ren", "view", ">", ">>");
-                    if (caller.readTag() != null) former.addIfStarts("paste");
-                    if (base instanceof NBTList) former.addIfStarts("ins");
+                    former.addIfStarts("rem", "+=", "copy", "cut", "ren", "view", ">", ">>");
+                    if (!(container instanceof NBTContainerValue)) former.addIfStarts("+=");
+                    if (buffer != null) former.addIfStarts("paste");
+                    if (base instanceof Collection) former.addIfStarts("ins");
                     if (base.getClass().isArray()) former.addIfStarts("ins");
                 }
-                former.addIfStarts("=", "as", "swap", "paste", "swap", "<<");
+                if (!(container instanceof NBTContainerValue)) former.addIfStarts("=", "swap", "paste", "<<");
+                former.addIfStarts("as");
             }
             return;
         }
@@ -164,7 +176,7 @@ public class CompleterNBT extends Completer {
         } else if (matches(word, "insert", "ins")) {
             if (base == null) return;
             int size;
-            if(base instanceof NBTList list) size = list.size();
+            if(base instanceof Collection list) size = list.size();
             else if(base instanceof byte[] arr) size = arr.length;
             else if(base instanceof int[] arr) size = arr.length;
             else if(base instanceof long[] arr) size = arr.length;
@@ -187,12 +199,12 @@ public class CompleterNBT extends Completer {
                         NBTType type = NBTType.fromValue(base);
                         switch (type) {
                             case BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, BYTEARRAY, INTARRAY -> {
-                                String s = NBTViewer.getShortValue(base, false);
+                                String s = NBTViewer.getShortValue(base, false, false);
                                 former.add(s);
                                 return;
                             }
                             case STRING -> {
-                                String t = NBTViewer.getShortValue(base, false);
+                                String t = NBTViewer.getShortValue(base, false, false);
                                 String w = StringParser.wrap(t);
                                 former.add("\"" + w + "\"");
                                 return;
@@ -207,17 +219,17 @@ public class CompleterNBT extends Completer {
                                 former.add("" + arr[ind]);
                             } else if (base instanceof long[] arr){
                                 former.add("" + arr[ind]);
-                            } else if (base instanceof NBTList list){
-                                Object b = list.get(ind);
+                            } else if (base instanceof Collection<?> list){
+                                Object b = new ArrayList<Object>(list).get(ind);
                                 NBTType type = NBTType.fromValue(b);
                                 switch (type) {
                                     case BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, BYTEARRAY, INTARRAY -> {
-                                        String s = NBTViewer.getShortValue(b, false);
+                                        String s = NBTViewer.getShortValue(b, false, false);
                                         former.add(s);
                                         return;
                                     }
                                     case STRING -> {
-                                        String t = NBTViewer.getShortValue(b, false);
+                                        String t = NBTViewer.getShortValue(b, false, false);
                                         String w = StringParser.wrap(t);
                                         former.add("\"" + w + "\"");
                                         return;
@@ -299,7 +311,7 @@ public class CompleterNBT extends Completer {
                         former.addIfStarts("int", "byte", "short", "long");
                     } else if (val2.matches("-?[0-9]+(.[0-9]*)?")) {
                         former.addIfStarts("int", "byte", "short", "long", "float", "double");
-                    } else if (val1.matches("NaN|-?Infinity")) {
+                    } else if (containerRequest.matches("NaN|-?Infinity")) {
                         former.addIfStarts("float", "double");
                     } else if (val2.matches("\\[((-?[0-9]+|#-?[0-9a-fA-F]+)(,(?!\\])|(?=\\])))*\\]")) {
                         former.addIfStarts("byte[]", "int[]");
@@ -312,9 +324,8 @@ public class CompleterNBT extends Completer {
     }
 
 
-    private void completeTag(NBTContainer<?> container, TabFormer former) throws Exception {
-        String query = former.getQuery();
-        String[] els = query.split("\\.|(?=\\[)");
+    private void completeTag(NBTContainer<?> container, TabFormer former) throws Exception {String query = former.getQuery();
+        String[] els = query.split("\\.|(?=\\[)|#");
         if (query.endsWith("..")) {
             els[els.length - 1] = "";
             String t = StringUtils.join(els, '.');
@@ -324,22 +335,22 @@ public class CompleterNBT extends Completer {
         if (!query.endsWith(".") && (query.isEmpty() || els.length == 1)) {
             Object base = container.getCustomTag();
             if (base != null) {
-                if (base instanceof NBTCompound compound) {
-                    for (String s : compound.keySet()) {
+                if (base instanceof Map map && !(container instanceof NBTContainerValue)) {
+                    for (Object key : map.keySet()) {
+                        if (!(key instanceof String s)) continue;
                         String u = StringParser.wrap(s);
-                        // TODO, maybe parse?
                         if (!u.equals(s) || u.contains(".")) s = '\"' + u + '\"';
                         former.addIfHas(s);
                     }
-                } else if (base instanceof NBTList list) {
+                } else if (base instanceof Collection list && !(container instanceof NBTContainerValue)) {
                     for (int i = 0; i < list.size(); i++) {
                         former.addIfStarts("[" + i + "]");
                     }
-                } else if (base instanceof byte[] arr) {
+                } else if (base instanceof byte[] arr && !(container instanceof NBTContainerValue)) {
                     for (int i = 0; i < arr.length; i++) former.addIfStarts("[" + i + "]");
-                } else if (base instanceof int[] arr) {
+                } else if (base instanceof int[] arr && !(container instanceof NBTContainerValue)) {
                     for (int i = 0; i < arr.length; i++) former.addIfStarts("[" + i + "]");
-                } else if (base instanceof long[] arr) {
+                } else if (base instanceof long[] arr && !(container instanceof NBTContainerValue)) {
                     for (int i = 0; i < arr.length; i++) former.addIfStarts("[" + i + "]");
                 }
             }
@@ -363,14 +374,16 @@ public class CompleterNBT extends Completer {
         NBTQuery q = NBTQuery.fromString(option);
         Object base = container.getCustomTag(q);
         if (base != null) {
-            if (base instanceof NBTCompound compound) {
-                for (String s : compound.keySet()) {
+            if (base instanceof Map compound) {
+                for (Object key : compound.keySet()) {
+                    if (!(key instanceof String s)) continue;
                     String u = StringParser.wrap(s);
                     // TODO maybe parse key
                     if (!u.equals(s) || u.contains(".")) s = '\"' + u + '\"';
-                    if (s.toUpperCase().contains(qu.toUpperCase())) former.add(option + "." + s);
+                    String delimiter = option.endsWith("#") ? "" : ".";
+                    if (s.toUpperCase().contains(qu.toUpperCase())) former.add(option + delimiter + s);
                 }
-            } else if (base instanceof NBTList list) {
+            } else if (base instanceof Collection list) {
                 for (int i = 0; i < list.size(); i++) {
                     String s = "[" + i + "]";
                     if (s.toUpperCase().startsWith(qu.toUpperCase())) former.add(option + s);
@@ -390,6 +403,8 @@ public class CompleterNBT extends Completer {
                     String s = "[" + i + "]";
                     if (s.toUpperCase().startsWith(qu.toUpperCase())) former.add(option + s);
                 }
+            } else if (base instanceof String) {
+                former.add(option + "#");
             }
         }
         for (String type : container.getTypes()) {

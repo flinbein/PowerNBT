@@ -26,6 +26,7 @@ locale:
   error_customfile: "неверно указано имя файла: %s"
   data_elements: "%d элементов"
   data_null: "пусто"
+  data_unknown: "неизвестный тип"
   data_bytes: "%d байт"
   data_ints: "%d чисел"
   data_emptyarray: "пустой массив"

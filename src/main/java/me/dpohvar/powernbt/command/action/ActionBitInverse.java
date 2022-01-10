@@ -28,11 +28,14 @@ public class ActionBitInverse extends Action {
         NBTContainer container1 = arg1.getContainer();
         NBTQuery query1 = arg1.getQuery();
         Object base1 = container1.getCustomTag(query1);
-        if (!(base1 instanceof Number)){
+        Object result;
+        if (base1 instanceof Number num) {
+            result = NBTManager.convertValue(~(num.longValue()), NBTType.fromValue(base1).type);
+        } else if (base1 instanceof Boolean bool) {
+            result = !bool;
+        } else {
             throw new RuntimeException(plugin.translate("error_null"));
         }
-        long baseValue = ((Number)base1).longValue();
-        Object result = NBTManager.convertValue(~baseValue, NBTType.fromValue(base1).type);
         container1.setCustomTag(query1, result);
         caller.send(plugin.translate("success_edit") + NBTViewer.getShortValueWithPrefix(result,false));
 

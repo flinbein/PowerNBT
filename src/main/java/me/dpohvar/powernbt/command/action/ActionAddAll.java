@@ -42,7 +42,7 @@ public class ActionAddAll extends Action {
         NBTQuery query2 = arg2.getQuery();
         Object base2 = container2.getCustomTag(query2);
         if (base1 == null) {
-            base1 = NBTType.fromValue(base2).getDefault();
+            base1 = NBTType.fromValue(base2).getDefaultValue();
         }
         if (base1 instanceof NBTCompound cmp1 && base2 instanceof NBTCompound cmp2){
             cmp1.merge(cmp2);

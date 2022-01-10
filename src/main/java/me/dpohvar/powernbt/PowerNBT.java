@@ -26,7 +26,7 @@ public class PowerNBT extends JavaPlugin {
     private final HashMap<String, Caller> callers = new HashMap<String, Caller>();
     private Translator translator;
     private static final Tokenizer tokenizer = new Tokenizer(
-            null, null, null, List.of('\"'), null, List.of(' ')
+            null, null, null, List.of('\"'), null, List.of(' '), "{}[]()"
     );
     private final String prefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[" + ChatColor.YELLOW + "PowerNBT" + ChatColor.GOLD + ChatColor.BOLD + "] " + ChatColor.RESET;
     private final String errorPrefix = ChatColor.DARK_RED.toString() + ChatColor.BOLD + "[" + ChatColor.RED + "PowerNBT" + ChatColor.DARK_RED + ChatColor.BOLD + "] " + ChatColor.RESET;

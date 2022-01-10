@@ -41,7 +41,7 @@ public abstract class ActionBiLong extends Action {
             throw new RuntimeException(plugin.translate("error_null"));
         }
         if (base1 == null) {
-            base1 = NBTType.fromValue(base2).getDefault();
+            base1 = NBTType.fromValue(base2).getDefaultValue();
         }
         long baseValue = ((Number)base1).longValue();
         long argValue = ((Number)base2).longValue();

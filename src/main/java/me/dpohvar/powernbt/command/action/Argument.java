@@ -7,10 +7,8 @@ import me.dpohvar.powernbt.api.NBTList;
 import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.completer.TypeCompleter;
 import me.dpohvar.powernbt.nbt.*;
-import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.NBTParser;
-import me.dpohvar.powernbt.utils.NBTQuery;
-import me.dpohvar.powernbt.utils.StringParser;
+import me.dpohvar.powernbt.utils.*;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
@@ -80,10 +78,8 @@ public class Argument {
         if (container == null) {
             objectFuture = object;
             queryFuture = param;
-        } else if (container instanceof NBTContainerValue value) {
-            NBTType type = NBTType.fromValue(value.getObject());
-            if (type == NBTType.LIST || type == NBTType.COMPOUND || type.getBaseType() != null) query = NBTQuery.fromString(param);
-            else query = emptyQuery;
+        } else if (container instanceof NBTContainerValue) {
+            query = emptyQuery;
         } else {
             query = NBTQuery.fromString(param);
         }
@@ -97,7 +93,8 @@ public class Argument {
         }
         if (object.equals("item") || object.equals("i")) {
             if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
-            return new NBTContainerItem(((Player) caller.getOwner()).getItemInHand());
+            NBTContainerItem nbtContainerItem = new NBTContainerItem(((Player) caller.getOwner()).getInventory().getItemInMainHand());
+            return new NBTContainerComplex(nbtContainerItem, new NBTQuery("tag"));
         }
         if (object.equals("inventory") || object.equals("inv")) {
             if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
@@ -230,10 +227,13 @@ public class Argument {
             return new NBTContainerValue(new NBTList());
         }
         if (object.equals("on") || object.equals("true")) {
-            return new NBTContainerValue((byte) 1);
+            return new NBTContainerValue(true);
         }
         if (object.equals("off") || object.equals("false")) {
-            return new NBTContainerValue((byte) 0);
+            return new NBTContainerValue(false);
+        }
+        if (object.equals("null")) {
+            return new NBTContainerValue(null);
         }
         if (object.equals("int[]")) {
             return new NBTContainerValue(new int[0]);
@@ -306,20 +306,26 @@ public class Argument {
         if (object.startsWith("\"") && object.endsWith("\"") && object.length() > 1) {
             String s = StringParser.parse(object.substring(1, object.length() - 1));
             NBTType type = NBTType.STRING;
+            if ("json".equalsIgnoreCase(param)) {
+                return new NBTContainerValue(PowerJSONParser.parse(s));
+            }
+            if ("mojangson".equalsIgnoreCase(param) || "mj".equalsIgnoreCase(param)) {
+                return new NBTContainerValue(NBTParser.parser("",s).parse());
+            }
             if (param != null) type = NBTType.fromString(param);
             return new NBTContainerValue(type.parse(s));
         }
         if (object.matches("#-?[0-9a-fA-F]+")) {
-            Long l = Long.parseLong(object.substring(1), 16);
-            String s = l.toString();
+            long l = Long.parseLong(object.substring(1), 16);
+            String s = Long.toString(l);
             NBTType type = NBTType.INT;
             if (param != null) type = NBTType.fromString(param);
             return new NBTContainerValue(type.parse(s));
         }
         if (object.matches("b[0-1]+")) {
             if (param == null) return null;
-            Long l = Long.parseLong(object.substring(1), 2);
-            String s = l.toString();
+            long l = Long.parseLong(object.substring(1), 2);
+            String s = Long.toString(l);
             NBTType type = NBTType.fromString(param);
             return new NBTContainerValue(type.parse(s));
         }
@@ -350,20 +356,18 @@ public class Argument {
         if (object.equals("*") || object.equals("self") || object.equals("this")) {
             return null;
         }
-        if (object.matches("\\[((-?[0-9]+|#-?[0-9a-fA-F]+)(,(?!\\])|(?=\\])))*\\]")) {
-            if (param == null) {
-                return null;
-            } else {
-                NBTType type = NBTType.fromString(param);
-                if (type == NBTType.BYTE) type = NBTType.BYTEARRAY;
-                else if (type == NBTType.INT) type = NBTType.INTARRAY;
-                else if (type == NBTType.LONG) type = NBTType.LONGARRAY;
-                return new NBTContainerValue(type.parse(object));
-            }
+        if (object.matches("\\[((-?[0-9]+|#-?[0-9a-fA-F]+)(,(?!])|(?=])))*][bil]")) {
+            NBTType type = switch (object.charAt(object.length()-1)) {
+                case 'b' -> NBTType.BYTEARRAY;
+                case 'i' -> NBTType.INTARRAY;
+                case 'l' -> NBTType.LONGARRAY;
+                default -> NBTType.LIST;
+            };
+            String parseString = object.replaceAll(".$", "");
+            return new NBTContainerValue(type.parse(parseString));
         }
         if (object.equals("hand") || object.equals("h")) {
-            if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
-            Player p = (Player) caller.getOwner();
+            if (!(caller.getOwner() instanceof Player p)) throw new RuntimeException(plugin.translate("error_noplayer"));
             NBTContainerEntity player = new NBTContainerEntity(p);
             int pslot = p.getInventory().getHeldItemSlot();
             int ind = 0;
@@ -406,16 +410,20 @@ public class Argument {
             NBTQuery q = new NBTQuery("Inventory",result);
             return new NBTContainerComplex(container,q);
         }
-        if (object.startsWith("{") && object.endsWith("}") || object.startsWith("[") && object.endsWith("]") || object.matches("-?[0-9]*(\\.[0-9])?[fd]") || object.matches("-?[0-9]*[bsil]")) {
-            Object mojangsonTag = null;
+        if (object.startsWith("{") && object.endsWith("}") || object.startsWith("[") && object.endsWith("]") || object.matches("-?[0-9]*(\\.[0-9])?[fd]") || object.matches("-?[0-9]*[bsilfd]")) {
+            Object result = null;
+
             try {
-                mojangsonTag = NBTParser.parser("", object).parse();
+                if ("json".equals(param)) {
+                    result = PowerJSONParser.parse(object);
+                } else {
+                    result = NBTParser.parser("", object).parse();
+                }
             } catch (Exception ignored){}
-            if (mojangsonTag != null) {
-                return new NBTContainerValue(mojangsonTag instanceof NBTBox box ? box.clone() : mojangsonTag);
+            if (result != null) {
+                return new NBTContainerValue(result);
             }
         }
-
         throw new RuntimeException(plugin.translate("error_undefinedobject", object));
     }
 

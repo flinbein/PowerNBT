@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class NBTContainerEntity extends NBTContainer<Entity> {
@@ -44,8 +45,11 @@ public class NBTContainerEntity extends NBTContainer<Entity> {
     }
 
     @Override
-    public void writeTag(Object base) {
-        if (!(base instanceof NBTCompound compound)) return;
+    public void writeTag(Object value) {
+        NBTCompound compound = null;
+        if (value instanceof NBTCompound c) compound = c;
+        else if (value instanceof Map map) compound = new NBTCompound(map);
+        if (compound == null) return;
         NBTManager.getInstance().write(entity, compound);
         if (ReflectionUtils.isForge()){
             Object forgeData = compound.get("ForgeData");

@@ -14,6 +14,25 @@ ignore_set:
 
 hooks:
   default:
+    entity:
+      getNBT: "net.minecraft.world.entity.Entity d(net.minecraft.nbt.NBTTagCompound): boolean"
+      getNBTSimple: "net.minecraft.world.entity.Entity save(net.minecraft.nbt.NBTTagCompound): net.minecraft.nbt.NBTTagCompound"
+      setNBT: "net.minecraft.world.entity.Entity load(net.minecraft.nbt.NBTTagCompound): void"
+      getHandle: "{cb}.entity.CraftEntity *(): net.minecraft.world.entity.Entity"
+      createType: "net.minecraft.world.entity.EntityTypes public static *(net.minecraft.nbt.NBTTagCompound, net.minecraft.world.level.World): java.util.Optional"
+      getBukkitEntity: "net.minecraft.world.entity.Entity *(): {cb}.entity.CraftEntity"
+    block:
+      getSnapshot: "{cb}.block.CraftBlockEntityState getSnapshot()"
+      getNBT: "net.minecraft.world.level.block.entity.TileEntity save(net.minecraft.nbt.NBTTagCompound): net.minecraft.nbt.NBTTagCompound"
+      setNBT: "net.minecraft.world.level.block.entity.TileEntity load(net.minecraft.nbt.NBTTagCompound): void"
+    item:
+      handle: "{cb}.inventory.CraftItemStack *:net.minecraft.world.item.ItemStack"
+      craftCopy: "{cb}.inventory.CraftItemStack static *(org.bukkit.inventory.ItemStack): {cb}.inventory.CraftItemStack"
+      getNBT: "net.minecraft.world.item.ItemStack *(net.minecraft.nbt.NBTTagCompound): net.minecraft.nbt.NBTTagCompound"
+      setNBT: "net.minecraft.world.item.ItemStack declared load(net.minecraft.nbt.NBTTagCompound): void"
+    world:
+      getHandle: "{cb}.CraftWorld *(): net.minecraft.server.level.WorldServer"
+      addEntity: "net.minecraft.server.level.WorldServer addEntity(net.minecraft.world.entity.Entity, org.bukkit.event.entity.CreatureSpawnEvent$SpawnReason): boolean"
   1_18_1-R0_1-SNAPSHOT:
     entity:
       getNBT: "net.minecraft.world.entity.Entity d(net.minecraft.nbt.NBTTagCompound): boolean"

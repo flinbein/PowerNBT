@@ -40,7 +40,7 @@ public class ActionMultiply extends Action {
         if (!(base2 instanceof Number number2)){
             throw new RuntimeException(plugin.translate("error_null"));
         }
-        if (base1 == null) base1 = NBTType.fromValue(base2).getDefault();
+        if (base1 == null) base1 = NBTType.fromValue(base2).getDefaultValue();
         Number mathResult;
         Number number1 = (Number) base1;
         if (number1 instanceof Float || number1 instanceof Double || number2 instanceof Float || number2 instanceof Double){

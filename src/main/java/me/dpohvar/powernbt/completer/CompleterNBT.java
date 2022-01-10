@@ -40,7 +40,7 @@ public class CompleterNBT extends Completer {
         String word = former.poll(); // object
         if (word.isEmpty()) {
             former.addIfStarts("buffer", "list", "compound", "byte[]", "int[]", "long[]", "debug", "file:", "gz:", "sch:");
-            if (caller.getOwner() instanceof Entity) former.addIfStarts("block", "inventory","hand","hand:");
+            if (caller.getOwner() instanceof Entity) former.addIfStarts("block", "inventory","item","hand","hand:");
             if (caller.getOwner() instanceof Entity p && former.getQuery().startsWith("id")) {
                 TreeSet<Entity> nearbyEntities = new TreeSet<>(comparingDouble(e -> e.getLocation().distance(p.getLocation())));
                 nearbyEntities.addAll( p.getNearbyEntities(20, 20, 20) );
@@ -242,7 +242,7 @@ public class CompleterNBT extends Completer {
                     }
                 }
                 former.addIfStarts("me", "item", "buffer", "list", "compound", "byte[]", "int[]", "long[]");
-                if (caller.getOwner() instanceof Entity) former.addIfStarts("block", "inventory","hand","hand:");
+                if (caller.getOwner() instanceof Entity) former.addIfStarts("block", "inventory","item","hand","hand:");
                 if (caller.getOwner() instanceof Entity p && former.getQuery().startsWith("id")) {
                     TreeSet<Entity> nearbyEntities = new TreeSet<>(comparingDouble(e -> e.getLocation().distance(p.getLocation())));
                     nearbyEntities.addAll( p.getNearbyEntities(20, 20, 20) );
@@ -325,11 +325,20 @@ public class CompleterNBT extends Completer {
 
 
     private void completeTag(NBTContainer<?> container, TabFormer former) throws Exception {String query = former.getQuery();
-        String[] els = query.split("\\.|(?=\\[)|#");
+        String[] els = query.split("\\.|(?=\\[)|(?<=#)|(?=#)");
         if (query.endsWith("..")) {
             els[els.length - 1] = "";
-            String t = StringUtils.join(els, '.');
-            former.add(t.substring(0, t.length() - 1));
+            StringBuilder stringBuilder = new StringBuilder();
+            for (String el : els) {
+                if (el.isEmpty()) continue;
+                if (!el.startsWith("[") && !el.equals("#")) {
+                    if (!stringBuilder.toString().endsWith("]") && !stringBuilder.toString().endsWith("#") && !stringBuilder.isEmpty()) {
+                        stringBuilder.append(".");
+                    }
+                }
+                stringBuilder.append(el);
+            }
+            former.add(stringBuilder.toString());
             return;
         }
         if (!query.endsWith(".") && (query.isEmpty() || els.length == 1)) {

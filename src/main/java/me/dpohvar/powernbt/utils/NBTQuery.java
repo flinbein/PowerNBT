@@ -7,6 +7,7 @@ import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.exception.NBTTagNotFound;
 import me.dpohvar.powernbt.exception.NBTTagUnexpectedType;
 import me.dpohvar.powernbt.nbt.NBTType;
+import org.bukkit.Bukkit;
 
 import java.util.*;
 
@@ -120,6 +121,9 @@ public class NBTQuery {
                         tokens.add(r);
                         buffer = new StringBuilder();
                         mode = ParseMode.DEFAULT;
+                    } else if (c == '-') {
+                        if (buffer.isEmpty()) buffer.append(c);
+                        else throw new RuntimeException(plugin.translate("error_querynode", string));
                     } else if (c.toString().matches("[0-9]")) {
                         buffer.append(c);
                     } else {
@@ -234,7 +238,7 @@ public class NBTQuery {
                 int currentIndex = qKey == anyIndexSelector ? objects.length - 1 : ((Number)qKey).intValue();
                 if (currentIndex < 0) currentIndex = objects.length - currentIndex;
                 if (currentIndex < 0 || currentIndex >= objects.length) throw new NBTTagNotFound(current, qKey);
-                return objects[currentIndex];
+                return get(objects[currentIndex], queue);
             }
             throw new NBTTagNotFound(current, qKey);
         }
@@ -267,6 +271,9 @@ public class NBTQuery {
                 resultMap.put(key, value);
                 return resultMap;
             }
+
+            Bukkit.getPlayer("v").spigot().sendMessage();
+
             if (qKey instanceof Number key) {
                 if (current instanceof Collection<?> col) {
                     List<Object> resultList = cloneCollection(col);
@@ -292,8 +299,8 @@ public class NBTQuery {
             resultMap.put(key, result);
             return resultMap;
         }
-        if (current instanceof Collection<?> col && (qKey instanceof Number || qKey == null)) {
-            int index = qKey == null ? col.size()-1 : ((Number)qKey).intValue();
+        if (current instanceof Collection<?> col && qKey instanceof Number key) {
+            int index = anyIndexSelector.equals(key) ? col.size()-1 : key.intValue();
             if (index < 0) index = col.size() - index;
             if (index >= col.size()) {
                 Object nextKey = queue.peek();

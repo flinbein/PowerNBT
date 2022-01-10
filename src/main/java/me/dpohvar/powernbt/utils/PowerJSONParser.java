@@ -14,7 +14,7 @@ import static java.util.stream.Collectors.joining;
 public class PowerJSONParser {
 
     private static final JsonParser parser = new JsonParser();
-    private static Gson gson = new Gson();
+    private static final Gson gson = new Gson();
 
     public static Object parse(String value){
         JsonElement parsed = parser.parse(value);

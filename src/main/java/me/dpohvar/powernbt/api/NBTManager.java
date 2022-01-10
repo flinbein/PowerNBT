@@ -747,13 +747,66 @@ public class NBTManager {
 
     public static Object convertToPrimitiveArrayOrNull(Object[] objArray){
         if (objArray instanceof Boolean[] a) return ArrayUtils.toPrimitive(a);
+        if (objArray instanceof Character[] a) return ArrayUtils.toPrimitive(a);
         if (objArray instanceof Byte[] a) return ArrayUtils.toPrimitive(a);
         if (objArray instanceof Short[] a) return ArrayUtils.toPrimitive(a);
         if (objArray instanceof Integer[] a) return ArrayUtils.toPrimitive(a);
         if (objArray instanceof Long[] a) return ArrayUtils.toPrimitive(a);
         if (objArray instanceof Float[] a) return ArrayUtils.toPrimitive(a);
         if (objArray instanceof Double[] a) return ArrayUtils.toPrimitive(a);
-        if (objArray instanceof Character[] a) return ArrayUtils.toPrimitive(a);
+        return null;
+    }
+
+    public static Object convertToClassType(Class<?> clazz, Object value){
+        if (clazz == Boolean.class || clazz == boolean.class) {
+            if (value == null) return false;
+            if (value instanceof Boolean b) return b;
+            if (value instanceof Character b) return b != 0;
+            if (value instanceof Number b) return b.doubleValue() != 0 && !Double.isNaN(b.doubleValue());
+            if (value instanceof String b) return !b.isEmpty();
+            if (value instanceof Object[] b) return b.length > 0;
+            if (value instanceof Collection b) return b.size() > 0;
+            if (value instanceof Map b) return b.size() > 0;
+            Object[] objects = convertToObjectArrayOrNull(value);
+            if (objects != null) return objects.length > 0;
+            return true;
+        } else if (clazz == Character.class || clazz == char.class) {
+            if (value == null) return '\0';
+            if (value instanceof Boolean b) return b ? '1' : '0';
+            if (value instanceof Character b) return b;
+            if (value instanceof Number b) return (char) b.intValue();
+            if (value instanceof String s) return s.isEmpty() ? '\0' : s.charAt(0);
+        } else if (clazz == Byte.class || clazz == byte.class) {
+            if (value instanceof Boolean b) return b ? (byte) 1 : (byte) 0;
+            if (value instanceof Character b) return (byte) (char) b;
+            if (value instanceof Number b) return b.byteValue();
+            if (value instanceof String s) return Byte.valueOf(s);
+        } else if (clazz == Short.class || clazz == short.class) {
+            if (value instanceof Boolean b) return b ? (short) 1 : (short) 0;
+            if (value instanceof Character b) return (short) (char) b;
+            if (value instanceof Number b) return b.shortValue();
+            if (value instanceof String s) return Short.valueOf(s);
+        } else if (clazz == Integer.class || clazz == int.class) {
+            if (value instanceof Boolean b) return b ? 1 : 0;
+            if (value instanceof Character b) return (int) (char) b;
+            if (value instanceof Number b) return b.intValue();
+            if (value instanceof String s) return Integer.valueOf(s);
+        } else if (clazz == Long.class || clazz == long.class) {
+            if (value instanceof Boolean b) return b ? (long) 1 : (long) 0;
+            if (value instanceof Character b) return (long) (char) b;
+            if (value instanceof Number b) return b.longValue();
+            if (value instanceof String s) return Long.valueOf(s);
+        } else if (clazz == Float.class || clazz == float.class) {
+            if (value instanceof Boolean b) return b ? (float) 1 : (float) 0;
+            if (value instanceof Character b) return (float) (char) b;
+            if (value instanceof Number b) return b.floatValue();
+            if (value instanceof String s) return Float.valueOf(s);
+        } else if (clazz == Double.class || clazz == double.class) {
+            if (value instanceof Boolean b) return b ? (double) 1 : (double) 0;
+            if (value instanceof Character b) return (double) (char) b;
+            if (value instanceof Number b) return b.doubleValue();
+            if (value instanceof String s) return Double.valueOf(s);
+        }
         return null;
     }
 
@@ -762,14 +815,13 @@ public class NBTManager {
         Class<?> baseClass = array.getClass().getComponentType();
         if (baseClass == null) return null;
         Object[] objectArray = convertToObjectArrayOrNull(array);
-        List<Object> list = List.of(objectArray);
+        List<Object> list = new ArrayList<>(List.of(objectArray));
         consumer.accept(list);
+        Object[] copyArray = (Object[]) Array.newInstance(objectArray.getClass().getComponentType(), list.size());
         if (baseClass.isPrimitive()) {
-            Object[] copyArray = (Object[]) Array.newInstance(objectArray.getClass().getComponentType(), list.size());
-            Object[] resultArray = list.toArray(copyArray);
+            Object[] resultArray = list.stream().map(v -> convertToClassType(baseClass, v)).toList().toArray(copyArray);
             return convertToPrimitiveArrayOrNull(resultArray);
         } else {
-            Object[] copyArray = (Object[]) Array.newInstance(objectArray.getClass().getComponentType(), list.size());
             return list.toArray(copyArray);
         }
     }

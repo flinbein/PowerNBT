@@ -31,7 +31,6 @@ public class ActionEdit extends Action {
             return;
         }
         Object base = arg2.getContainer().getCustomTag(arg2.getQuery());
-        if (base == null) throw new RuntimeException(PowerNBT.plugin.translate("error_null"));
         try{
             container.setCustomTag(query, base);
             caller.send(PowerNBT.plugin.translate("success_edit") + NBTViewer.getShortValueWithPrefix(base, false));

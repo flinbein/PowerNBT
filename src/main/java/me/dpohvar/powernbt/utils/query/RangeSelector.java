@@ -61,7 +61,7 @@ public record RangeSelector(Integer start, Integer end) implements QSelector {
 
     public int fixedIndex(Integer index, int size){
         if (index == null) return size;
-        return index < 0 ? size - index : index;
+        return index < 0 ? size + index : index;
     }
 
     @Override

@@ -145,10 +145,7 @@ public class NBTQuery {
                         }
                         buffer = new StringBuilder();
                         mode = ParseMode.DEFAULT;
-                    } else if (c == '-') {
-                        if (buffer.isEmpty()) buffer.append(c);
-                        else throw new RuntimeException(plugin.translate("error_querynode", string));
-                    } else if (c.toString().matches("[0-9.]")) {
+                    } else if (c.toString().matches("[0-9.-]")) {
                         buffer.append(c);
                     } else {
                         throw new RuntimeException(plugin.translate("error_querynode", string));

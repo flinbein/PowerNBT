@@ -17,6 +17,7 @@ public class NBTContainerEntity extends NBTContainer<Entity> {
     Entity entity;
 
     public NBTContainerEntity(Entity entity) {
+        super("id"+entity.getEntityId());
         this.entity = entity;
     }
 
@@ -26,7 +27,7 @@ public class NBTContainerEntity extends NBTContainer<Entity> {
 
     @Override
     public List<String> getTypes() {
-        List<String> s = new ArrayList<String>();
+        List<String> s = new ArrayList<>();
         s.add("entity");
         if (entity instanceof LivingEntity) s.add("living");
         //noinspection deprecation
@@ -42,6 +43,11 @@ public class NBTContainerEntity extends NBTContainer<Entity> {
             tag.put("ForgeData", Objects.requireNonNullElseGet(nbtCompound, NBTCompound::new));
         }
         return tag;
+    }
+
+    @Override
+    protected void eraseTag() {
+        if (!(entity instanceof Player)) entity.remove();
     }
 
     @Override
@@ -65,8 +71,11 @@ public class NBTContainerEntity extends NBTContainer<Entity> {
 
     @Override
     public String toString(){
-        if (entity instanceof Player) return ((Player) entity).getDisplayName();
-        else return entity.getType().toString();
+        return entity.getName();
     }
 
+    @Override
+    public String getSelector() {
+        return "id"+entity.getEntityId();
+    }
 }

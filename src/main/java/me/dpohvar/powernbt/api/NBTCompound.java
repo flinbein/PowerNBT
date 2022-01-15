@@ -269,23 +269,7 @@ public class NBTCompound implements Map<String,Object>, NBTBox {
     }
 
     public String toString() {
-        NBTEntrySet.NBTIterator i = entrySet().iterator();
-        if (!i.hasNext()) return "{}";
-        StringBuilder sb = new StringBuilder().append('{');
-        for (;;) {
-            NBTEntrySet.NBTIterator.NBTEntry e = i.next();
-            Object val = e.getValue();
-            sb.append(e.getKey()).append('=');
-            if (val instanceof byte[] bs) {
-                sb.append("int[").append(bs.length).append(']');
-            } else if (val instanceof int[] ints) {
-                sb.append("byte[").append(ints.length).append(']');
-            } else {
-                sb.append(val);
-            }
-            if (!i.hasNext()) return sb.append('}').toString();
-            sb.append(", ");
-        }
+        return handle.toString();
     }
 
     /**

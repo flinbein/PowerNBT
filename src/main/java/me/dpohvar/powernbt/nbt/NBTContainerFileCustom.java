@@ -2,11 +2,10 @@ package me.dpohvar.powernbt.nbt;
 
 import me.dpohvar.powernbt.api.NBTBox;
 import me.dpohvar.powernbt.api.NBTCompound;
-import me.dpohvar.powernbt.utils.PowerJSONParser;
+import me.dpohvar.powernbt.utils.StringParser;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
@@ -16,7 +15,7 @@ public class NBTContainerFileCustom extends NBTContainerFileGZip {
     String name;
 
     public NBTContainerFileCustom(String name) {
-        super(getFileByName(name));
+        super(getFileByName(name), "$$" + StringParser.wrapToQuotesIfNeeded(name));
         this.name = name;
     }
 
@@ -46,10 +45,5 @@ public class NBTContainerFileCustom extends NBTContainerFileGZip {
             super.writeTag(compound);
         }
 
-    }
-
-    @Override
-    public String toString(){
-        return "$$" + name;
     }
 }

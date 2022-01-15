@@ -757,7 +757,7 @@ public class NBTManager {
         return null;
     }
 
-    public static Object convertToClassType(Class<?> clazz, Object value){
+    public static Object convertToPrimitiveClassType(Class<?> clazz, Object value){
         if (clazz == Boolean.class || clazz == boolean.class) {
             if (value == null) return false;
             if (value instanceof Boolean b) return b;
@@ -819,10 +819,26 @@ public class NBTManager {
         consumer.accept(list);
         Object[] copyArray = (Object[]) Array.newInstance(objectArray.getClass().getComponentType(), list.size());
         if (baseClass.isPrimitive()) {
-            Object[] resultArray = list.stream().map(v -> convertToClassType(baseClass, v)).toList().toArray(copyArray);
+            Object[] resultArray = list.stream().map(v -> convertToPrimitiveClassType(baseClass, v)).toList().toArray(copyArray);
             return convertToPrimitiveArrayOrNull(resultArray);
         } else {
             return list.toArray(copyArray);
+        }
+    }
+
+    public static Object mapArray(Object array, Function<List<?>, List<?>> function){
+        if (array == null) return null;
+        Class<?> baseClass = array.getClass().getComponentType();
+        if (baseClass == null) return null;
+        Object[] objectArray = convertToObjectArrayOrNull(array);
+        List<?> list = new ArrayList<>(List.of(objectArray));
+        List<?> resultList = function.apply(list);
+        Object[] copyArray = (Object[]) Array.newInstance(objectArray.getClass().getComponentType(), resultList.size());
+        if (baseClass.isPrimitive()) {
+            Object[] resultArray = resultList.stream().map(v -> convertToPrimitiveClassType(baseClass, v)).toList().toArray(copyArray);
+            return convertToPrimitiveArrayOrNull(resultArray);
+        } else {
+            return resultList.toArray(copyArray);
         }
     }
 

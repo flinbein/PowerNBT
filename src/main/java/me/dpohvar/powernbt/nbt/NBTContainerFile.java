@@ -3,6 +3,7 @@ package me.dpohvar.powernbt.nbt;
 import me.dpohvar.powernbt.api.NBTBox;
 import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.utils.PowerJSONParser;
+import me.dpohvar.powernbt.utils.StringParser;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -15,6 +16,11 @@ public class NBTContainerFile extends NBTContainer<File> {
     private final File file;
 
     public NBTContainerFile(File file) {
+        this(file, null);
+    }
+
+    public NBTContainerFile(File file, String selector) {
+        super(selector == null ? "file:"+ StringParser.wrapToQuotesIfNeeded(file.toString()) : selector);
         this.file = file;
     }
 
@@ -26,6 +32,7 @@ public class NBTContainerFile extends NBTContainer<File> {
     public Object readTag() {
 
         boolean isNBT;
+        if (!file.exists() || file.isDirectory()) return null;
         try (var input = new DataInputStream(new FileInputStream(file))) {
             byte b = input.readByte();
             NBTType nbtType = NBTType.fromByte(b);
@@ -52,7 +59,7 @@ public class NBTContainerFile extends NBTContainer<File> {
     public void writeTag(Object base) {
 
         try {
-            if ((base instanceof Map || base instanceof Collection || base instanceof Object[] || base instanceof Boolean) && !(base instanceof NBTBox)) { // json
+            if ((base == null || base instanceof Map || base instanceof Collection || base instanceof Object[] || base instanceof Boolean) && !(base instanceof NBTBox)) { // json
                 PowerJSONParser.write(base, file);
             } else {
                 NBTManager.getInstance().write(file, base);
@@ -81,6 +88,6 @@ public class NBTContainerFile extends NBTContainer<File> {
 
     @Override
     public String toString(){
-        return "file:"+file.toString();
+        return file.getName();
     }
 }

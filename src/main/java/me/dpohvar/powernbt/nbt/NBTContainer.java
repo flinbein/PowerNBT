@@ -1,18 +1,31 @@
 package me.dpohvar.powernbt.nbt;
 
+import me.dpohvar.powernbt.api.NBTBox;
 import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.exception.NBTTagNotFound;
 import me.dpohvar.powernbt.exception.NBTTagUnexpectedType;
-import me.dpohvar.powernbt.utils.NBTQuery;
+import me.dpohvar.powernbt.utils.PowerJSONParser;
+import me.dpohvar.powernbt.utils.StringParser;
+import me.dpohvar.powernbt.utils.query.NBTQuery;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
 // TODO: MAKE
 
 public abstract class NBTContainer<T> {
+
+    protected String selector = null;
+
+    public NBTContainer(String selector) {
+        this.selector = selector;
+    }
 
     abstract public T getObject();
 
@@ -45,18 +58,19 @@ public abstract class NBTContainer<T> {
         return new ArrayList<>();
     };
 
-    // ########################## PowerNBT API ##########################
+    public String getSelector(){
+        return this.selector;
+    };
 
+    public NBTQuery getSelectorQuery(){
+        return null;
+    }
     /**
      * Set value of container root tag
      * @see #removeTag() remove tag if value is null
      * @param value root tag
      */
     final public void setTag(Object value){
-        if(value==null) {
-            eraseTag();
-            return;
-        }
         writeTag(value);
     }
 
@@ -71,10 +85,6 @@ public abstract class NBTContainer<T> {
      * @param value root tag
      */
     final public void setCustomTag(Object value){
-        if(value==null) {
-            eraseCustomTag();
-            return;
-        }
         if (value instanceof NBTCompound tag){
             NBTCompound tagClone = tag.clone();
             List<String> ignoreList = plugin.getConfig().getStringList("ignore_set."+getName());
@@ -155,5 +165,38 @@ public abstract class NBTContainer<T> {
 
     public String toString(){
         return getName();
+    }
+
+    public static String parseValueToSelector(Object value, int maxLength){
+        String result = parseValueToSelector(value);
+        if (result == null) return null;
+        if (result.length() > maxLength) return null;
+        return result;
+    }
+
+    public static String parseValueToSelector(Object value){
+        if (value == null) return "null";
+        if (value instanceof Boolean) return value+"";
+        if (value instanceof Byte) return value+"b";
+        if (value instanceof Short) return value+"s";
+        if (value instanceof Integer) return value+"i";
+        if (value instanceof Long) return value+"l";
+        if (value instanceof Float) return value+"f";
+        if (value instanceof Double) return value+"d";
+        if (value instanceof String s) return "\"" + StringParser.wrap(s) + "\"";
+        if (value instanceof byte[] array) return StringUtils.join(ArrayUtils.toObject(array), ',')+"b";
+        if (value instanceof int[] array) return StringUtils.join(ArrayUtils.toObject(array), ',')+"i";
+        if (value instanceof long[] array) return StringUtils.join(ArrayUtils.toObject(array), ',')+"l";
+        if (value instanceof NBTBox) return value.toString();
+        if (value instanceof Collection || value instanceof Map) return PowerJSONParser.stringify(value);
+        return null;
+    }
+
+    public NBTContainer<?> getRootContainer(){
+        return this;
+    }
+
+    public boolean isObjectReadonly(){
+        return false;
     }
 }

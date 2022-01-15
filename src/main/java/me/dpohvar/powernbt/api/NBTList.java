@@ -242,7 +242,11 @@ public class NBTList implements List<Object>, NBTBox {
     public Object[] toArray() {
         Object[] result = new Object[size()];
         int i=0;
-        for (Object t: this) result[i++] = t;
+        NBTIterator iterator = this.iterator();
+        while (iterator.hasNext()) {
+            Object val = iterator.next();
+            result[i++] = val;
+        }
         return result;
     }
 
@@ -340,6 +344,10 @@ public class NBTList implements List<Object>, NBTBox {
         handleList.clear();
     }
 
+    public void clear(int fromIndex, int toIndex) {
+        handleList.subList(fromIndex, toIndex).clear();
+    }
+
     @Override
     public Object get(int index) {
         Object tag = handleList.get(index);
@@ -390,7 +398,6 @@ public class NBTList implements List<Object>, NBTBox {
     @SuppressWarnings("NullableProblems")
     public NBTIterator listIterator() {
         return new NBTIterator(handleList.listIterator());
-
     }
 
     @Override
@@ -420,7 +427,8 @@ public class NBTList implements List<Object>, NBTBox {
 
         @Override
         public Object next() {
-            return nbt.getValueOfTag(iterator.next());
+            Object nbtTag = iterator.next();
+            return nbt.getValueOfTag(nbtTag);
         }
 
         @Override
@@ -502,6 +510,18 @@ public class NBTList implements List<Object>, NBTBox {
         }
 
         @Override
+        public void clear() {
+            list.clear(offset, offset + size);
+            size = 0;
+        }
+
+        @Override
+        public void clear(int fromIndex, int toIndex) {
+            list.clear(fromIndex + offset, toIndex + offset);
+            size -= (toIndex - fromIndex);
+        }
+
+        @Override
         public void add(int index, Object element) {
             if (element == null) return;
             rangeCheckForAdd(index);
@@ -523,7 +543,7 @@ public class NBTList implements List<Object>, NBTBox {
 
         @Override
         public boolean addAll(int index, Collection<?> c) {
-            List<Object> objectToAdd = new ArrayList<Object>();
+            List<Object> objectToAdd = new ArrayList<>();
             for (Object o: c) {
                 if (o != null) objectToAdd.add(o);
             }
@@ -538,7 +558,13 @@ public class NBTList implements List<Object>, NBTBox {
         @Override
         @SuppressWarnings("NullableProblems")
         public NBTIterator iterator() {
-            return listIterator();
+            return this.listIterator();
+        }
+
+        @Override
+        @SuppressWarnings("NullableProblems")
+        public NBTIterator listIterator() {
+            return this.listIterator(0);
         }
 
         @Override
@@ -546,7 +572,7 @@ public class NBTList implements List<Object>, NBTBox {
         public NBTIterator listIterator(final int index) {
             rangeCheckForAdd(index);
 
-            return new NBTIterator(list.listIterator(index+offset)) {
+            return new NBTIterator(list.listIterator(index+offset).iterator) {
 
                 @Override
                 public boolean hasNext() {
@@ -628,16 +654,7 @@ public class NBTList implements List<Object>, NBTBox {
 
     @Override
     public String toString() {
-        NBTIterator it = iterator();
-        if (! it.hasNext()) return "[]";
-        StringBuilder sb = new StringBuilder();
-        sb.append('[');
-        for (;;) {
-            Object e = it.next();
-            sb.append(e);
-            if (! it.hasNext()) return sb.append(']').toString();
-            sb.append(',').append(' ');
-        }
+        return handle.toString();
     }
 
 }

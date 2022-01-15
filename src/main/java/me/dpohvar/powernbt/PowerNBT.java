@@ -6,6 +6,8 @@ import me.dpohvar.powernbt.completer.CompleterNBT;
 import me.dpohvar.powernbt.completer.TypeCompleter;
 import me.dpohvar.powernbt.listener.SelectListener;
 import me.dpohvar.powernbt.utils.*;
+import me.dpohvar.powernbt.utils.viewer.InteractiveViewer;
+import me.dpohvar.powernbt.utils.viewer.ViewerStyle;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -31,15 +33,23 @@ public class PowerNBT extends JavaPlugin {
     private final String prefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[" + ChatColor.YELLOW + "PowerNBT" + ChatColor.GOLD + ChatColor.BOLD + "] " + ChatColor.RESET;
     private final String errorPrefix = ChatColor.DARK_RED.toString() + ChatColor.BOLD + "[" + ChatColor.RED + "PowerNBT" + ChatColor.DARK_RED + ChatColor.BOLD + "] " + ChatColor.RESET;
     private TypeCompleter typeCompleter;
+    private final InteractiveViewer viewer;
 
     public PowerNBT() {
         super();
 
+
+        ViewerStyle style = new ViewerStyle(getConfig().getConfigurationSection("editor.colors"), getConfig().getConfigurationSection("editor.icons"));
+        viewer = new InteractiveViewer(style, getConfig().getInt("limit.vertical", 60), getConfig().getInt("limit.horizontal", 10));
         try {
             loadExtensions();
         } catch (Error e) {
             e.printStackTrace();
         }
+    }
+
+    public InteractiveViewer getViewer() {
+        return viewer;
     }
 
     private static void loadExtensions(){
@@ -143,7 +153,7 @@ public class PowerNBT extends JavaPlugin {
         this.translator = new Translator(this, lang);
         this.typeCompleter = new TypeCompleter(getTemplateFolder());
         getServer().getPluginManager().registerEvents(new SelectListener(), this);
-        NBTViewer.applyConfig(getConfig());
+        NBTStaticViewer.applyConfig(getConfig());
         getCommand("powernbt").setExecutor(new CommandNBT());
         getCommand("powernbt.").setExecutor(new CommandNBT(SILENT));
         getCommand("powernbt").setTabCompleter(new CompleterNBT());

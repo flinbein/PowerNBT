@@ -6,8 +6,7 @@ import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.nbt.NBTType;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.NBTQuery;
-import me.dpohvar.powernbt.utils.NBTViewer;
+import me.dpohvar.powernbt.utils.query.NBTQuery;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,7 +45,7 @@ public class ActionInsert extends Action {
         if (base1 instanceof NBTList list){
             list.add(pos,base2);
             container1.setCustomTag(query1,list);
-            caller.send(PowerNBT.plugin.translate("success_insert") + NBTViewer.getShortValueWithPrefix(base2, false));
+            caller.sendValue(PowerNBT.plugin.translate("success_insert"), base2, false, false);
         } else if (base1 != null && base1.getClass().isArray() && base2 instanceof Number num){
             byte type = NBTType.fromValue(base1).type;
             Object[] array = NBTManager.convertToObjectArrayOrNull(base1);
@@ -54,7 +53,7 @@ public class ActionInsert extends Action {
             list.add(pos, num);
             Object result = NBTManager.convertValue(list, type);
             container1.setCustomTag(query1, result);
-            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(num, false));
+            caller.sendValue(PowerNBT.plugin.translate("success_add"), num, false, false);
         } else {
             caller.send(PowerNBT.plugin.translate("fail_insert"));
         }

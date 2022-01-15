@@ -129,8 +129,8 @@ public class CommandNBT extends Command {
         } else if (action.equals("rm") || action.equals("rem") || action.equals("remove")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;
             if (argsBefore.size() < 1) throw exceptionNEArgs;
-            if (argsAfter.size() > 0) throw exceptionTMArgs;
-            Action a = new ActionRemove(caller, argsBefore.poll(), argsBefore.poll());
+            if (argsAfter.size() > 1) throw exceptionTMArgs;
+            Action a = new ActionRemove(caller, argsBefore.poll(), argsBefore.poll(), argsAfter.poll());
             a.execute();
         } else if (action.equals("ren") || action.equals("rename")) {
             if (argsBefore.size() > 2) throw exceptionTMArgs;

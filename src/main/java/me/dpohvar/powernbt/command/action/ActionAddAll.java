@@ -7,8 +7,7 @@ import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.nbt.NBTType;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.NBTQuery;
-import me.dpohvar.powernbt.utils.NBTViewer;
+import me.dpohvar.powernbt.utils.query.NBTQuery;
 
 import java.util.Arrays;
 import java.util.List;
@@ -47,15 +46,15 @@ public class ActionAddAll extends Action {
         if (base1 instanceof NBTCompound cmp1 && base2 instanceof NBTCompound cmp2){
             cmp1.merge(cmp2);
             container1.setCustomTag(query1,cmp1);
-            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(cmp2, false));
+            caller.sendValue(PowerNBT.plugin.translate("success_add"), cmp2, false, false);
         } else if (base1 instanceof NBTList list1 && base2 instanceof NBTList list2){
             list1.addAll(list2);
             container1.setCustomTag(query1,list1);
-            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(list2,false));
+            caller.sendValue(PowerNBT.plugin.translate("success_add"), list2,false, false);
         } else if (base1 instanceof String s1 && base2 instanceof String s2){
             s1 += s2;
             container1.setCustomTag(query1,s1);
-            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(s2,false));
+            caller.sendValue(PowerNBT.plugin.translate("success_add"), s2,false, false);
         } else if (base1 instanceof Number x1 && base2 instanceof Number x2){
             NBTType x1Type = NBTType.fromValue(x1);
             if(x1 instanceof Float || x1 instanceof Double){
@@ -65,7 +64,7 @@ public class ActionAddAll extends Action {
             }
             x1 = (Number) NBTManager.convertValue(x1, x1Type.type);
             container1.setCustomTag(query1, x1);
-            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(x2,false));
+            caller.sendValue(PowerNBT.plugin.translate("success_add"), x2,false, false);
         } else if (base1.getClass().isArray() && base2.getClass().isArray()){
             NBTType baseType = NBTType.fromValue(base1).getBaseType();
             Object[] array1 = NBTManager.convertToObjectArrayOrNull(base1);
@@ -76,7 +75,7 @@ public class ActionAddAll extends Action {
             }
             Object result = NBTManager.convertValue(list1, baseType.type);
             container1.setCustomTag(query1,result);
-            caller.send(PowerNBT.plugin.translate("success_add") + NBTViewer.getShortValueWithPrefix(base2,false));
+            caller.sendValue(PowerNBT.plugin.translate("success_add"), base2,false, false);
         } else {
             caller.send(PowerNBT.plugin.translate("fail_add"));
         }

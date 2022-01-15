@@ -2,8 +2,7 @@ package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.NBTQuery;
-import me.dpohvar.powernbt.utils.NBTViewer;
+import me.dpohvar.powernbt.utils.query.NBTQuery;
 
 public class ActionView extends Action {
 
@@ -21,6 +20,12 @@ public class ActionView extends Action {
         if(args!=null) this.args = args.split(",|\\.|-");
     }
 
+    public ActionView(Caller caller, Argument arg, String args) {
+        this.caller = caller;
+        this.arg = arg;
+        if(args!=null) this.args = args.split(",|\\.|-");
+    }
+
     @Override
     public void execute() throws Exception {
         if (arg.needPrepare()) {
@@ -35,7 +40,7 @@ public class ActionView extends Action {
         if(args!=null) {
             for(String s:args){
                 if (s.equalsIgnoreCase("hex")||s.equalsIgnoreCase("h")) hex=true;
-                if (s.equalsIgnoreCase("bin")||s.equalsIgnoreCase("b")) bin=true;
+                else if (s.equalsIgnoreCase("bin")||s.equalsIgnoreCase("b")) bin=true;
                 else if (s.equalsIgnoreCase("full")||s.equalsIgnoreCase("f")||s.equalsIgnoreCase("all")||s.equalsIgnoreCase("a")) {
                     start=0; end=Integer.MAX_VALUE;
                 }
@@ -47,9 +52,8 @@ public class ActionView extends Action {
         }
         if(start==-1) start=0;
         if(end==-1) end=0;
-        if(start>end){int t=start; start=end; end=t;}
-        String answer = NBTViewer.getFullValue(container.getCustomTag(query), start, end, hex, bin);
-        caller.send(answer);
+        if(start>end){int t=start; start=end; end=t;};
+        caller.sendValueView("", container, query, start, end, hex, bin);
     }
 }
 

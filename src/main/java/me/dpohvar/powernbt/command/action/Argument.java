@@ -1,19 +1,22 @@
 package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.PowerNBT;
-import me.dpohvar.powernbt.api.NBTBox;
 import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.api.NBTList;
 import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.completer.TypeCompleter;
 import me.dpohvar.powernbt.nbt.*;
-import me.dpohvar.powernbt.utils.*;
-import org.apache.commons.lang.StringEscapeUtils;
+import me.dpohvar.powernbt.utils.Caller;
+import me.dpohvar.powernbt.utils.NBTParser;
+import me.dpohvar.powernbt.utils.PowerJSONParser;
+import me.dpohvar.powernbt.utils.StringParser;
+import me.dpohvar.powernbt.utils.query.IndexSelector;
+import me.dpohvar.powernbt.utils.query.KeySelector;
+import me.dpohvar.powernbt.utils.query.NBTQuery;
+import me.dpohvar.powernbt.utils.query.QSelector;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
-import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.block.TileState;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
@@ -23,8 +26,10 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
-import java.util.function.Predicate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
@@ -94,13 +99,13 @@ public class Argument {
         if (object.equals("item") || object.equals("i")) {
             if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
             NBTContainerItem nbtContainerItem = new NBTContainerItem(((Player) caller.getOwner()).getInventory().getItemInMainHand());
-            return new NBTContainerComplex(nbtContainerItem, new NBTQuery("tag"));
+            return new NBTContainerComplex(nbtContainerItem, new NBTQuery(new KeySelector("tag")), "item");
         }
         if (object.equals("inventory") || object.equals("inv")) {
             if (!(caller.getOwner() instanceof Player)) throw new RuntimeException(plugin.translate("error_noplayer"));
             return new NBTContainerComplex(
                     new NBTContainerEntity(((Player) caller.getOwner())),
-                    new NBTQuery("Inventory")
+                    new NBTQuery(new KeySelector("Inventory"))
             );
         }
         if (object.startsWith("id")) {
@@ -117,6 +122,7 @@ public class Argument {
             if (!(caller.getOwner() instanceof LivingEntity entity)) {
                 throw new RuntimeException(plugin.translate("error_noplayer"));
             }
+            // todo: CUSTOM RAY-TRACE
             return entity.getLineOfSight(null, 128).stream()
                     .filter(block -> block.getState() instanceof TileState)
                     .findFirst()
@@ -166,7 +172,7 @@ public class Argument {
             }
             if (tokenText.contains(".") || tokenText.contains(File.separator))
                 throw new RuntimeException(plugin.translate("error_customfile", tokenText));
-            return new NBTContainerFile(new File(plugin.getNBTFilesFolder(), tokenText + ".nbt"));
+            return new NBTContainerFile(new File(plugin.getNBTFilesFolder(), tokenText + ".nbt"), object);
         }
         if (colors.containsKey(object)) {
             return new NBTContainerValue(colors.get(object));
@@ -382,7 +388,7 @@ public class Argument {
                 ind++;
             }
             if (result == -1) throw new RuntimeException(plugin.translate("error_null"));
-            NBTQuery q = new NBTQuery("Inventory",result);
+            NBTQuery q = new NBTQuery(new KeySelector("Inventory"),new IndexSelector(result));
             return new NBTContainerComplex(player,q);
         }
         if (object.startsWith("hand:") && object.length()>5 || object.startsWith("h:") && object.length() > 2) {
@@ -407,7 +413,7 @@ public class Argument {
                 ind++;
             }
             if (result == -1) throw new RuntimeException(plugin.translate("error_null"));
-            NBTQuery q = new NBTQuery("Inventory",result);
+            NBTQuery q = new NBTQuery(new KeySelector("Inventory"), new IndexSelector(result));
             return new NBTContainerComplex(container,q);
         }
         if (object.startsWith("{") && object.endsWith("}") || object.startsWith("[") && object.endsWith("]") || object.matches("-?[0-9]*(\\.[0-9])?[fd]") || object.matches("-?[0-9]*[bsilfd]")) {
@@ -455,7 +461,7 @@ public class Argument {
                 ind++;
             }
             if (result == -1) throw new RuntimeException(plugin.translate("error_null"));
-            NBTQuery q = new NBTQuery("Inventory",result);
+            NBTQuery q = new NBTQuery(new KeySelector("Inventory"),new IndexSelector(result));
             this.container = new NBTContainerComplex(player,q);
             this.query = NBTQuery.fromString(queryFuture);
             action.execute();
@@ -474,7 +480,7 @@ public class Argument {
             }
             NBTType type = NBTType.fromValue(paramQuery.get(paramContainer.getCustomTag()));
             if (type == NBTType.END) {
-                List<Object> q = paramQuery.getValues();
+                List<QSelector> q = paramQuery.getSelectors();
                 if (!q.isEmpty()) {
                     q.remove(q.size() - 1);
                 }

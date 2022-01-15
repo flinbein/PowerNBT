@@ -1,7 +1,6 @@
 package me.dpohvar.powernbt.extension;
 
 import groovy.lang.Closure;
-import me.dpohvar.powernbt.api.NBTBox;
 import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.api.NBTList;
 import me.dpohvar.powernbt.api.NBTManager;
@@ -17,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
-import java.util.function.Function;
 
 public class NBTExtension {
 

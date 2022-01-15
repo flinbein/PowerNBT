@@ -3,8 +3,7 @@ package me.dpohvar.powernbt.command.action;
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.NBTQuery;
-import me.dpohvar.powernbt.utils.NBTViewer;
+import me.dpohvar.powernbt.utils.query.NBTQuery;
 
 public class ActionMove extends Action {
 
@@ -36,7 +35,7 @@ public class ActionMove extends Action {
         try{
             container.setCustomTag(query, base);
             arg2.getContainer().removeTag(arg2.getQuery());
-            caller.send(PowerNBT.plugin.translate("success_move") + NBTViewer.getShortValueWithPrefix(base, false));
+            caller.sendValue(PowerNBT.plugin.translate("success_move"), base, false, false);
         } catch (Exception e) {
             throw new RuntimeException(PowerNBT.plugin.translate("fail_move", query.toString()),e);
         }

@@ -3,9 +3,13 @@ package me.dpohvar.powernbt.utils;
 import me.dpohvar.powernbt.command.action.Action;
 import me.dpohvar.powernbt.command.action.Argument;
 import me.dpohvar.powernbt.nbt.NBTContainer;
+import me.dpohvar.powernbt.utils.query.NBTQuery;
+import me.dpohvar.powernbt.utils.viewer.InteractiveViewer;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -67,11 +71,50 @@ public class Caller extends NBTContainer<Caller> {
         variables.remove(name);
     }
 
+    private boolean isInteractiveMode(Player player){
+        return plugin.getConfig().getBoolean("editor.enabled");
+    }
+
     public void send(Object o) {
         if (silent) return;
         String message = plugin.getPrefix() + o;
         if (message.length()>32743) message = message.substring(0,32743);
         owner.sendMessage(message);
+    }
+
+    public void sendValue(String prefix, Object value, boolean hex, boolean bin) {
+        if (owner instanceof Player player && isInteractiveMode(player)) {
+            InteractiveViewer viewer = plugin.getViewer();
+            TextComponent component = new TextComponent("");
+            component.addExtra(plugin.getPrefix());
+            component.addExtra(prefix);
+            if (prefix != null && !ChatColor.stripColor(prefix).isEmpty()) component.addExtra(" ");
+            component.addExtra(viewer.getShortValue(value, hex, bin));
+            player.spigot().sendMessage(component);
+        } else {
+            String message = plugin.getPrefix() + prefix + " " + NBTStaticViewer.getShortValueWithPrefix(value, hex, bin);
+            if (message.length()>32743) message = message.substring(0,32743);
+            owner.sendMessage(message);
+            owner.sendMessage();
+        }
+    }
+
+    public void sendValueView(String prefix, NBTContainer<?> container, NBTQuery query, int start, int end, boolean hex, boolean bin) throws Exception {
+        if (owner instanceof Player player && isInteractiveMode(player)) {
+            InteractiveViewer viewer = plugin.getViewer();
+            TextComponent component = new TextComponent("");
+            component.addExtra(plugin.getPrefix());
+            component.addExtra(prefix);
+            if (prefix != null && !ChatColor.stripColor(prefix).isEmpty()) component.addExtra(" ");
+            component.addExtra(viewer.getFullValue(container, query, start, end, hex, bin));
+            player.spigot().sendMessage(component);
+        } else {
+            Object value = container.getCustomTag(query);
+            String message = plugin.getPrefix() + prefix + " " + NBTStaticViewer.getFullValue(value, start, end, hex, bin);
+            if (message.length()>32743) message = message.substring(0,32743);
+            owner.sendMessage(message);
+            owner.sendMessage();
+        }
     }
 
     public void handleException(Throwable o) {
@@ -92,6 +135,7 @@ public class Caller extends NBTContainer<Caller> {
     }
 
     public Caller(CommandSender owner) {
+        super("buffer");
         this.owner = owner;
     }
 
@@ -123,5 +167,10 @@ public class Caller extends NBTContainer<Caller> {
     @Override
     public void eraseTag() {
         this.base = null;
+    }
+
+    @Override
+    public String getSelector() {
+        return "buffer";
     }
 }

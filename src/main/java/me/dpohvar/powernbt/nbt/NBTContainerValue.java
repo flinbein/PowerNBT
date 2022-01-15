@@ -6,9 +6,22 @@ import java.util.List;
 public class NBTContainerValue extends NBTContainer<Object> {
 
     private Object base;
+    private final String selectorTag;
 
     public NBTContainerValue(Object base) {
+        this(base, null);
+    }
+
+    public NBTContainerValue(Object base, String selectorTag) {
+        super(null);
         this.base = base;
+        this.selectorTag = selectorTag;
+    }
+
+    @Override
+    public String getSelector() {
+        if (selectorTag != null) return selectorTag;
+        return NBTContainer.parseValueToSelector(base);
     }
 
     @Override
@@ -43,6 +56,11 @@ public class NBTContainerValue extends NBTContainer<Object> {
 
     @Override
     public String toString(){
-        return NBTType.fromValue(base).name;
+        return base == null ? "null" : base.getClass().getSimpleName();
+    }
+
+    @Override
+    public boolean isObjectReadonly(){
+        return true;
     }
 }

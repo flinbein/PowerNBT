@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
-import static java.util.stream.Collectors.toCollection;
 
 import static java.lang.Byte.parseByte;
 import static java.lang.Double.parseDouble;
@@ -18,6 +17,7 @@ import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
 import static java.lang.Short.parseShort;
+import static java.util.stream.Collectors.toCollection;
 
 public class NBTParser {
     private static final Pattern b = Pattern.compile("\\[[-+\\d|,\\s]+\\]");

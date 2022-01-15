@@ -11,6 +11,7 @@ public class NBTContainerVariable extends NBTContainer<Caller> {
     String name;
 
     public NBTContainerVariable(Caller caller, String name) {
+        super("%"+name);
         this.caller = caller;
         this.name = name;
     }
@@ -23,7 +24,7 @@ public class NBTContainerVariable extends NBTContainer<Caller> {
     @Override
     public List<String> getTypes() {
         NBTContainer c = getContainer();
-        if (c == null) return new ArrayList<String>();
+        if (c == null) return new ArrayList<>();
         return c.getTypes();
     }
 
@@ -58,8 +59,7 @@ public class NBTContainerVariable extends NBTContainer<Caller> {
 
     @Override
     public void eraseTag() {
-        NBTContainer t = getContainer();
-        if (t != null) t.eraseTag();
+        caller.removeVariable(name);
     }
 
     @Override
@@ -72,13 +72,8 @@ public class NBTContainerVariable extends NBTContainer<Caller> {
     @Override
     protected void writeCustomTag(Object base) {
         NBTContainer t = getContainer();
-        if (t != null) t.writeCustomTag(base);
-    }
-
-    @Override
-    protected void eraseCustomTag() {
-        NBTContainer t = getContainer();
-        if (t != null) t.eraseCustomTag();
+        if (t == null) caller.setVariable(name, new NBTContainerValue(base));
+        else t.writeCustomTag(base);
     }
 
     @Override
@@ -87,7 +82,7 @@ public class NBTContainerVariable extends NBTContainer<Caller> {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "%"+name;
     }
 }

@@ -5,6 +5,7 @@ import me.dpohvar.powernbt.api.NBTList;
 import me.dpohvar.powernbt.api.NBTManager;
 import org.bukkit.ChatColor;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -13,7 +14,7 @@ import static org.bukkit.ChatColor.*;
 
 public enum NBTType {
 
-    END((byte) 0, "end", "\u24EA", WHITE, () -> null), // ⓪
+    END((byte) 0, "end", "\u24DE", WHITE, () -> null), // ⓞ
     BYTE((byte) 1, "byte", "\u24B7", RED, () -> (byte) 0), // Ⓑ
     SHORT((byte) 2, "short", "\u24C8", YELLOW, () -> (short) 0), // Ⓢ
     INT((byte) 3, "int", "\u24BE", BLUE, () -> (int) 0), // Ⓘ
@@ -22,8 +23,8 @@ public enum NBTType {
     DOUBLE((byte) 6, "double", "\u24B9", LIGHT_PURPLE, () -> (double) 0), // Ⓓ
     BYTEARRAY((byte) 7, "byte[]", ChatColor.BOLD + "\u24D1", DARK_RED, () -> new byte[0]), // ⓑ
     STRING((byte) 8, "string", "\u24C9", GREEN, () -> ""), // Ⓣ
-    LIST((byte) 9, "list", "\u2630", DARK_GRAY, NBTList::new), // ☰
-    COMPOUND((byte) 10, "compound", "\u27B2", GRAY, NBTCompound::new), // ➲
+    LIST((byte) 9, "list", "\u24B6", DARK_GRAY, NBTList::new), // Ⓐ
+    COMPOUND((byte) 10, "compound", "\u24C2", GRAY, NBTCompound::new), // Ⓜ
     INTARRAY((byte) 11, "int[]", ChatColor.BOLD + "\u24D8", DARK_BLUE, () -> new int[0]), // ⓘ
     LONGARRAY((byte) 12, "long[]", ChatColor.BOLD + "\u24C1", DARK_AQUA, () -> new long[0]), // Ⓛ
     ;
@@ -80,6 +81,19 @@ public enum NBTType {
         if (value instanceof Map) return GRAY;
         if (NBTManager.convertToObjectArrayOrNull(value) != null) return DARK_GRAY;
         return MAGIC;
+    }
+
+    public static String getIconByValue(Object value){
+        NBTType nbtType = fromValueOrNull(value);
+        if (nbtType != null) return nbtType.prefix;
+        if (value == null) return "\u24DE"; // ⓞ;
+        if (value instanceof Boolean) return "\u2469"; // ⑩;
+        if (value instanceof Map) return "\u24C2"; // Ⓜ;
+        if (value instanceof Collection) return "\u24B6"; // Ⓐ;
+        Object[] objects = NBTManager.convertToObjectArrayOrNull(value);
+        if (objects != null) return "\u24D0"; // ⓐ
+
+        return "\u24E7"; // ⓧ
     }
 
     public static NBTType fromString(String name) {

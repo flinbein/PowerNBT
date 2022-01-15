@@ -4,8 +4,7 @@ import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.nbt.NBTType;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.NBTQuery;
-import me.dpohvar.powernbt.utils.NBTViewer;
+import me.dpohvar.powernbt.utils.query.NBTQuery;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
@@ -47,7 +46,7 @@ public abstract class ActionBiLong extends Action {
         long argValue = ((Number)base2).longValue();
         Object result = NBTManager.convertValue(operation(baseValue, argValue), NBTType.fromValue(base1).type);
         container1.setCustomTag(query1, result);
-        caller.send(plugin.translate("success_edit") + NBTViewer.getShortValueWithPrefix(result,false));
+        caller.sendValue(plugin.translate("success_edit"), result, false, false);
 
     }
 

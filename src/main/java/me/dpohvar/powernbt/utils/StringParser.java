@@ -114,15 +114,28 @@ public class StringParser {
 
     public static String wrap(String raw) {
         return raw
-            .replace("\\", "\\\\")
-            .replace("\n", "\\n")
-            .replace("\b", "\\b")
-            .replace("\r", "\\r")
-            .replace("\t", "\\t")
-            .replace("\f", "\\f")
-            .replace("\"", "\\\"")
-            .replace("&", "\\&")
-            .replace(String.valueOf(ChatColor.COLOR_CHAR), "&")
-        ;
+                .replace("\\", "\\\\")
+                .replace("\n", "\\n")
+                .replace("\b", "\\b")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t")
+                .replace("\f", "\\f")
+                .replace("\"", "\\\"")
+                .replace("  ", " \\_")
+                .replace("&", "\\&")
+                .replace(String.valueOf(ChatColor.COLOR_CHAR), "&")
+                ;
+    }
+
+    public static String wrapToQuotes(String raw) {
+        return "\""+wrap(raw)+"\"";
+    }
+
+    public static String wrapToQuotesIfNeeded(String raw) {
+        if (raw.isEmpty()) return "\"\"";
+        if (raw.matches("\\s")) return wrapToQuotes(raw);
+        String wrapped = wrap(raw);
+        if (wrapped.equals(raw)) return raw;
+        return "\""+wrapped+"\"";
     }
 }

@@ -2,7 +2,7 @@ package me.dpohvar.powernbt.nbt;
 
 import me.dpohvar.powernbt.exception.NBTQueryException;
 import me.dpohvar.powernbt.exception.NBTTagNotFound;
-import me.dpohvar.powernbt.utils.NBTQuery;
+import me.dpohvar.powernbt.utils.query.NBTQuery;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,15 @@ public class NBTContainerComplex extends NBTContainer<NBTContainer> {
     private final NBTContainer container;
     private final NBTQuery query;
 
+
     public NBTContainerComplex(NBTContainer container, NBTQuery query) {
+        super(container.getSelector());
+        this.container = container;
+        this.query = query;
+    }
+
+    public NBTContainerComplex(NBTContainer container, NBTQuery query, String name) {
+        super(name);
         this.container = container;
         this.query = query;
     }
@@ -27,7 +35,7 @@ public class NBTContainerComplex extends NBTContainer<NBTContainer> {
         return new ArrayList<String>();
     }
 
-    public Object getQuery() {
+    public NBTQuery getQuery() {
         return this.query;
     }
 
@@ -98,5 +106,23 @@ public class NBTContainerComplex extends NBTContainer<NBTContainer> {
     public String toString(){
         if (query==null || query.toString().isEmpty()) return "<"+container.toString()+">";
         else return "<"+container.toString()+" "+query+">";
+    }
+
+    @Override
+    public NBTQuery getSelectorQuery() {
+        if (this.getSelector() != null) return new NBTQuery();
+        NBTQuery selectorQuery = container.getSelectorQuery();
+        if (selectorQuery == null) return query;
+        return selectorQuery.join(query);
+    }
+
+    @Override
+    public NBTContainer<?> getRootContainer(){
+        return container.getRootContainer();
+    }
+
+    @Override
+    public boolean isObjectReadonly(){
+        return container.isObjectReadonly();
     }
 }

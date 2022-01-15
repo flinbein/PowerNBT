@@ -2,6 +2,7 @@ package me.dpohvar.powernbt.nbt;
 
 import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.utils.StringParser;
 import org.bukkit.Chunk;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ public class NBTContainerChunk extends NBTContainer<Chunk> {
     Chunk chunk;
 
     public NBTContainerChunk(Chunk chunk) {
+        super("chunk:"+chunk.getX()+":"+chunk.getZ()+":"+ StringParser.wrapToQuotesIfNeeded(chunk.getWorld().getName()));
         this.chunk = chunk;
     }
 
@@ -50,5 +52,4 @@ public class NBTContainerChunk extends NBTContainer<Chunk> {
     public String toString(){
         return chunk.toString();
     }
-
 }

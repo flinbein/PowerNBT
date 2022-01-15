@@ -20,7 +20,7 @@ import java.util.Map;
  * Date: 07.06.13
  * Time: 1:11
  */
-public class NBTViewer {
+public class NBTStaticViewer {
 
     private static int v_limit = 60;
     private static int h_limit = 10;
@@ -30,10 +30,6 @@ public class NBTViewer {
         h_limit = config.getInt("limit.horizontal", 10);
     }
 
-    @Deprecated
-    public static String getShortValueWithPrefix(Object base, boolean hex){
-        return getShortValueWithPrefix(base, hex, false);
-    }
     public static String getShortValueWithPrefix(Object base, boolean hex, boolean bin){
         if (base==null) return ChatColor.RESET + PowerNBT.plugin.translate("error_null");
         ChatColor typeColor = NBTType.getTypeColorByValue(base);
@@ -41,6 +37,7 @@ public class NBTViewer {
         String typeName = type != null ? type.name : base.getClass().getSimpleName();
         return typeColor + typeName + ':' + ' ' + ChatColor.RESET + getShortValue(base, hex, bin);
     }
+
     public static String getShortValue(Object base, boolean hex, boolean bin){
         String value = "";
         NBTType type = NBTType.fromValueOrNull(base);
@@ -111,6 +108,7 @@ public class NBTViewer {
             case LIST -> { // list
                 NBTList list = (NBTList) base;
                 NBTType listType = NBTType.fromByte(list.getType());
+                if (listType == null) listType = NBTType.END;
                 if (list.size() == 0) {
                     value = PowerNBT.plugin.translate("data_emptylist");
                 } else {
@@ -125,7 +123,7 @@ public class NBTViewer {
                 } else {
                     ArrayList<String> h = new ArrayList<>();
                     for (Map.Entry<String, Object> b : tag.entrySet()) {
-                        h.add(NBTType.fromValue(b.getValue()).color + b.getKey());
+                        h.add(NBTType.getTypeColorByValue(b.getValue()) + b.getKey());
                     }
                     value = tag.size() + ": " + StringUtils.join(h, ChatColor.RESET + ",");
                 }
@@ -170,7 +168,7 @@ public class NBTViewer {
             }
             default -> { // null
                 if (base == null) {
-                    value = PowerNBT.plugin.translate("data_null");
+                    value = "null";
                 } else if (base instanceof Boolean) {
                     value = base.toString();
                 } else if (base instanceof Map<?,?> tag) {
@@ -179,22 +177,18 @@ public class NBTViewer {
                     } else {
                         ArrayList<String> h = new ArrayList<>();
                         for (Map.Entry<?,?> b : tag.entrySet()) {
-                            NBTType nbtType = NBTType.fromValueOrNull(b.getValue());
                             Object key = b.getKey();
                             if (!(key instanceof String s)) continue;
-                            if (nbtType == null) nbtType = NBTType.END;
-                            h.add(nbtType.color + s);
+                            h.add(NBTType.getTypeColorByValue(b.getValue()) + s);
                         }
                         value = tag.size() + ": " + StringUtils.join(h, ChatColor.RESET + ",");
                     }
                 } else if (base instanceof Collection<?> col){
                     NBTType listType = NBTType.END;
-                    if (col instanceof NBTList nbtList) listType = NBTType.fromByte(nbtList.getType());
                     if (col.size() == 0) {
                         value = PowerNBT.plugin.translate("data_emptylist");
                     } else {
-                        value = PowerNBT.plugin.translate("data_elements", col.size())
-                                + " " + listType.color + listType.name + ChatColor.RESET;
+                        value = PowerNBT.plugin.translate("data_elements", col.size());
                     }
                 } else {
                     Object[] array = NBTManager.convertToObjectArrayOrNull(base);
@@ -355,7 +349,7 @@ public class NBTViewer {
                     };
                     buffer.append('\n')
                             .append(c)
-                            .append(t.prefix)
+                            .append(NBTType.getIconByValue(b))
                             .append(' ')
                             .append(bolder)
                             .append(currentName)

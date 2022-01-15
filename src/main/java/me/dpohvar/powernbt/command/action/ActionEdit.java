@@ -3,8 +3,7 @@ package me.dpohvar.powernbt.command.action;
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.NBTQuery;
-import me.dpohvar.powernbt.utils.NBTViewer;
+import me.dpohvar.powernbt.utils.query.NBTQuery;
 
 public class ActionEdit extends Action {
 
@@ -33,7 +32,7 @@ public class ActionEdit extends Action {
         Object base = arg2.getContainer().getCustomTag(arg2.getQuery());
         try{
             container.setCustomTag(query, base);
-            caller.send(PowerNBT.plugin.translate("success_edit") + NBTViewer.getShortValueWithPrefix(base, false));
+            caller.sendValue(PowerNBT.plugin.translate("success_edit"), base, false, false);
         } catch (Exception e){
             throw new RuntimeException( PowerNBT.plugin.translate("fail_edit", query.toString()) , e);
         }

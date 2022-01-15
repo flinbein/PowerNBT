@@ -2,6 +2,8 @@ package me.dpohvar.powernbt.nbt;
 
 import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.utils.StringParser;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.TileState;
@@ -17,6 +19,7 @@ public class NBTContainerBlock extends NBTContainer<Block> {
     Block block;
 
     public NBTContainerBlock(Block block) {
+        super(block.getX()+":"+block.getY()+":"+block.getZ()+":"+StringParser.wrapToQuotesIfNeeded(block.getWorld().getName()));
         this.block = block;
     }
 
@@ -39,6 +42,11 @@ public class NBTContainerBlock extends NBTContainer<Block> {
         return tag;
     }
 
+    @Override
+    protected void eraseTag() {
+        block.setBlockData(Material.AIR.createBlockData());
+    }
+
     public NBTCompound readTag() {
         return NBTManager.getInstance().read(block);
     }
@@ -55,6 +63,7 @@ public class NBTContainerBlock extends NBTContainer<Block> {
     @Override
     public void writeCustomTag(Object value) {
         NBTCompound compound = null;
+        if (value == null) compound = new NBTCompound();
         if (value instanceof NBTCompound c) compound = c;
         else if (value instanceof Map map) compound = new NBTCompound(map);
         if (compound == null) return;
@@ -75,7 +84,7 @@ public class NBTContainerBlock extends NBTContainer<Block> {
 
     @Override
     public String toString(){
-        return "block:" + block.getBlockData();
+        return block.getBlockData().getMaterial().name();
     }
 
 }

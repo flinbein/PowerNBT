@@ -9,10 +9,11 @@ import me.dpohvar.powernbt.nbt.NBTContainerValue;
 import me.dpohvar.powernbt.nbt.NBTContainerVariable;
 import me.dpohvar.powernbt.nbt.NBTType;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.NBTQuery;
-import me.dpohvar.powernbt.utils.NBTViewer;
+import me.dpohvar.powernbt.utils.NBTStaticViewer;
 import me.dpohvar.powernbt.utils.StringParser;
-import org.apache.commons.lang.StringUtils;
+import me.dpohvar.powernbt.utils.query.KeySelector;
+import me.dpohvar.powernbt.utils.query.NBTQuery;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
@@ -48,7 +49,7 @@ public class CompleterNBT extends Completer {
                 var i = 0;
                 for (Entity entity : nearbyEntities) {
                     var prefix = pow == 0 ? "" : "["+Strings.padStart(String.valueOf(i), pow, ' ')+"]";
-                    former.addIfStarts("id" + prefix + entity.getEntityId() + "(\"" + entity.getName() + "\")");
+                    former.addIfStarts("id" + prefix + entity.getEntityId() + "(\"" + ChatColor.stripColor(entity.getName()) + "\")");
                     i++;
                 }
             }
@@ -199,12 +200,12 @@ public class CompleterNBT extends Completer {
                         NBTType type = NBTType.fromValue(base);
                         switch (type) {
                             case BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, BYTEARRAY, INTARRAY -> {
-                                String s = NBTViewer.getShortValue(base, false, false);
+                                String s = NBTStaticViewer.getShortValue(base, false, false);
                                 former.add(s);
                                 return;
                             }
                             case STRING -> {
-                                String t = NBTViewer.getShortValue(base, false, false);
+                                String t = NBTStaticViewer.getShortValue(base, false, false);
                                 String w = StringParser.wrap(t);
                                 former.add("\"" + w + "\"");
                                 return;
@@ -224,12 +225,12 @@ public class CompleterNBT extends Completer {
                                 NBTType type = NBTType.fromValue(b);
                                 switch (type) {
                                     case BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, BYTEARRAY, INTARRAY -> {
-                                        String s = NBTViewer.getShortValue(b, false, false);
+                                        String s = NBTStaticViewer.getShortValue(b, false, false);
                                         former.add(s);
                                         return;
                                     }
                                     case STRING -> {
-                                        String t = NBTViewer.getShortValue(b, false, false);
+                                        String t = NBTStaticViewer.getShortValue(b, false, false);
                                         String w = StringParser.wrap(t);
                                         former.add("\"" + w + "\"");
                                         return;
@@ -250,7 +251,7 @@ public class CompleterNBT extends Completer {
                     var i = 0;
                     for (Entity entity : nearbyEntities) {
                         var prefix = pow == 0 ? "" : "["+Strings.padStart(String.valueOf(i), pow, ' ')+"]";
-                        former.addIfStarts("id" + prefix + entity.getEntityId() + "(\"" + entity.getName() + "\")");
+                        former.addIfStarts("id" + prefix + entity.getEntityId() + "(\"" + ChatColor.stripColor(entity.getName()) + "\")");
                         i++;
                     }
                 }
@@ -332,7 +333,7 @@ public class CompleterNBT extends Completer {
             for (String el : els) {
                 if (el.isEmpty()) continue;
                 if (!el.startsWith("[") && !el.equals("#")) {
-                    if (!stringBuilder.toString().endsWith("]") && !stringBuilder.toString().endsWith("#") && !stringBuilder.isEmpty()) {
+                    if (!stringBuilder.toString().endsWith("#") && !stringBuilder.isEmpty()) {
                         stringBuilder.append(".");
                     }
                 }
@@ -347,9 +348,8 @@ public class CompleterNBT extends Completer {
                 if (base instanceof Map map && !(container instanceof NBTContainerValue)) {
                     for (Object key : map.keySet()) {
                         if (!(key instanceof String s)) continue;
-                        String u = StringParser.wrap(s);
-                        if (!u.equals(s) || u.contains(".")) s = '\"' + u + '\"';
-                        former.addIfHas(s);
+                        KeySelector selector = new KeySelector(s);
+                        former.addIfHas(selector.toString());
                     }
                 } else if (base instanceof Collection list && !(container instanceof NBTContainerValue)) {
                     for (int i = 0; i < list.size(); i++) {
@@ -365,9 +365,8 @@ public class CompleterNBT extends Completer {
             }
             for (String type : container.getTypes()) {
                 for (String s : typeCompleter.getNextKeys(type, emptyQuery)) {
-                    String u = StringParser.wrap(s);
-                    if (!u.equals(s) || u.contains(".")) s = '\"' + u + '\"';
-                    former.addIfHas(s);
+                    KeySelector selector = new KeySelector(s);
+                    former.addIfHas(selector.toString());
                 }
             }
             return;
@@ -386,11 +385,9 @@ public class CompleterNBT extends Completer {
             if (base instanceof Map compound) {
                 for (Object key : compound.keySet()) {
                     if (!(key instanceof String s)) continue;
-                    String u = StringParser.wrap(s);
-                    // TODO maybe parse key
-                    if (!u.equals(s) || u.contains(".")) s = '\"' + u + '\"';
+                    KeySelector selector = new KeySelector(s);
                     String delimiter = option.endsWith("#") ? "" : ".";
-                    if (s.toUpperCase().contains(qu.toUpperCase())) former.add(option + delimiter + s);
+                    if (s.toUpperCase().contains(qu.toUpperCase())) former.add(option + delimiter + selector);
                 }
             } else if (base instanceof Collection list) {
                 for (int i = 0; i < list.size(); i++) {

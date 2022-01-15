@@ -3,8 +3,8 @@ package me.dpohvar.powernbt.command.action;
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.NBTQuery;
-import me.dpohvar.powernbt.utils.NBTViewer;
+import me.dpohvar.powernbt.utils.query.NBTQuery;
+import me.dpohvar.powernbt.utils.query.QSelector;
 
 import java.util.List;
 
@@ -30,8 +30,8 @@ public class ActionRename extends Action {
         }
         NBTContainer container = arg1.getContainer();
         NBTQuery query = arg1.getQuery();
-        List<Object> v = query.getParent().getValues();
-        v.addAll(query2.getValues());
+        List<QSelector> v = query.getParent().getSelectors();
+        v.addAll(query2.getSelectors());
         NBTQuery newQuery = new NBTQuery(v);
         Object root = container.getTag();
         Object base = query.get(root);
@@ -41,7 +41,7 @@ public class ActionRename extends Action {
             root = query.remove(root);
             root = newQuery.set(root,base);
             container.setCustomTag(root);
-            caller.send(PowerNBT.plugin.translate("success_rename", name) + NBTViewer.getShortValueWithPrefix(base, false));
+            caller.sendValue(PowerNBT.plugin.translate("success_rename", name), base, false, false);
         }
     }
 }

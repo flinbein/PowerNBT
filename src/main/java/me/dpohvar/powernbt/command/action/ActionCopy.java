@@ -3,8 +3,7 @@ package me.dpohvar.powernbt.command.action;
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.NBTQuery;
-import me.dpohvar.powernbt.utils.NBTViewer;
+import me.dpohvar.powernbt.utils.query.NBTQuery;
 
 public class ActionCopy extends Action {
 
@@ -26,6 +25,6 @@ public class ActionCopy extends Action {
         NBTQuery query = arg.getQuery();
         Object base = container.getCustomTag(query);
         caller.setCustomTag(container.getCustomTag(query));
-        caller.send(PowerNBT.plugin.translate("success_copied") + NBTViewer.getShortValueWithPrefix(base,false));
+        caller.sendValue(PowerNBT.plugin.translate("success_copied"), base,false, false);
     }
 }

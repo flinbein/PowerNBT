@@ -3,7 +3,7 @@ package me.dpohvar.powernbt.command.action;
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.NBTQuery;
+import me.dpohvar.powernbt.utils.query.NBTQuery;
 
 public class ActionSwap extends Action {
 

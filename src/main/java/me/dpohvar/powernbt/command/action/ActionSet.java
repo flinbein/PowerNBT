@@ -5,7 +5,7 @@ import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.nbt.NBTContainerComplex;
 import me.dpohvar.powernbt.nbt.NBTContainerVariable;
 import me.dpohvar.powernbt.utils.Caller;
-import me.dpohvar.powernbt.utils.NBTQuery;
+import me.dpohvar.powernbt.utils.query.NBTQuery;
 
 public class ActionSet extends Action {
 

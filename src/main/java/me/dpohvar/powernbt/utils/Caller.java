@@ -85,7 +85,7 @@ public class Caller extends NBTContainer<Caller> {
     public void sendValue(String prefix, Object value, boolean hex, boolean bin) {
         if (owner instanceof Player player && isInteractiveMode(player)) {
             InteractiveViewer viewer = plugin.getViewer();
-            TextComponent component = new TextComponent("");
+            TextComponent component = new TextComponent("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
             component.addExtra(plugin.getPrefix());
             component.addExtra(prefix);
             if (prefix != null && !ChatColor.stripColor(prefix).isEmpty()) component.addExtra(" ");
@@ -102,7 +102,7 @@ public class Caller extends NBTContainer<Caller> {
     public void sendValueView(String prefix, NBTContainer<?> container, NBTQuery query, int start, int end, boolean hex, boolean bin) throws Exception {
         if (owner instanceof Player player && isInteractiveMode(player)) {
             InteractiveViewer viewer = plugin.getViewer();
-            TextComponent component = new TextComponent("");
+            TextComponent component = new TextComponent("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
             component.addExtra(plugin.getPrefix());
             component.addExtra(prefix);
             if (prefix != null && !ChatColor.stripColor(prefix).isEmpty()) component.addExtra(" ");

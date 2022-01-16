@@ -218,7 +218,7 @@ Required tags in left side to spawn entity:
 **Pos** - position of entity. List of doubles  
 
 Examples:  
-`/nbt {id:pig,Pos:[1d,100d,2d],Riding:{id:MinecartRideable}} spawn world1` - spawn pig in minecart at position 1:100:2 in world world1  
+`/nbt {id:pig,Pos:[1d,100d,2d],Riding:{id:MinecartRideable}} spawn world1` - spawn pig in minecart at position `1:100:2` in world world1  
 `/nbt id123(Creeper) copy` - copy entity value to buffer  
 `/nbt buffer Pos = me Pos` - change position stored in buffer to your position  
 `/nbt buffer spawn` - spawn entity at your position  

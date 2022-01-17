@@ -26,10 +26,7 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
@@ -122,8 +119,7 @@ public class Argument {
             if (!(caller.getOwner() instanceof LivingEntity entity)) {
                 throw new RuntimeException(plugin.translate("error_noplayer"));
             }
-            // todo: CUSTOM RAY-TRACE
-            return entity.getLineOfSight(null, 128).stream()
+            return entity.getLineOfSight(new UniverseSet<>(), 32).stream()
                     .filter(block -> block.getState() instanceof TileState)
                     .findFirst()
                     .map(NBTContainerBlock::new)
@@ -539,4 +535,11 @@ public class Argument {
         this.query = NBTQuery.fromString(queryFuture);
     }
 
+}
+
+class UniverseSet<T> extends HashSet<T> {
+    @Override
+    public boolean contains(Object o) {
+        return true;
+    }
 }

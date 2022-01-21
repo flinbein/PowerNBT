@@ -3,7 +3,6 @@ package me.dpohvar.powernbt.command.action;
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.api.NBTList;
-import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.api.NBTManagerUtils;
 import me.dpohvar.powernbt.completer.TypeCompleter;
 import me.dpohvar.powernbt.nbt.*;

@@ -1,6 +1,5 @@
 package me.dpohvar.powernbt.command.action;
 
-import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.api.NBTManagerUtils;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.nbt.NBTType;

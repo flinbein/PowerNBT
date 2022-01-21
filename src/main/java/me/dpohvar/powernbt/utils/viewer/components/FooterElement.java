@@ -1,7 +1,6 @@
 package me.dpohvar.powernbt.utils.viewer.components;
 
 import com.google.common.base.Strings;
-import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.api.NBTManagerUtils;
 import me.dpohvar.powernbt.utils.viewer.ContainerControl;
 import me.dpohvar.powernbt.utils.viewer.EventBuilder;

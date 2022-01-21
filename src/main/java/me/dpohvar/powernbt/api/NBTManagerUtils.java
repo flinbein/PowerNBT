@@ -1,24 +1,12 @@
 package me.dpohvar.powernbt.api;
 
-import me.dpohvar.powernbt.utils.NBTParser;
 import org.apache.commons.lang.ArrayUtils;
-import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.TileState;
-import org.bukkit.entity.Entity;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 
-import java.io.*;
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * PowerNBT API.<br>

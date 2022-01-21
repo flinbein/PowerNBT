@@ -3,7 +3,6 @@ package me.dpohvar.powernbt.utils;
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.api.NBTList;
-import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.api.NBTManagerUtils;
 import me.dpohvar.powernbt.nbt.NBTType;
 import org.apache.commons.lang.ArrayUtils;

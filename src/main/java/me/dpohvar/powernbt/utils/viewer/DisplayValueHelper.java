@@ -1,6 +1,5 @@
 package me.dpohvar.powernbt.utils.viewer;
 
-import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.api.NBTManagerUtils;
 import net.md_5.bungee.api.ChatColor;
 import org.apache.commons.lang.StringUtils;

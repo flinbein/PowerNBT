@@ -1,6 +1,5 @@
 package me.dpohvar.powernbt.utils.viewer;
 
-import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.api.NBTManagerUtils;
 import me.dpohvar.powernbt.exception.NBTTagNotFound;
 import me.dpohvar.powernbt.nbt.NBTContainer;

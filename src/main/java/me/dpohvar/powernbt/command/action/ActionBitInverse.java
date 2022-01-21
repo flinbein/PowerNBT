@@ -1,6 +1,7 @@
 package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.api.NBTManagerUtils;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.nbt.NBTType;
 import me.dpohvar.powernbt.utils.Caller;
@@ -29,7 +30,7 @@ public class ActionBitInverse extends Action {
         Object base1 = container1.getCustomTag(query1);
         Object result;
         if (base1 instanceof Number num) {
-            result = NBTManager.convertValue(~(num.longValue()), NBTType.fromValue(base1).type);
+            result = NBTManagerUtils.convertValue(~(num.longValue()), NBTType.fromValue(base1).type);
         } else if (base1 instanceof Boolean bool) {
             result = !bool;
         } else {

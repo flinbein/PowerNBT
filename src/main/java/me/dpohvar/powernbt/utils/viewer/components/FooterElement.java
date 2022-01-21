@@ -2,6 +2,7 @@ package me.dpohvar.powernbt.utils.viewer.components;
 
 import com.google.common.base.Strings;
 import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.api.NBTManagerUtils;
 import me.dpohvar.powernbt.utils.viewer.ContainerControl;
 import me.dpohvar.powernbt.utils.viewer.EventBuilder;
 import me.dpohvar.powernbt.utils.viewer.ViewerStyle;
@@ -60,7 +61,7 @@ public class FooterElement implements Element {
         else if (value instanceof String s) size = s.length();
         else if (value instanceof Collection c) size = c.size();
         else {
-            Object[] objects = NBTManager.convertToObjectArrayOrNull(value);
+            Object[] objects = NBTManagerUtils.convertToObjectArrayOrNull(value);
             if (objects != null) size = objects.length;
         }
         if (size >= 0) {

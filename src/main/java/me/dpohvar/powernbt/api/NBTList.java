@@ -158,7 +158,7 @@ public class NBTList implements List<Object>, NBTBox {
             setType(type);
             return tag;
         }
-        else return nbt.getTagOfValue(NBTManager.convertValue(value, type)); // CREATE TAG AND CONVERT FOR TYPE
+        else return nbt.getTagOfValue(NBTManagerUtils.convertValue(value, type)); // CREATE TAG AND CONVERT FOR TYPE
     }
 
 

@@ -4,6 +4,7 @@ import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.api.NBTList;
 import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.api.NBTManagerUtils;
 import me.dpohvar.powernbt.completer.TypeCompleter;
 import me.dpohvar.powernbt.nbt.*;
 import me.dpohvar.powernbt.utils.Caller;
@@ -467,7 +468,7 @@ public class Argument {
             }
             long val = Long.parseLong(objectFuture, 2);
             NBTType type = NBTType.fromValue(paramQuery.get(paramContainer.getCustomTag()));
-            this.container = new NBTContainerValue(NBTManager.convertValue(val, type.type));
+            this.container = new NBTContainerValue(NBTManagerUtils.convertValue(val, type.type));
             this.query = emptyQuery;
             action.execute();
         } else if (objectFuture.matches("-?[0-9]*(.[0-9]*)?") || objectFuture.matches("NaN|-?Infinity")) {

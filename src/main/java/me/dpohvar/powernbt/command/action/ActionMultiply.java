@@ -1,6 +1,7 @@
 package me.dpohvar.powernbt.command.action;
 
 import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.api.NBTManagerUtils;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.nbt.NBTType;
 import me.dpohvar.powernbt.utils.Caller;
@@ -48,7 +49,7 @@ public class ActionMultiply extends Action {
             mathResult = number1.longValue() * number2.longValue();
         }
         byte base1Type = NBTType.fromValue(base1).type;
-        Object result = NBTManager.convertValue(mathResult, base1Type);
+        Object result = NBTManagerUtils.convertValue(mathResult, base1Type);
         container1.setCustomTag(query1, result);
         caller.sendValue(plugin.translate("success_edit"), result, false, false);
 

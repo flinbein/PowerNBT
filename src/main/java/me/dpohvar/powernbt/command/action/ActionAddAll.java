@@ -4,6 +4,7 @@ import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.api.NBTList;
 import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.api.NBTManagerUtils;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.nbt.NBTType;
 import me.dpohvar.powernbt.utils.Caller;
@@ -62,18 +63,18 @@ public class ActionAddAll extends Action {
             } else {
                 x1 = x1.longValue()+x2.longValue();
             }
-            x1 = (Number) NBTManager.convertValue(x1, x1Type.type);
+            x1 = (Number) NBTManagerUtils.convertValue(x1, x1Type.type);
             container1.setCustomTag(query1, x1);
             caller.sendValue(PowerNBT.plugin.translate("success_add"), x2,false, false);
         } else if (base1.getClass().isArray() && base2.getClass().isArray()){
             NBTType baseType = NBTType.fromValue(base1).getBaseType();
-            Object[] array1 = NBTManager.convertToObjectArrayOrNull(base1);
-            Object[] array2 = NBTManager.convertToObjectArrayOrNull(base2);
+            Object[] array1 = NBTManagerUtils.convertToObjectArrayOrNull(base1);
+            Object[] array2 = NBTManagerUtils.convertToObjectArrayOrNull(base2);
             List<Object> list1 = Arrays.asList(array1);
             for (Object val : array2) {
-                list1.add(NBTManager.convertValue(val, baseType.type));
+                list1.add(NBTManagerUtils.convertValue(val, baseType.type));
             }
-            Object result = NBTManager.convertValue(list1, baseType.type);
+            Object result = NBTManagerUtils.convertValue(list1, baseType.type);
             container1.setCustomTag(query1,result);
             caller.sendValue(PowerNBT.plugin.translate("success_add"), base2,false, false);
         } else {

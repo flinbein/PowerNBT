@@ -5,6 +5,13 @@ Command-based in-game NBT editor for Bukkit
 
 ***********************************************
 
+build:
+```shell
+env PLUGIN_VERSION="DEV-SNAPSHOT" mvn package
+```
+
+***********************************************
+
 **Features:**
 * Browsing and editing NBT tags
 * supports items, players, offline-players, entities, blocks, ~~chunks~~, schematic files and all other nbt files

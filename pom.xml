@@ -31,7 +31,7 @@
 
     <groupId>me.dpohvar.powernbt</groupId>
     <artifactId>powernbt</artifactId>
-    <version>${env.PLUGIN_VERSION}</version>
+    <version>BUILD-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <description>Powerful NBT editor for CraftBukkit 1.5 and later</description>
@@ -136,7 +136,7 @@
                 <configuration>
                     <repositoryName>PowerNBT</repositoryName>
                     <repositoryOwner>DPOH-VAR</repositoryOwner>
-                    <message>Creating site for ${project.version}</message>
+                    <message>Creating site for ${env.PLUGIN_VERSION}</message>
                 </configuration>
                 <executions>
                     <execution>

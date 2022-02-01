@@ -2,4 +2,5 @@ before_install:
   - sdk install java 17.0.2-open
   - sdk use java 17.0.2-open
 install:
+  - chmod 770 ./jitpack_build.sh
   - ./jitpack_build.sh

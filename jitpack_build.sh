@@ -1,6 +1,8 @@
-if [[ $VERSION == v* ]]
+if [[ $JITPACK_VERSION == v* ]]
 then
-  env PLUGIN_VERSION=${VERSION:1} mvn package
+  echo "BUILD VERSION: ${JITPACK_VERSION:1}"
+  env PLUGIN_VERSION=${JITPACK_VERSION:1} mvn package
 else
-  env PLUGIN_VERSION=${VERSION} mvn package
+  echo "BUILD VERSION: ${JITPACK_VERSION}-SNAPSHOT"
+  env PLUGIN_VERSION=${JITPACK_VERSION}-SNAPSHOT mvn package
 fi

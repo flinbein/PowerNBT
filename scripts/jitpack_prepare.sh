@@ -1,7 +1,7 @@
 if [[ $VERSION == v* ]]
 then
-  export PLUGIN_VERSION=${VERSION:1}
+  echo "${VERSION:1}" >> PLUGIN_VERSION.var
 else
-  export PLUGIN_VERSION=${VERSION}-SNAPSHOT
+  echo "${VERSION:1}-SNAPSHOT" >> PLUGIN_VERSION.var
 fi
-echo "exports PLUGIN_VERSION = $PLUGIN_VERSION"
+echo "save PLUGIN_VERSION.var = `cat ./PLUGIN_VERSION.var`"

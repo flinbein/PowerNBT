@@ -1,3 +1,3 @@
 moduleName=powernbt-ext
-moduleVersion=${env.PLUGIN_VERSION}
+moduleVersion=${plugin-version}
 extensionClasses=me.dpohvar.powernbt.extension.NBTExtension

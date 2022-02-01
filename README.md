@@ -7,7 +7,7 @@ Command-based in-game NBT editor for Bukkit
 
 build:
 ```shell
-env PLUGIN_VERSION="DEV-SNAPSHOT" mvn package
+mvn -Dplugin-version=LOCALDEV-SNAPSHOT package
 ```
 
 ***********************************************

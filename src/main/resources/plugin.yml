@@ -3,7 +3,7 @@ description: ${plugin-description}
 author: ${plugin-author}
 main: me.dpohvar.powernbt.PowerNBT
 website: ${plugin-website}
-version: ${env.PLUGIN_VERSION}
+version: ${plugin-version}
 softdepend:
     - VarScript
 commands:

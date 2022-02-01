@@ -16,6 +16,7 @@
         <bukkit-version>1.15.2-R0.1-SNAPSHOT</bukkit-version>
         <spigot-version>1.17.1-R0.1-SNAPSHOT</spigot-version>
         <groovy-version>3.0.9</groovy-version>
+        <plugin-version>DEV-SNAPSHOT</plugin-version>
 
         <github.global.server>github</github.global.server>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -136,7 +137,7 @@
                 <configuration>
                     <repositoryName>PowerNBT</repositoryName>
                     <repositoryOwner>DPOH-VAR</repositoryOwner>
-                    <message>Creating site for ${env.PLUGIN_VERSION}</message>
+                    <message>Creating site for ${plugin-version}</message>
                 </configuration>
                 <executions>
                     <execution>

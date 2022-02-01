@@ -1,7 +1,6 @@
 before_install:
-  - export JITPACK_VERSION=$VERSION
+  - chmod 770 ./scripts/prepare_jitpack_env.sh
+  - ./scripts/prepare_jitpack_env.sh
   - sdk install java 17.0.2-open
   - sdk use java 17.0.2-open
 install:
-  - chmod 770 ./jitpack_build.sh
-  - ./jitpack_build.sh

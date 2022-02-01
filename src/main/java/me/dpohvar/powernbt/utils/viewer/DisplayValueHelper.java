@@ -1,6 +1,6 @@
 package me.dpohvar.powernbt.utils.viewer;
 
-import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.api.NBTManagerUtils;
 import net.md_5.bungee.api.ChatColor;
 import org.apache.commons.lang.StringUtils;
 
@@ -82,7 +82,7 @@ public class DisplayValueHelper {
                 return "{" + tag.size() + "}: " + StringUtils.join(h, ",");
             }
         }
-        Object[] array = NBTManager.convertToObjectArrayOrNull(base);
+        Object[] array = NBTManagerUtils.convertToObjectArrayOrNull(base);
         if (array != null) {
             if (array.length == 0) return "[0] empty";
             return "["+array.length+"]";

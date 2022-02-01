@@ -1,6 +1,6 @@
 package me.dpohvar.powernbt.utils.query;
 
-import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.api.NBTManagerUtils;
 import me.dpohvar.powernbt.exception.NBTTagNotFound;
 import me.dpohvar.powernbt.nbt.NBTType;
 import org.apache.commons.lang.ArrayUtils;
@@ -32,7 +32,7 @@ public record RangeSelector(Integer start, Integer end) implements QSelector {
             List<Object> list = IntegerSelector.cloneCollection(col);
             return getSubList(list);
         }
-        Object arrayResult = NBTManager.mapArray(current, this::getSubList);
+        Object arrayResult = NBTManagerUtils.mapArray(current, this::getSubList);
         if (arrayResult != null) return arrayResult;
         throw new NBTTagNotFound(current, this.toString());
     }
@@ -79,7 +79,7 @@ public record RangeSelector(Integer start, Integer end) implements QSelector {
             if (removed) return list;
             return current;
         }
-        Object arrayResult = NBTManager.modifyArray(current, this::clearRange);
+        Object arrayResult = NBTManagerUtils.modifyArray(current, this::clearRange);
         if (arrayResult != null) return arrayResult;
         throw new NBTTagNotFound(current, this.toString());
     }
@@ -92,7 +92,7 @@ public record RangeSelector(Integer start, Integer end) implements QSelector {
             reverse = true;
             int c = a; a = b; b = c;
         }
-        Object[] objectsToInsert = NBTManager.convertToObjectArrayOrNull(valueToInsert);
+        Object[] objectsToInsert = NBTManagerUtils.convertToObjectArrayOrNull(valueToInsert);
         if (objectsToInsert == null) objectsToInsert = new Object[]{valueToInsert};
         if (reverse) ArrayUtils.reverse(objectsToInsert);
         List<Object> result = list.subList(a, b);
@@ -112,7 +112,7 @@ public record RangeSelector(Integer start, Integer end) implements QSelector {
             }
             String before = s.substring(0, a);
             String after = s.substring(b);
-            String pasteValue = (String) NBTManager.convertValue(value, NBTType.STRING.type);
+            String pasteValue = (String) NBTManagerUtils.convertValue(value, NBTType.STRING.type);
             if (reverse) pasteValue = new StringBuilder(pasteValue).reverse().toString();
             return before + pasteValue + after;
         }
@@ -121,7 +121,7 @@ public record RangeSelector(Integer start, Integer end) implements QSelector {
             insertSubList(list, value);
             return list;
         }
-        Object arrayResult = NBTManager.modifyArray(current, list -> insertSubList(list, value));
+        Object arrayResult = NBTManagerUtils.modifyArray(current, list -> insertSubList(list, value));
         if (arrayResult != null) return arrayResult;
         throw new NBTTagNotFound(current, this.toString());
     }

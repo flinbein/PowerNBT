@@ -1,6 +1,5 @@
 package me.dpohvar.powernbt.utils.query;
 
-import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.exception.NBTTagNotFound;
 import me.dpohvar.powernbt.exception.NBTTagUnexpectedType;
 import me.dpohvar.powernbt.utils.StringParser;
@@ -16,7 +15,6 @@ import static me.dpohvar.powernbt.PowerNBT.plugin;
 public class NBTQuery {
 
     private final QSelector[] selectors;
-    private static final NBTManager nbt = NBTManager.getInstance();
 
     public List<QSelector> getSelectors() {
         return Arrays.asList(selectors);
@@ -181,7 +179,7 @@ public class NBTQuery {
         Object reduceValue = headSelector.delete(stepValues.pollLast());
         for (int i = tailSelectors.length-1; i >= 0 ; i--) {
             QSelector selector = tailSelectors[i];
-            reduceValue = selector.set(stepValues.getLast(), reduceValue, false);
+            reduceValue = selector.set(stepValues.pollLast(), reduceValue, false);
         }
         return reduceValue;
     }

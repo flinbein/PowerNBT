@@ -3,7 +3,7 @@ package me.dpohvar.powernbt.utils;
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.api.NBTList;
-import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.api.NBTManagerUtils;
 import me.dpohvar.powernbt.nbt.NBTType;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -191,7 +191,7 @@ public class NBTStaticViewer {
                         value = PowerNBT.plugin.translate("data_elements", col.size());
                     }
                 } else {
-                    Object[] array = NBTManager.convertToObjectArrayOrNull(base);
+                    Object[] array = NBTManagerUtils.convertToObjectArrayOrNull(base);
                     if (array != null) {
                         if (array.length == 0) {
                             value = PowerNBT.plugin.translate("data_emptylist");
@@ -361,7 +361,7 @@ public class NBTStaticViewer {
                 value = PowerNBT.plugin.translate("data_elements", entries.size()) + buffer;
             }
         } else {
-            Object[] array = NBTManager.convertToObjectArrayOrNull(base);
+            Object[] array = NBTManagerUtils.convertToObjectArrayOrNull(base);
             if (array != null) {
                 if (start == 0 && end == 0) end = h_limit;
                 ChatColor typeColor = ChatColor.WHITE;

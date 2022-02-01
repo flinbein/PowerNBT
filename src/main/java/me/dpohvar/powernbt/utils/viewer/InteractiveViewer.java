@@ -1,6 +1,6 @@
 package me.dpohvar.powernbt.utils.viewer;
 
-import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.api.NBTManagerUtils;
 import me.dpohvar.powernbt.exception.NBTTagNotFound;
 import me.dpohvar.powernbt.nbt.NBTContainer;
 import me.dpohvar.powernbt.utils.query.NBTQuery;
@@ -55,7 +55,7 @@ public class InteractiveViewer {
             } else if (value instanceof String s) {
                 result.addExtra(DisplayValueHelper.getStringValue(style, s, start, end, colLimit*rowLimit, hex));
             } else {
-                Object[] objects = NBTManager.convertToObjectArrayOrNull(value);
+                Object[] objects = NBTManagerUtils.convertToObjectArrayOrNull(value);
                 if (objects != null) {
                     ListElement listElement = new ListElement(style, control, Arrays.asList(objects), start, end, colLimit, rowLimit, hex, bin);
                     result.addExtra(listElement.getComponent());

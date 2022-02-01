@@ -3,7 +3,7 @@ package me.dpohvar.powernbt.command.action;
 import me.dpohvar.powernbt.PowerNBT;
 import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.api.NBTList;
-import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.api.NBTManagerUtils;
 import me.dpohvar.powernbt.completer.TypeCompleter;
 import me.dpohvar.powernbt.nbt.*;
 import me.dpohvar.powernbt.utils.Caller;
@@ -26,10 +26,7 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
@@ -122,8 +119,7 @@ public class Argument {
             if (!(caller.getOwner() instanceof LivingEntity entity)) {
                 throw new RuntimeException(plugin.translate("error_noplayer"));
             }
-            // todo: CUSTOM RAY-TRACE
-            return entity.getLineOfSight(null, 128).stream()
+            return entity.getLineOfSight(new UniverseSet<>(), 32).stream()
                     .filter(block -> block.getState() instanceof TileState)
                     .findFirst()
                     .map(NBTContainerBlock::new)
@@ -471,7 +467,7 @@ public class Argument {
             }
             long val = Long.parseLong(objectFuture, 2);
             NBTType type = NBTType.fromValue(paramQuery.get(paramContainer.getCustomTag()));
-            this.container = new NBTContainerValue(NBTManager.convertValue(val, type.type));
+            this.container = new NBTContainerValue(NBTManagerUtils.convertValue(val, type.type));
             this.query = emptyQuery;
             action.execute();
         } else if (objectFuture.matches("-?[0-9]*(.[0-9]*)?") || objectFuture.matches("NaN|-?Infinity")) {
@@ -539,4 +535,11 @@ public class Argument {
         this.query = NBTQuery.fromString(queryFuture);
     }
 
+}
+
+class UniverseSet<T> extends HashSet<T> {
+    @Override
+    public boolean contains(Object o) {
+        return true;
+    }
 }

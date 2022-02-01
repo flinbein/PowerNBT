@@ -1,7 +1,7 @@
 package me.dpohvar.powernbt.utils.query;
 
 import me.dpohvar.powernbt.api.NBTList;
-import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.api.NBTManagerUtils;
 import me.dpohvar.powernbt.exception.NBTTagNotFound;
 import me.dpohvar.powernbt.nbt.NBTType;
 import org.apache.commons.lang.StringUtils;
@@ -39,7 +39,7 @@ public interface IntegerSelector extends QSelector {
             }
             return s.substring(index, index+1);
         }
-        Object[] objects = NBTManager.convertToObjectArrayOrNull(current);
+        Object[] objects = NBTManagerUtils.convertToObjectArrayOrNull(current);
         if (objects != null) {
             int index = indexToGet(objects.length);
             if (index >= objects.length) {
@@ -66,9 +66,9 @@ public interface IntegerSelector extends QSelector {
             int index = indexToDelete(s.length());
             return s.substring(0, index) + s.substring(index+1);
         }
-        Object[] array = NBTManager.convertToObjectArrayOrNull(current);
+        Object[] array = NBTManagerUtils.convertToObjectArrayOrNull(current);
         if (array != null) {
-            return NBTManager.modifyArray(array, list -> list.remove(indexToDelete(array.length)));
+            return NBTManagerUtils.modifyArray(array, list -> list.remove(indexToDelete(array.length)));
         }
         throw new NBTTagNotFound(current, this.toString());
     }
@@ -84,13 +84,13 @@ public interface IntegerSelector extends QSelector {
         if (current instanceof String s) {
             int length = s.length();
             int index = indexToSet(length);
-            String pasteValue = (String) NBTManager.convertValue(value, NBTType.STRING.type);
+            String pasteValue = (String) NBTManagerUtils.convertValue(value, NBTType.STRING.type);
             if (index < length) {
                 return s.substring(0, index) + pasteValue + s.substring(index+1);
             }
             return s + StringUtils.repeat(" ",length - index) + pasteValue;
         }
-        Object array = NBTManager.modifyArray(current, list -> putToFreeIndex(list, indexToSet(list.size()), value));
+        Object array = NBTManagerUtils.modifyArray(current, list -> putToFreeIndex(list, indexToSet(list.size()), value));
         if (array != null) return array;
         throw new NBTTagNotFound(current, this.toString());
     }

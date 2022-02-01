@@ -3,6 +3,7 @@ package me.dpohvar.powernbt.nbt;
 import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.api.NBTList;
 import me.dpohvar.powernbt.api.NBTManager;
+import me.dpohvar.powernbt.api.NBTManagerUtils;
 import org.bukkit.ChatColor;
 
 import java.util.Collection;
@@ -79,7 +80,7 @@ public enum NBTType {
         if (value instanceof long[]) return DARK_AQUA;
         if (value instanceof String) return GREEN;
         if (value instanceof Map) return GRAY;
-        if (NBTManager.convertToObjectArrayOrNull(value) != null) return DARK_GRAY;
+        if (NBTManagerUtils.convertToObjectArrayOrNull(value) != null) return DARK_GRAY;
         return MAGIC;
     }
 
@@ -90,7 +91,7 @@ public enum NBTType {
         if (value instanceof Boolean) return "\u2469"; // ⑩;
         if (value instanceof Map) return "\u24C2"; // Ⓜ;
         if (value instanceof Collection) return "\u24B6"; // Ⓐ;
-        Object[] objects = NBTManager.convertToObjectArrayOrNull(value);
+        Object[] objects = NBTManagerUtils.convertToObjectArrayOrNull(value);
         if (objects != null) return "\u24D0"; // ⓐ
 
         return "\u24E7"; // ⓧ

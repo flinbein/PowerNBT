@@ -1,6 +1,8 @@
 before_install:
-  - chmod 770 ./scripts/prepare_jitpack_env.sh
-  - ./scripts/prepare_jitpack_env.sh
+  - chmod 770 ./scripts/jitpack_prepare.sh
+  - ./scripts/jitpack_prepare.sh
   - sdk install java 17.0.2-open
   - sdk use java 17.0.2-open
 install:
+  - chmod 770 ./scripts/jitpack_build.sh
+  - ./scripts/jitpack_build.sh

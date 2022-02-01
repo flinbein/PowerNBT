@@ -1,0 +1,1 @@
+env PLUGIN_VERSION="$PLUGIN_VERSION" mvn clean install -DskipTests

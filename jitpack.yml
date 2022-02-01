@@ -1,4 +1,6 @@
 before_install:
+  - echo "version variable"
+  - echo $VERSION
   - sdk install java 17.0.2-open
   - sdk use java 17.0.2-open
 install:

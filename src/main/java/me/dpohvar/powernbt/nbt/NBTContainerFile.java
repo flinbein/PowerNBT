@@ -1,15 +1,12 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.api.NBTBox;
 import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.utils.PowerJSONParser;
 import me.dpohvar.powernbt.utils.StringParser;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 public class NBTContainerFile extends NBTContainer<File> {
 
@@ -33,7 +30,7 @@ public class NBTContainerFile extends NBTContainer<File> {
 
         boolean isNBT;
         if (!file.exists() || file.isDirectory()) return null;
-        try (var input = new DataInputStream(new FileInputStream(file))) {
+        try (var input = getDataInputStream()) {
             byte b = input.readByte();
             NBTType nbtType = NBTType.fromByte(b);
             isNBT = (nbtType != null);
@@ -55,20 +52,35 @@ public class NBTContainerFile extends NBTContainer<File> {
         }
     }
 
+    protected DataInputStream getDataInputStream() throws FileNotFoundException {
+        return new DataInputStream(new FileInputStream(file));
+    }
+
+    protected final boolean isNBT(Object base){
+        return NBTType.fromValueOrNull(base) != null;
+    }
+
     @Override
     public void writeTag(Object base) {
-
         try {
-            if ((base == null || base instanceof Map || base instanceof Collection || base instanceof Object[] || base instanceof Boolean) && !(base instanceof NBTBox)) { // json
-                PowerJSONParser.write(base, file);
+            if (isNBT(base)) {
+                writeTagNBT(base);
             } else {
-                NBTManager.getInstance().write(file, base);
+                writeTagJSON(base);
             }
         } catch (FileNotFoundException e) {
             throw new RuntimeException("file "+file+" not found", e);
         } catch (Exception e) {
             throw new RuntimeException("can't write to file", e);
         }
+    }
+
+    public void writeTagNBT(Object base) throws Exception{
+        NBTManager.getInstance().write(file, base);
+    }
+
+    public void writeTagJSON(Object base) throws IOException{
+        PowerJSONParser.write(base, file);
     }
 
     @Override

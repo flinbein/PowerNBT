@@ -228,6 +228,7 @@ public class NBTManager {
     public void writeCompressed(OutputStream outputStream, Object value) throws IOException {
         DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(outputStream)));
         nbtBridge.writeNBTData(dos, getTagOfValue(value));
+        dos.close();
     }
 
     /**

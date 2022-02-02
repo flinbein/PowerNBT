@@ -1,16 +1,14 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.api.NBTBox;
 import me.dpohvar.powernbt.api.NBTManager;
 import me.dpohvar.powernbt.utils.PowerJSONParser;
 import me.dpohvar.powernbt.utils.StringParser;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.zip.GZIPInputStream;
 
 public class NBTContainerFileGZip extends NBTContainerFile {
 
@@ -30,20 +28,11 @@ public class NBTContainerFileGZip extends NBTContainerFile {
 
     @Override
     public Object readTag() {
-        boolean isNBT;
-        try (var input = new DataInputStream(new BufferedInputStream(new GZIPInputStream(new FileInputStream(this.getObject()))))) {
-            byte b = input.readByte();
-            NBTType nbtType = NBTType.fromByte(b);
-            isNBT = (nbtType != null);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("no file",e);
-        } catch (IOException e) {
-            throw new RuntimeException("can't read file",e);
-        }
-
         try {
-            if (isNBT) return NBTManager.getInstance().readCompressed(this.getObject());
-            else return PowerJSONParser.readCompressed(this.getObject());
+            try {
+                return NBTManager.getInstance().readCompressed(this.getObject());
+            } catch (Exception ignored) {}
+            return PowerJSONParser.readCompressed(this.getObject());
         } catch (FileNotFoundException e) {
             return null;
         } catch (IOException e) {
@@ -54,16 +43,13 @@ public class NBTContainerFileGZip extends NBTContainerFile {
     }
 
     @Override
-    public void writeTag(Object base) {
-        try {
-            if ((base instanceof Map || base instanceof Collection || base instanceof Object[] || base instanceof Boolean) && !(base instanceof NBTBox)) { // json
-                PowerJSONParser.writeCompressed(base, this.getObject());
-            } else {
-                NBTManager.getInstance().writeCompressed(this.getObject(), base);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("IO error", e);
-        }
+    public void writeTagNBT(Object base) {
+        NBTManager.getInstance().writeCompressed(this.getObject(), base);
+    }
+
+    @Override
+    public void writeTagJSON(Object base) throws IOException {
+        PowerJSONParser.writeCompressed(base, this.getObject());
     }
 
     @Override

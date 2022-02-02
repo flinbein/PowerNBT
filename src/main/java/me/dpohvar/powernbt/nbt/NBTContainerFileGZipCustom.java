@@ -1,20 +1,17 @@
 package me.dpohvar.powernbt.nbt;
 
-import me.dpohvar.powernbt.api.NBTBox;
 import me.dpohvar.powernbt.api.NBTCompound;
 import me.dpohvar.powernbt.utils.StringParser;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Map;
 
 import static me.dpohvar.powernbt.PowerNBT.plugin;
 
-public class NBTContainerFileCustom extends NBTContainerFileGZip {
+public class NBTContainerFileGZipCustom extends NBTContainerFileGZip {
 
     String name;
 
-    public NBTContainerFileCustom(String name) {
+    public NBTContainerFileGZipCustom(String name) {
         super(getFileByName(name), "$$" + StringParser.wrapToQuotesIfNeeded(name));
         this.name = name;
     }
@@ -23,7 +20,7 @@ public class NBTContainerFileCustom extends NBTContainerFileGZip {
         if (name.contains(".") || name.contains(File.separator)) {
             throw new RuntimeException(plugin.translate("error_customfile", name));
         }
-        return new File(plugin.getNBTFilesFolder(), name + ".nbtz");
+        return new File(plugin.getNBTFilesFolder(), name + ".nbt.gz");
     }
 
     @Override
@@ -37,12 +34,12 @@ public class NBTContainerFileCustom extends NBTContainerFileGZip {
 
     @Override
     public void writeTag(Object base) {
-        if ((base instanceof Map || base instanceof Collection || base instanceof Object[] || base instanceof Boolean) && !(base instanceof NBTBox)) { // json
-            super.writeTag(base);
-        } else {
+        if (isNBT(base)) {
             NBTCompound compound = new NBTCompound();
             compound.put("Data", base);
             super.writeTag(compound);
+        } else { // json
+            super.writeTag(base);
         }
 
     }

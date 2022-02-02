@@ -159,7 +159,7 @@ public class Argument {
             if (tokenText.startsWith("\"") && tokenText.endsWith("\"") && tokenText.length()>1) {
                 tokenText = StringParser.parse(tokenText.substring(1,tokenText.length()-1)).trim();
             }
-            return new NBTContainerFileCustom(tokenText);
+            return new NBTContainerFileGZipCustom(tokenText);
         }
         if (object.startsWith("$") && object.length() > 1) {
             String tokenText = object.substring(1);

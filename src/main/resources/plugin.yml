@@ -2,6 +2,7 @@ name: PowerNBT
 description: ${plugin-description}
 author: ${plugin-author}
 main: me.dpohvar.powernbt.PowerNBT
+api-version: ${api-version}
 website: ${plugin-website}
 version: ${plugin-version}
 softdepend:

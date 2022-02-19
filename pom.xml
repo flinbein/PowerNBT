@@ -33,11 +33,11 @@
 
     <groupId>me.dpohvar.powernbt</groupId>
     <artifactId>powernbt</artifactId>
-    <version>BUILD-SNAPSHOT</version>
+    <version>${plugin-version}</version>
     <packaging>jar</packaging>
 
     <description>Powerful NBT editor for CraftBukkit 1.5 and later</description>
-    <url>http://dev.bukkit.org/bukkit-plugins/powernbt/</url>
+    <url>https://www.spigotmc.org/resources/powernbt.9098/</url>
 
     <distributionManagement>
         <downloadUrl>https://github.com/flinbein/powernbt/releases</downloadUrl>

@@ -11,12 +11,11 @@ import me.dpohvar.powernbt.utils.viewer.ViewerStyle;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 
@@ -24,8 +23,7 @@ public class PowerNBT extends JavaPlugin {
 
     private static final boolean SILENT = true;
     public static PowerNBT plugin;
-    public static final Charset charset = StandardCharsets.UTF_8;
-    private final HashMap<String, Caller> callers = new HashMap<String, Caller>();
+    private final HashMap<String, Caller> callers = new HashMap<>();
     private Translator translator;
     private static final Tokenizer tokenizer = new Tokenizer(
             null, null, null, List.of('\"'), null, List.of(' '), "{}[]()"
@@ -33,14 +31,10 @@ public class PowerNBT extends JavaPlugin {
     private final String prefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[" + ChatColor.YELLOW + "PowerNBT" + ChatColor.GOLD + ChatColor.BOLD + "] " + ChatColor.RESET;
     private final String errorPrefix = ChatColor.DARK_RED.toString() + ChatColor.BOLD + "[" + ChatColor.RED + "PowerNBT" + ChatColor.DARK_RED + ChatColor.BOLD + "] " + ChatColor.RESET;
     private TypeCompleter typeCompleter;
-    private final InteractiveViewer viewer;
+    private InteractiveViewer viewer;
 
     public PowerNBT() {
         super();
-
-
-        ViewerStyle style = new ViewerStyle(getConfig().getConfigurationSection("editor.colors"), getConfig().getConfigurationSection("editor.icons"));
-        viewer = new InteractiveViewer(style, getConfig().getInt("limit.vertical", 60), getConfig().getInt("limit.horizontal", 10));
         try {
             loadExtensions();
         } catch (Error e) {
@@ -144,6 +138,10 @@ public class PowerNBT extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        FileConfiguration config = getConfig();
+        ViewerStyle style = new ViewerStyle(config.getConfigurationSection("editor.colors"), config.getConfigurationSection("editor.icons"));
+        viewer = new InteractiveViewer(style, config.getInt("limit.vertical", 60), config.getInt("limit.horizontal", 10));
+
         String classMap = this.getConfig().getString("classmap");
         if (classMap != null && !classMap.isEmpty()) {
             File classMapFile = new File(getDataFolder(),classMap);
@@ -153,7 +151,7 @@ public class PowerNBT extends JavaPlugin {
         this.translator = new Translator(this, lang);
         this.typeCompleter = new TypeCompleter(getTemplateFolder());
         getServer().getPluginManager().registerEvents(new SelectListener(), this);
-        NBTStaticViewer.applyConfig(getConfig());
+        NBTStaticViewer.applyConfig(config);
         getCommand("powernbt").setExecutor(new CommandNBT());
         getCommand("powernbt.").setExecutor(new CommandNBT(SILENT));
         getCommand("powernbt").setTabCompleter(new CompleterNBT());

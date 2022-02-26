@@ -33,23 +33,14 @@ public class PowerNBT extends JavaPlugin {
     private final String prefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[" + ChatColor.YELLOW + "PowerNBT" + ChatColor.GOLD + ChatColor.BOLD + "] " + ChatColor.RESET;
     private final String errorPrefix = ChatColor.DARK_RED.toString() + ChatColor.BOLD + "[" + ChatColor.RED + "PowerNBT" + ChatColor.DARK_RED + ChatColor.BOLD + "] " + ChatColor.RESET;
     private TypeCompleter typeCompleter;
-    private final InteractiveViewer viewer;
 
     public PowerNBT() {
         super();
-
-
-        ViewerStyle style = new ViewerStyle(getConfig().getConfigurationSection("editor.colors"), getConfig().getConfigurationSection("editor.icons"));
-        viewer = new InteractiveViewer(style, getConfig().getInt("limit.vertical", 60), getConfig().getInt("limit.horizontal", 10));
         try {
             loadExtensions();
         } catch (Error e) {
             e.printStackTrace();
         }
-    }
-
-    public InteractiveViewer getViewer() {
-        return viewer;
     }
 
     private static void loadExtensions(){

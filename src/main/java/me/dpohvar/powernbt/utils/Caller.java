@@ -83,38 +83,18 @@ public class Caller extends NBTContainer<Caller> {
     }
 
     public void sendValue(String prefix, Object value, boolean hex, boolean bin) {
-        if (owner instanceof Player player && isInteractiveMode(player)) {
-            InteractiveViewer viewer = plugin.getViewer();
-            TextComponent component = new TextComponent("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-            component.addExtra(plugin.getPrefix());
-            component.addExtra(prefix);
-            if (prefix != null && !ChatColor.stripColor(prefix).isEmpty()) component.addExtra(" ");
-            component.addExtra(viewer.getShortValue(value, hex, bin));
-            player.spigot().sendMessage(component);
-        } else {
-            String message = plugin.getPrefix() + prefix + " " + NBTStaticViewer.getShortValueWithPrefix(value, hex, bin);
-            if (message.length()>32743) message = message.substring(0,32743);
-            owner.sendMessage(message);
-            owner.sendMessage();
-        }
+        String message = plugin.getPrefix() + prefix + " " + NBTStaticViewer.getShortValueWithPrefix(value, hex, bin);
+        if (message.length()>32743) message = message.substring(0,32743);
+        owner.sendMessage(message);
+        owner.sendMessage();
     }
 
     public void sendValueView(String prefix, NBTContainer<?> container, NBTQuery query, int start, int end, boolean hex, boolean bin) throws Exception {
-        if (owner instanceof Player player && isInteractiveMode(player)) {
-            InteractiveViewer viewer = plugin.getViewer();
-            TextComponent component = new TextComponent("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-            component.addExtra(plugin.getPrefix());
-            component.addExtra(prefix);
-            if (prefix != null && !ChatColor.stripColor(prefix).isEmpty()) component.addExtra(" ");
-            component.addExtra(viewer.getFullValue(container, query, start, end, hex, bin));
-            player.spigot().sendMessage(component);
-        } else {
-            Object value = container.getCustomTag(query);
-            String message = plugin.getPrefix() + prefix + " " + NBTStaticViewer.getFullValue(value, start, end, hex, bin);
-            if (message.length()>32743) message = message.substring(0,32743);
-            owner.sendMessage(message);
-            owner.sendMessage();
-        }
+        Object value = container.getCustomTag(query);
+        String message = plugin.getPrefix() + prefix + " " + NBTStaticViewer.getFullValue(value, start, end, hex, bin);
+        if (message.length()>32743) message = message.substring(0,32743);
+        owner.sendMessage(message);
+        owner.sendMessage();
     }
 
     public void handleException(Throwable o) {

@@ -43,3 +43,10 @@ hooks:
     block:
       getNBT: "net.minecraft.world.level.block.entity.TileEntity m(): net.minecraft.nbt.NBTTagCompound"
       setNBT: "net.minecraft.world.level.block.entity.TileEntity a(net.minecraft.nbt.NBTTagCompound): void"
+  1_19_3-R0_1-SNAPSHOT:
+    entity:
+      getNBTSimple: "net.minecraft.world.entity.Entity f(net.minecraft.nbt.NBTTagCompound): net.minecraft.nbt.NBTTagCompound"
+      setNBT: "net.minecraft.world.entity.Entity g(net.minecraft.nbt.NBTTagCompound): void"
+    block:
+      getNBT: "net.minecraft.world.level.block.entity.TileEntity m(): net.minecraft.nbt.NBTTagCompound"
+      setNBT: "net.minecraft.world.level.block.entity.TileEntity a(net.minecraft.nbt.NBTTagCompound): void"
